@@ -97,7 +97,7 @@
 
 .infoRow {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-md) var(--spacing-lg);
 }
@@ -105,7 +105,6 @@
 .infoIcon {
   color: var(--color-text-tertiary);
   flex-shrink: 0;
-  margin-top: 2px;
 }
 
 .infoBody {
@@ -206,7 +205,7 @@
 
 .specialItem {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--spacing-sm);
   font-size: var(--font-size-base);           /* Body/M — 16px */
   color: var(--color-text-primary);
@@ -221,7 +220,6 @@
   border-radius: 50%;
   background: var(--color-brand-400);
   flex-shrink: 0;
-  margin-top: 7px;
 }
 
 /* ─── Choice block (Sim / Não) ──────────────────────────── */

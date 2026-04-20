@@ -148,19 +148,10 @@ export function SurveyFormScreen({
           </div>
         </section>
 
-        {/* Serviço — título contextual (apenas para cenário com serviço único) */}
-        {survey.services.length === 1 && (
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>{survey.services[0].name}</h2>
-          </section>
-        )}
-
         {/* Blocos por serviço */}
         {survey.services.map(svc => (
           <section key={svc.id} className={styles.section}>
-            {survey.services.length > 1 && (
-              <h2 className={styles.sectionTitle}>{svc.name}</h2>
-            )}
+            <h2 className={styles.sectionTitle}>{svc.name}</h2>
             <div className={styles.questionList}>
               {svc.questions.map(q => (
                 <div key={q.id} className={styles.questionCard}>
