@@ -1,0 +1,282 @@
+/* ─── ClientesScreen.module.css ─────────────────────────────────────────────
+   Estilos para a tela de listagem de clientes (admin only)
+   Padrão idêntico ao UsersScreen / ProfissionaisScreen
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ─── Shell ──────────────────────────────────────────────────────────────────*/
+.shell {
+  min-height: 100vh;
+  background: #F5F3EE;
+  font-family: var(--font-body);
+}
+
+.sidebarFixed {
+  position: fixed;
+  top: 0;
+  left: var(--proto-offset, 0px);
+  height: 100vh;
+  z-index: 100;
+}
+
+.contentWrap {
+  margin-left: 246px;
+  padding: 24px 24px 24px 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.contentWrapClosed {
+  margin-left: 78px;
+}
+
+.contentCard {
+  background: var(--color-gray-50);
+  border-radius: 0 24px 24px 0;
+  border: 1px solid var(--color-gray-200);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-height: calc(100vh - 48px);
+}
+
+/* ─── Page Header ────────────────────────────────────────────────────────────*/
+.pageHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-display-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.1;
+}
+
+/* ─── Table section ──────────────────────────────────────────────────────────*/
+.tableSection {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-gray-200);
+  overflow: hidden;
+}
+
+/* ─── Toolbar ────────────────────────────────────────────────────────────────*/
+.toolbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.toolbarLeft {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ─── Search ─────────────────────────────────────────────────────────────────*/
+.searchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+}
+
+.searchInput {
+  height: 36px;
+  padding: 0 12px 0 32px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  outline: none;
+  min-width: 240px;
+  transition: border-color var(--transition-fast);
+}
+
+.searchInput::placeholder { color: var(--color-text-tertiary); }
+.searchInput:hover         { border-color: var(--color-gray-300); }
+.searchInput:focus         { border-color: var(--color-brand-400); }
+
+/* ─── Table ──────────────────────────────────────────────────────────────────*/
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.headerRow {
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.th {
+  padding: 10px 16px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  text-align: left;
+  background: var(--color-gray-50);
+}
+
+.tr:nth-child(odd) td  { background: var(--color-bg-surface); }
+.tr:nth-child(even) td { background: var(--color-gray-50); }
+.tr:hover td           { background: rgba(178, 85, 87, 0.04); }
+
+.td {
+  padding: 12px 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.tr:last-child .td { border-bottom: none; }
+
+/* ─── User cell — nome + ID ───────────────────────────────────────────────────*/
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.userName {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+.userId {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ─── Cells ──────────────────────────────────────────────────────────────────*/
+.cellText {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* ─── Action button — Ver detalhe ────────────────────────────────────────────*/
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  background: transparent;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.actionBtn:hover {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
+  color: var(--color-text-primary);
+}
+
+/* ─── Empty state ────────────────────────────────────────────────────────────*/
+.emptyCell {
+  padding: 48px 24px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  color: var(--color-text-tertiary);
+}
+
+/* ─── Pagination ─────────────────────────────────────────────────────────────*/
+.pagination {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-top: 1px solid var(--color-gray-200);
+  gap: 12px;
+}
+
+.paginationInfo {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.paginationControls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+.pageBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.pageBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.pageBtn:not(:disabled):hover {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-200);
+}
+
+.pageBtnActive {
+  background: var(--color-bg-brand) !important;
+  border-color: var(--color-brand-300) !important;
+  color: var(--color-brand-700) !important;
+  font-weight: var(--font-weight-semibold);
+}

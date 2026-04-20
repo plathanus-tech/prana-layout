@@ -1,0 +1,331 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-default);
+  font-family: var(--font-body);
+}
+
+/* ─── Hero ────────────────────────────────────────────── */
+.hero {
+  background: #F5F3EE;
+  border-bottom: var(--border-width-thin) solid var(--color-border-subtle);
+}
+
+.heroInner {
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.heroInnerDesktop {
+  max-width: none;
+  margin: 0;
+  padding-left: 120px;
+  padding-right: 120px;
+}
+
+.heroTag {
+  font-size: var(--font-size-xs);             /* Body/XXS — 10px */
+  font-weight: var(--font-weight-regular);
+  color: var(--color-brand-500);
+  text-transform: uppercase;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.heroTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-display-sm);     /* Heading/5 — 32px */
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+/* ─── Content ─────────────────────────────────────────── */
+.content {
+  flex: 1;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--spacing-lg) var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.contentDesktop {
+  max-width: none;
+  margin: 0;
+  padding-left: 120px;
+  padding-right: 120px;
+}
+
+/* ─── Current booking info ────────────────────────────── */
+.currentBooking {
+  background: var(--color-bg-surface);
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  box-shadow: var(--shadow-xs);
+}
+
+.currentBookingIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.currentBookingInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.currentBookingLabel {
+  font-size: var(--font-size-xs);             /* Body/XXS — 10px */
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-disabled);
+  text-transform: uppercase;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.currentBookingName {
+  font-size: var(--font-size-base);           /* Subtitle/M — 16px */
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+
+.currentBookingMeta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-sm);             /* Body/XS — 12px */
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Section ─────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-xs);             /* Body/XXS — 10px */
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+/* ─── Day strip ───────────────────────────────────────── */
+.dayStrip {
+  display: flex;
+  gap: var(--spacing-xs);
+  overflow-x: auto;
+  padding-bottom: var(--spacing-xs);
+  scrollbar-width: none;
+}
+
+.dayStrip::-webkit-scrollbar { display: none; }
+
+.dayBtn {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--spacing-sm);
+  width: 68px;             /* largura fixa padronizada */
+  border-radius: var(--radius-sm);
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.dayBtn:hover {
+  border-color: var(--color-brand-300);
+  background: var(--color-brand-50);
+}
+
+.dayBtnActive {
+  background: var(--color-brand-50);
+  border-color: var(--color-brand-500);
+  border-width: 2px;
+  box-shadow: none;
+}
+
+.dayName {
+  font-size: var(--font-size-xs);             /* Body/XXS — 10px */
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-regular);
+  text-transform: uppercase;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.dayNum {
+  font-size: var(--font-size-lg);             /* Subtitle/L — 18px */
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  line-height: 1.1;
+  letter-spacing: 0em;
+}
+
+.dayMonth {
+  font-size: var(--font-size-xs);             /* Body/XXS — 10px */
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.dayBtnActive .dayName,
+.dayBtnActive .dayNum,
+.dayBtnActive .dayMonth {
+  color: var(--color-brand-700);
+}
+
+.dayBtnExhausted {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border-subtle);
+  box-shadow: none;
+}
+
+.dayBtnExhausted .dayName,
+.dayBtnExhausted .dayNum,
+.dayBtnExhausted .dayMonth {
+  color: var(--color-text-disabled);
+}
+
+.dayExhaustedTag {
+  font-size: var(--font-size-xs);             /* Body/XXS — 10px */
+  font-weight: var(--font-weight-regular);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text-disabled);
+  line-height: 1.4;
+  margin-top: 1px;
+}
+
+.dayBtnWaitlisted {
+  background: var(--color-brand-50);
+  border-color: var(--color-brand-300);
+  border-width: 2px;
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.dayBtnWaitlisted .dayName,
+.dayBtnWaitlisted .dayNum,
+.dayBtnWaitlisted .dayMonth,
+.dayBtnWaitlisted .dayExhaustedTag {
+  color: var(--color-brand-600);
+}
+
+/* ─── Picker label ────────────────────────────────────── */
+.pickerLabel {
+  font-size: var(--font-size-xs);             /* Body/XXS — 10px */
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-tertiary);
+  margin: 0;
+  text-transform: uppercase;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.pickerSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+/* ─── Time grid ───────────────────────────────────────── */
+.timeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.timeBtn {
+  padding: var(--spacing-sm) var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+  background: var(--color-bg-surface);
+  font-size: var(--font-size-sm);             /* Body/XS — 12px */
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  text-align: center;
+}
+
+.timeBtn:hover:not(:disabled) {
+  border-color: var(--color-brand-300);
+  background: var(--color-brand-50);
+}
+
+.timeBtnActive {
+  background: var(--color-brand-50);
+  border-color: var(--color-brand-500);
+  border-width: 2px;
+  color: var(--color-brand-700);
+  font-weight: var(--font-weight-semibold);
+}
+
+.timeBtnUnavailable {
+  background: transparent;
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+  text-decoration: line-through;
+  border-color: transparent;
+}
+
+/* ─── CTA bar ─────────────────────────────────────────── */
+.ctaBar {
+  padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-lg);
+  background: transparent;
+  border: none;
+}
+
+.ctaInner {
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.ctaInnerDesktop {
+  max-width: none;
+  margin: 0;
+  padding-left: 120px;
+  padding-right: 120px;
+}

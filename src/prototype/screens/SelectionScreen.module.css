@@ -1,0 +1,412 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-default);
+  font-family: var(--font-body);
+}
+
+/* ─── Scrollable content ──────────────────────────────── */
+.content {
+  flex: 1;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/* ─── Prototype toggle ────────────────────────────────── */
+.protoToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-sm);
+  border: var(--border-width-thin) dashed var(--color-border-muted);
+}
+
+.protoLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ─── Event Banner ────────────────────────────────────── */
+.eventBanner {
+  background: var(--color-bg-brand);
+  border: var(--border-width-thin) solid var(--color-brand-200);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.eventTag {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-brand-600);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wider);
+}
+
+.eventName {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: var(--line-height-tight);
+}
+
+.eventMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-xs);
+}
+
+.eventMetaItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.eventHint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: var(--spacing-xs) 0 0;
+  padding-top: var(--spacing-sm);
+  border-top: var(--border-width-thin) solid var(--color-brand-200);
+}
+
+/* ─── Section ─────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* ─── Service list ────────────────────────────────────── */
+.serviceList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* ─── Service card ────────────────────────────────────── */
+.card {
+  background: var(--color-bg-surface);
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.card:not(.cardDisabled):hover {
+  border-color: var(--color-border-muted);
+  box-shadow: var(--shadow-xs);
+}
+
+.cardSelected {
+  border-color: var(--color-brand-400);
+  box-shadow: var(--shadow-xs);
+}
+
+.cardDisabled {
+  opacity: 0.45;
+}
+
+/* Card header row */
+.cardHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition-fast);
+}
+
+.cardSelected .cardHeader {
+  background: var(--color-bg-brand);
+}
+
+.cardHeader:hover:not(:disabled) {
+  background: var(--color-bg-subtle);
+}
+
+.cardSelected .cardHeader:hover:not(:disabled) {
+  background: var(--color-brand-100);
+}
+
+/* Icon */
+.cardIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.cardIconSelected {
+  background: var(--color-brand-100);
+  color: var(--color-brand-600);
+}
+
+/* Info */
+.cardInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cardName {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.cardComplete {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-success);
+  font-weight: var(--font-weight-medium);
+  margin-top: 2px;
+}
+
+/* Selector (radio / checkbox) */
+.selector {
+  flex-shrink: 0;
+}
+
+.radio,
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: var(--border-width-medium) solid var(--color-border-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.checkbox {
+  border-radius: var(--radius-xs);
+}
+
+.selectorSelected .radio,
+.selectorSelected .checkbox {
+  border-color: var(--color-brand-500);
+  background: var(--color-brand-500);
+}
+
+.radioDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}
+
+.checkmark {
+  font-size: 12px;
+  color: white;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+/* ─── Card body (schedule) ────────────────────────────── */
+.cardBody {
+  padding: 0 var(--spacing-md) var(--spacing-md);
+  border-top: var(--border-width-thin) solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* ─── Waitlist state ──────────────────────────────────── */
+.waitlist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-md);
+}
+
+/* ─── Scheduler ───────────────────────────────────────── */
+.scheduler {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding-top: var(--spacing-md);
+}
+
+.pickerSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.pickerLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  font-size: var(--font-size-xs);
+}
+
+/* Day strip */
+.dayStrip {
+  display: flex;
+  gap: var(--spacing-xs);
+  overflow-x: auto;
+  padding-bottom: var(--spacing-xs);
+  scrollbar-width: none;
+}
+
+.dayStrip::-webkit-scrollbar { display: none; }
+
+.dayBtn {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--spacing-sm);
+  min-width: 52px;
+  border-radius: var(--radius-sm);
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+  background: var(--color-bg-surface);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.dayBtn:hover {
+  border-color: var(--color-border-default);
+  background: var(--color-bg-subtle);
+}
+
+.dayBtnActive {
+  background: var(--color-brand-500);
+  border-color: var(--color-brand-500);
+}
+
+.dayName {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+}
+
+.dayNum {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.dayMonth {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.dayBtnActive .dayName,
+.dayBtnActive .dayNum,
+.dayBtnActive .dayMonth {
+  color: white;
+}
+
+/* Time grid */
+.timeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.timeBtn {
+  padding: var(--spacing-sm) var(--spacing-xs);
+  border-radius: var(--radius-xs);
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+  background: var(--color-bg-surface);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  text-align: center;
+}
+
+.timeBtn:hover:not(:disabled) {
+  border-color: var(--color-brand-400);
+  background: var(--color-bg-brand);
+}
+
+.timeBtnActive {
+  background: var(--color-brand-500);
+  border-color: var(--color-brand-500);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+}
+
+.timeBtnActive:hover {
+  background: var(--color-brand-600) !important;
+  border-color: var(--color-brand-600) !important;
+}
+
+.timeBtnUnavailable {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+  text-decoration: line-through;
+  border-color: transparent;
+}
+
+/* ─── CTA bar ─────────────────────────────────────────── */
+.ctaBar {
+  padding: var(--spacing-xl) var(--spacing-md) var(--spacing-md);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.ctaInner {
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}

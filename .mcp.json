@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "figma-dev-mode": {
+      "type": "http",
+      "url": "https://mcp.figma.com/mcp",
+      "headers": {
+        "Authorization": "Bearer figd_-18JN0EqwdioOBHB9H39nJorGD7tk7fN5tPJz1Wy"
+      }
+    }
+  }
+}

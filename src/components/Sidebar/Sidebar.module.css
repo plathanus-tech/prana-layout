@@ -1,0 +1,263 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Sidebar — fiel ao Figma (node 6453:541)
+   Figma: bg #F5F3EE · border-right #F3E5E6 · pad T32 B32 · gap 24
+   Open: 246px  |  Closed: 78px
+   ───────────────────────────────────────────────────────────────────────── */
+
+.sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #F5F3EE;
+  border-right: 1px solid #F3E5E6;
+  padding: 32px 0;
+  gap: 24px;
+  transition: width 250ms ease;
+  overflow: visible;
+  flex-shrink: 0;
+  font-family: var(--font-body);
+}
+
+.open   { width: 246px; }
+.closed { width: 78px;  }
+
+/* ── Logo row — logo + toggle alinhados na mesma altura ─────────────────
+   Toggle fica na borda direita, levemente sobreposto
+   ─────────────────────────────────────────────────────────────────────── */
+.logoRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  height: 46px;
+  flex-shrink: 0;
+}
+
+.logoWrap {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Body (navs + spacer + bottom) ──────────────────────────────────────
+   Figma: outer frame com gap:404 entre Nav List 1 e Nav List 2
+   Replicado com flex:1 spacer
+   ─────────────────────────────────────────────────────────────────────── */
+.body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: visible;
+  padding: 0 8px;
+  gap: 16px;
+}
+
+/* ── Nav List ────────────────────────────────────────────────────────────
+   Figma: gap 16, pad T0 R8 B0 L8
+   ─────────────────────────────────────────────────────────────────────── */
+.navList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Nav Item ────────────────────────────────────────────────────────────
+   Figma (open): 230x44, pad T0 R8 B0 L8, radius 4
+   Figma (closed): 46x44, pad T0 R8 B0 L8, radius 4
+   Font: 18px Regular Roboto, color #6B3334
+   ─────────────────────────────────────────────────────────────────────── */
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-left-width: 3px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-brand-700);
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.5;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background 150ms ease, border-color 150ms ease;
+  flex-shrink: 0;
+}
+
+.navItem:hover:not(.navItemActive) {
+  background: rgba(107, 51, 52, 0.06);
+}
+
+/* Active — border esquerda brand/700, background inalterado */
+.navItemActive {
+  background: #F0DDDD;
+  border-color: transparent;
+  border-left-color: #6B3334;
+}
+
+.navItem:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* ── Icon / label / trail ────────────────────────────────────────────────*/
+.navIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.navLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navLabelLogout {
+  flex: 1;
+  color: var(--color-brand-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navTrail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Notification dot — Figma: 12x12 circle #B25557 */
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #B25557;
+  flex-shrink: 0;
+}
+
+.chevron {
+  opacity: 0.6;
+}
+
+/* ── Spacer ──────────────────────────────────────────────────────────────*/
+.spacer { flex: 1; }
+
+/* ── Bottom section ──────────────────────────────────────────────────────
+   Figma: separator #F0DDDD + avatar row + "Sair" nav item
+   ─────────────────────────────────────────────────────────────────────── */
+.bottomList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Separator — Figma Line 18: stroke #F0DDDD */
+.separator {
+  height: 1px;
+  background: #F0DDDD;
+  margin: 0 0 4px;
+}
+
+/* User row */
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  min-height: 40px;
+  overflow: hidden;
+}
+
+/* Avatar — Figma: 40x40, radius 44 (circle), fill #F0DDDD */
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #F0DDDD;
+  flex-shrink: 0;
+}
+
+.avatarInitials {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-brand-500);
+  font-family: var(--font-body);
+  line-height: 1;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Figma: "Admin Prana" 14px Bold Roboto */
+.userName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-brand-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userEmail {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Toggle button ───────────────────────────────────────────────────────
+   Alinhado ao logo (logoRow), sobrepõe levemente a borda direita da sidebar
+   ─────────────────────────────────────────────────────────────────────── */
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  border: 1px solid #F3E5E6;
+  border-radius: 50%;
+  background: #FAFAFA;
+  color: var(--color-brand-700);
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(107, 51, 52, 0.15);
+  transition: background 150ms ease, box-shadow 150ms ease;
+  z-index: 9999;
+}
+
+.toggleBtn:hover {
+  background: #F0DDDD;
+  box-shadow: 0 2px 6px rgba(107, 51, 52, 0.20);
+}
+
+.toggleBtn:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}

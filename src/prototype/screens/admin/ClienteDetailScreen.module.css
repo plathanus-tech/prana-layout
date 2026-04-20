@@ -1,0 +1,414 @@
+/* ─── ClienteDetailScreen.module.css ────────────────────────────────────────
+   Estilos para a tela de detalhe do cliente (admin only)
+   Padrão idêntico ao EventDetailScreen / ProfissionalDetailScreen
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ─── Shell ──────────────────────────────────────────────────────────────────*/
+.shell {
+  min-height: 100vh;
+  background: #F5F3EE;
+  font-family: var(--font-body);
+}
+
+.sidebarFixed {
+  position: fixed;
+  top: 0;
+  left: var(--proto-offset, 0px);
+  height: 100vh;
+  z-index: 100;
+}
+
+.contentWrap {
+  margin-left: 246px;
+  padding: 24px 24px 24px 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.contentWrapClosed {
+  margin-left: 78px;
+}
+
+.contentCard {
+  background: var(--color-gray-50);
+  border-radius: 0 24px 24px 0;
+  border: 1px solid var(--color-gray-200);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-height: calc(100vh - 48px);
+}
+
+/* ─── Back navigation link ───────────────────────────────────────────────────*/
+.backNav {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  align-self: flex-start;
+}
+
+.backNav:hover {
+  color: var(--color-text-secondary);
+}
+
+/* ─── Page Header ────────────────────────────────────────────────────────────*/
+.pageHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.headerMeta {
+  flex: 1;
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-display-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 6px;
+  line-height: 1.1;
+}
+
+.pageSub {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pageSubSep {
+  color: var(--color-gray-300);
+}
+
+/* ─── Config Action Bar ──────────────────────────────────────────────────────*/
+.configActionBar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 10px;
+}
+
+.configActionLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.configActionBtns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Badge "Modo edição" — inline na action bar */
+.editingBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--color-bg-brand);
+  border: 1px solid var(--color-brand-300);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-brand-600);
+  white-space: nowrap;
+}
+
+/* Botão Editar */
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+.editBtn:hover {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
+  color: var(--color-text-primary);
+}
+
+/* Botão Salvar */
+.saveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  background: var(--color-brand-500);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast);
+}
+.saveBtn:hover { background: var(--color-brand-600); }
+
+/* Botão Cancelar */
+.cancelBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  background: none;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+.cancelBtn:hover {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Section card ───────────────────────────────────────────────────────────*/
+.section {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-gray-100);
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.sectionBadge {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 6px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.sectionBadgeEdit {
+  color: var(--color-brand-600);
+  background: var(--color-bg-brand);
+  border-color: var(--color-brand-300);
+}
+
+/* ─── Fields grid 2 colunas ──────────────────────────────────────────────────*/
+.fieldsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.field {
+  padding: 14px 20px;
+  border-right: 1px solid var(--color-gray-100);
+  border-bottom: 1px solid var(--color-gray-100);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+/* Remove borda direita nas colunas pares (última coluna) */
+.field:nth-child(even) { border-right: none; }
+
+/* Largura total */
+.fieldFull {
+  grid-column: 1 / -1;
+  border-right: none;
+}
+
+.fieldLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fieldValue {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.fieldEmpty {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+/* ─── Config Groups ──────────────────────────────────────────────────────────*/
+.configGroup {
+  border-bottom: 1px solid var(--color-gray-100);
+}
+.configGroupLast { border-bottom: none; }
+
+.configGroupTitle {
+  display: block;
+  padding: 10px 20px 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  border-bottom: 1px solid var(--color-gray-100);
+  background: var(--color-gray-50);
+}
+
+/* ─── Edit inputs ────────────────────────────────────────────────────────────*/
+.editInput {
+  height: 34px;
+  width: 100%;
+  padding: 0 10px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-300);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.editInput:hover { border-color: var(--color-gray-400); }
+.editInput:focus {
+  border-color: var(--color-brand-400);
+  box-shadow: 0 0 0 3px rgba(178, 85, 87, 0.1);
+}
+
+/* Select */
+.editSelectWrap {
+  position: relative;
+  display: inline-block;
+}
+
+.editSelect {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 34px;
+  min-width: 192px;
+  padding: 0 32px 0 10px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-300);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--transition-fast);
+  display: block;
+  width: 100%;
+}
+.editSelect:hover { border-color: var(--color-gray-400); }
+.editSelect:focus { border-color: var(--color-brand-400); }
+
+.editSelectChevron {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--color-text-tertiary);
+}
+
+/* ─── Survey badges ──────────────────────────────────────────────────────────*/
+.surveyBadgeAnswered {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--color-status-success-bg);
+  border: 1px solid var(--color-green-300);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-status-success-fg);
+  width: fit-content;
+}
+
+.surveyBadgeBlocked {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--color-status-warning-bg);
+  border: 1px solid var(--color-yellow-300);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-status-warning-fg);
+  width: fit-content;
+}
+
+/* ─── Notes value ────────────────────────────────────────────────────────────*/
+.notesValue {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}

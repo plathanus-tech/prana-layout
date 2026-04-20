@@ -1,0 +1,394 @@
+/* ═══════════════════════════════════════════════════
+   VERSÃO A — MINIMALISTA
+   Filosofia: redução. Menos elementos visuais, mais
+   respiração. Sem bordas de card — só divisores finos.
+   Botões em pill. Seleção via accent lateral sutil.
+   ═══════════════════════════════════════════════════ */
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-default);
+  font-family: var(--font-body);
+}
+
+/* ─── Content ─────────────────────────────────────── */
+.content {
+  flex: 1;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+/* ─── Prototype toggle ────────────────────────────── */
+.protoToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-sm);
+  border: var(--border-width-thin) dashed var(--color-border-muted);
+}
+.protoLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ─── Event Banner — tipografia limpa, sem caixa ──── */
+.eventBanner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 2px solid var(--color-brand-200);
+}
+
+.eventTag {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-brand-500);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wider);
+}
+
+.eventName {
+  font-family: var(--font-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: var(--line-height-tight);
+}
+
+.eventMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-xs);
+}
+
+.eventMetaItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.eventHint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: var(--spacing-xs) 0 0;
+}
+
+/* ─── Section ─────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wider);
+}
+
+/* ─── Service list — sem gap, usa divisores ───────── */
+.serviceList {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Card — sem borda nem sombra, só divisor ─────── */
+.card {
+  background: transparent;
+  border: none;
+  border-bottom: var(--border-width-thin) solid var(--color-border-subtle);
+  border-radius: 0;
+  overflow: hidden;
+  transition: background var(--transition-fast);
+  position: relative;
+}
+
+.card:first-child {
+  border-top: var(--border-width-thin) solid var(--color-border-subtle);
+}
+
+.card:not(.cardDisabled):hover {
+  background: var(--color-bg-subtle);
+}
+
+/* Accent lateral: barra brand à esquerda no selecionado */
+.cardSelected {
+  background: var(--color-bg-brand);
+  padding-left: 3px;
+  border-left: 3px solid var(--color-brand-400);
+}
+
+.cardDisabled {
+  opacity: 0.4;
+}
+
+/* ─── Card header ─────────────────────────────────── */
+.cardHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-sm);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.cardHeader:hover:not(:disabled) {
+  background: none;
+}
+
+/* Ícone circular e menor */
+.cardIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-bg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.cardIconSelected {
+  background: var(--color-brand-100);
+  color: var(--color-brand-600);
+}
+
+/* Info */
+.cardInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cardName {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.cardComplete {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-brand-600);
+  font-weight: var(--font-weight-medium);
+  margin-top: 2px;
+}
+
+/* Selector */
+.selector { flex-shrink: 0; }
+
+.radio, .checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: var(--border-width-medium) solid var(--color-border-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.checkbox { border-radius: var(--radius-xs); }
+
+.selectorSelected .radio,
+.selectorSelected .checkbox {
+  border-color: var(--color-brand-500);
+  background: var(--color-brand-500);
+}
+
+.radioDot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: white;
+}
+
+.checkmark {
+  font-size: 12px; color: white;
+  font-weight: var(--font-weight-bold); line-height: 1;
+}
+
+/* ─── Card body ───────────────────────────────────── */
+.cardBody {
+  padding: 0 var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Waitlist */
+.waitlist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-md);
+}
+
+/* Scheduler */
+.scheduler {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding-top: var(--spacing-xs);
+}
+
+.pickerSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.pickerLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+/* ─── Day strip — pills sem borda ─────────────────── */
+.dayStrip {
+  display: flex;
+  gap: var(--spacing-xs);
+  overflow-x: auto;
+  padding-bottom: var(--spacing-xs);
+  scrollbar-width: none;
+}
+.dayStrip::-webkit-scrollbar { display: none; }
+
+.dayBtn {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  min-width: 48px;
+  border-radius: 100px;
+  border: none;
+  background: var(--color-bg-subtle);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.dayBtn:hover {
+  background: var(--color-brand-100);
+}
+
+.dayBtnActive {
+  background: var(--color-brand-500);
+}
+
+.dayName {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+}
+
+.dayNum {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.dayMonth {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.dayBtnActive .dayName,
+.dayBtnActive .dayNum,
+.dayBtnActive .dayMonth {
+  color: white;
+}
+
+/* ─── Time grid — pills sem borda ─────────────────── */
+.timeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.timeBtn {
+  padding: var(--spacing-sm) var(--spacing-xs);
+  border-radius: 100px;
+  border: none;
+  background: var(--color-bg-subtle);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  text-align: center;
+}
+
+.timeBtn:hover:not(:disabled) {
+  background: var(--color-brand-100);
+}
+
+.timeBtnActive {
+  background: var(--color-brand-500);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+}
+
+.timeBtnActive:hover {
+  background: var(--color-brand-600) !important;
+}
+
+.timeBtnUnavailable {
+  background: transparent;
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* ─── CTA bar ─────────────────────────────────────── */
+.ctaBar {
+  padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-md);
+  background: transparent;
+  border: none;
+}
+
+.ctaInner {
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}

@@ -1,0 +1,129 @@
+/* ── Base ─────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;                          /* Figma: gap sem ícone = 10px */
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);   /* 16px */
+  font-weight: var(--font-weight-medium); /* Medium 500 — Figma: Roboto Medium */
+  line-height: 1.5;                   /* 24px / 16px */
+  letter-spacing: 0.5px;
+  padding: 12px 24px;                 /* Figma: pt/pb=12 pl/pr=24 */
+  border-radius: var(--radius-sm);    /* 8px */
+  border: var(--border-width-thin) solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+/* Quando há ícone, gap e padding do lado do ícone reduzem */
+.btn.hasLeft  { gap: 8px; padding-left: 16px; }   /* Figma: pl=16 com ícone */
+.btn.hasRight { gap: 8px; padding-right: 16px; }  /* Figma: pr=16 com ícone */
+
+.btn:focus-visible {
+  outline: var(--border-width-medium) solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* ── Icon wrapper ─────────────────────────────────── */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── Variants ─────────────────────────────────────── */
+.primary {
+  background-color: var(--color-action-primary);
+  color: var(--color-gray-white);
+  border-color: var(--color-action-primary);
+}
+.primary:hover:not(:disabled) {
+  background-color: var(--color-action-primary-hover);
+  border-color: var(--color-action-primary-hover);
+}
+.primary:active:not(:disabled) {
+  background-color: var(--color-action-primary-pressed);
+  border-color: var(--color-action-primary-pressed);
+}
+
+.secondary {
+  background-color: transparent;
+  color: var(--color-action-primary);
+  border-color: var(--color-action-primary);
+}
+.secondary:hover:not(:disabled) {
+  background-color: var(--color-bg-brand);
+  border-color: var(--color-action-primary-hover);
+  color: var(--color-action-primary-hover);
+}
+.secondary:active:not(:disabled) {
+  background-color: var(--color-brand-100);
+  border-color: var(--color-action-primary-pressed);
+  color: var(--color-action-primary-pressed);
+}
+
+.destructive {
+  background-color: var(--color-action-error);
+  color: var(--color-gray-white);
+  border-color: var(--color-action-error);
+}
+.destructive:hover:not(:disabled) {
+  background-color: var(--color-action-error-hover);
+  border-color: var(--color-action-error-hover);
+}
+.destructive:active:not(:disabled) {
+  background-color: var(--color-action-error-pressed);
+  border-color: var(--color-action-error-pressed);
+}
+
+.ghost {
+  background-color: transparent;
+  color: var(--color-text-primary);
+  border-color: transparent;
+}
+.ghost:hover:not(:disabled) { background-color: var(--color-bg-subtle); }
+.ghost:active:not(:disabled) { background-color: var(--color-bg-disabled); }
+
+/* ── Disabled base ────────────────────────────────── */
+.btn:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* ── Sizes ────────────────────────────────────────── */
+.sm {
+  font-size: var(--font-size-md);   /* 14px */
+  line-height: 1.71;
+  padding: 8px 16px;
+  border-radius: var(--radius-xs);
+}
+.sm.hasLeft  { padding-left: 12px; }
+.sm.hasRight { padding-right: 12px; }
+
+/* .md usa os valores base do .btn */
+
+.lg {
+  font-size: var(--font-size-xl);   /* 20px */
+  line-height: 1.2;
+  padding: 14px 32px;
+}
+.lg.hasLeft  { padding-left: 24px; }
+.lg.hasRight { padding-right: 24px; }
+
+/* ── Icon Only ────────────────────────────────────── */
+.iconOnly         { padding: 12px; gap: 0; }
+.iconOnly.sm      { padding: 8px; }
+.iconOnly.lg      { padding: 14px; }
+.iconOnly.hasLeft,
+.iconOnly.hasRight { padding-left: 12px; padding-right: 12px; }
+.iconOnly.sm.hasLeft,
+.iconOnly.sm.hasRight { padding-left: 8px; padding-right: 8px; }

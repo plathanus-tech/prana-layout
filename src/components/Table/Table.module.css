@@ -1,0 +1,304 @@
+/* ── Card container ──────────────────────────────────────────────────────
+   Figma: bg=bg-surface(white), padding 24/0/20/0, gap 16
+   ─────────────────────────────────────────────────────────────────────── */
+.card {
+  width: 100%;
+  background: var(--color-bg-surface);
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  font-family: var(--font-body);
+}
+
+/* ── Card header (title + subtitle) ─────────────────────────────────────
+   Figma: title=Raleway 24px Bold text-secondary | sub=Roboto 14px text-tertiary
+   ─────────────────────────────────────────────────────────────────────── */
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 24px 24px 16px;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-2xl);   /* 24px */
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+  color: var(--color-text-secondary);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: var(--font-size-md);    /* 14px */
+  font-weight: var(--font-weight-regular);
+  line-height: 1.4;
+  color: var(--color-text-tertiary);
+}
+
+/* ── Table scroll wrapper ────────────────────────────────────────────────*/
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* ── Header row ──────────────────────────────────────────────────────────
+   Figma: no bg (inherits white card), height 37px, 12px Bold, text-secondary
+   Bottom border separates header from striped rows
+   ─────────────────────────────────────────────────────────────────────── */
+.headerRow {
+  border-bottom: var(--border-width-thin) solid var(--color-border-subtle);
+}
+
+.th {
+  padding: 10px 8px;
+  height: 37px;
+  font-size: var(--font-size-sm);    /* 12px */
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  user-select: none;
+  border-right: var(--border-width-thin) solid var(--color-border-subtle);
+  text-align: left;
+}
+
+.th:last-child {
+  border-right: none;
+}
+
+.th.sortable {
+  cursor: pointer;
+}
+
+.th.sortable:hover {
+  color: var(--color-text-primary);
+}
+
+.thInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sortIcon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+/* ── Body rows — zebra striping ──────────────────────────────────────────
+   Figma: odd rows = bg-subtle (#F5F5F4), even rows = bg-default (#FAFAFA)
+   ─────────────────────────────────────────────────────────────────────── */
+.tr:nth-child(odd)  .td { background: var(--color-bg-subtle);  }
+.tr:nth-child(even) .td { background: var(--color-bg-default); }
+
+.tr:hover .td {
+  background: var(--color-bg-subtle);
+  filter: brightness(0.97);
+}
+
+/* ── Data cells ──────────────────────────────────────────────────────────
+   Figma: height 52px (pad 4/0), cell pad 8/8, 12px Regular text-primary
+   ─────────────────────────────────────────────────────────────────────── */
+.td {
+  padding: 8px;
+  height: 52px;
+  vertical-align: middle;
+  font-size: var(--font-size-sm);    /* 12px */
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  border-right: var(--border-width-thin) solid var(--color-border-subtle);
+}
+
+.td:last-child {
+  border-right: none;
+}
+
+/* Actions column: tighter padding, no right border on buttons */
+.tdActions {
+  padding: 0 8px;
+}
+
+/* ── Cell — Link ─────────────────────────────────────────────────────────
+   Figma: brand color, 12px Bold
+   ─────────────────────────────────────────────────────────────────────── */
+.cellLink {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-brand);
+  text-decoration: none;
+}
+
+.cellLink:hover {
+  text-decoration: underline;
+  color: var(--color-action-primary-hover);
+}
+
+/* ── Cell — Badge ────────────────────────────────────────────────────────
+   Figma: dot + label, pill shape
+   ─────────────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  white-space: nowrap;
+  background: var(--color-status-info-bg);
+  color: var(--color-status-info-fg);
+}
+
+.badge[data-status="success"] { background: var(--color-status-success-bg); color: var(--color-status-success-fg); }
+.badge[data-status="error"]   { background: var(--color-status-error-bg);   color: var(--color-status-error-fg);   }
+.badge[data-status="warning"] { background: var(--color-status-warning-bg); color: var(--color-status-warning-fg); }
+.badge[data-status="info"]    { background: var(--color-status-info-bg);    color: var(--color-status-info-fg);    }
+.badge[data-status="orange"]  { background: var(--color-status-orange-bg);  color: var(--color-status-orange-fg);  }
+.badge[data-status="indigo"]  { background: var(--color-status-indigo-bg);  color: var(--color-status-indigo-fg);  }
+.badge[data-status="violet"]  { background: var(--color-status-violet-bg);  color: var(--color-status-violet-fg);  }
+.badge[data-status="pink"]    { background: var(--color-status-pink-bg);    color: var(--color-status-pink-fg);    }
+
+.badgeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: currentColor;
+}
+
+/* ── Cell — Avatar ───────────────────────────────────────────────────────
+   Figma: 40x40, slight radius (square with rounding)
+   ─────────────────────────────────────────────────────────────────────── */
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-xs);
+  object-fit: cover;
+  display: block;
+  background: var(--color-bg-subtle);
+}
+
+/* ── Cell — Mini Toggle ──────────────────────────────────────────────────
+   Figma: track 40x24, thumb 16x16, brand color when on
+   ─────────────────────────────────────────────────────────────────────── */
+.miniToggle {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 6px;
+}
+
+.miniToggleInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.miniTrack {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: var(--color-border-muted);
+  border-radius: var(--radius-full);
+  transition: background var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.miniToggleInput:checked ~ .miniTrack {
+  background: var(--color-action-primary);
+}
+
+.miniThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--color-bg-surface);
+  border-radius: 50%;
+  transition: transform var(--transition-fast);
+  box-shadow: var(--shadow-xs);
+}
+
+.miniToggleInput:checked ~ .miniTrack .miniThumb {
+  transform: translateX(16px);
+}
+
+.miniToggle:has(.miniToggleInput:focus-visible) .miniTrack {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* ── Cell — Action buttons ───────────────────────────────────────────────
+   Figma: 3 icon buttons (20px icons), gap 8, pad 0/8/0/8
+   ─────────────────────────────────────────────────────────────────────── */
+.cellActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-xs);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.actionBtn:hover {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+}
+
+.actionBtn:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.actionDanger:hover {
+  background: var(--color-status-error-bg);
+  color: var(--color-status-error-fg);
+}
+
+/* ── Empty / loading state ───────────────────────────────────────────────*/
+.stateCell {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-base);
+}
+
+.loadingDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  background: var(--color-action-primary);
+  border-radius: 50%;
+  vertical-align: middle;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.75); }
+}

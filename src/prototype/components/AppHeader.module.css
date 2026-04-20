@@ -1,0 +1,31 @@
+.header {
+  background: var(--color-bg-surface);
+  border-bottom: var(--border-width-thin) solid var(--color-border-subtle);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--spacing-xl);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: var(--shadow-xs);
+}
+
+.inner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.logo {
+  height: 32px;
+  width: auto;
+  display: block;
+}

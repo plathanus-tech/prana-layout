@@ -1,0 +1,397 @@
+@font-face {
+  font-family: 'Qeilab';
+  src: url('/storybookprana/fonts/Qeilab.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root {
+  /* ─── Font Families ────────────────────────────────── */
+  --font-display: 'Raleway', sans-serif;
+  --font-body: 'Roboto', sans-serif;
+  --font-brand: 'Qeilab', sans-serif;
+
+  /* ─── Font Sizes ───────────────────────────────────── */
+  --font-size-xs:          10px;
+  --font-size-sm:          12px;
+  --font-size-md:          14px;
+  --font-size-base:        16px;
+  --font-size-lg:          18px;
+  --font-size-xl:          20px;
+  --font-size-2xl:         24px;
+  --font-size-3xl:         30px;
+  --font-size-4xl:         36px;
+  --font-size-5xl:         48px;
+  --font-size-6xl:         60px;
+  --font-size-7xl:         72px;
+  --font-size-8xl:         96px;
+  --font-size-9xl:         128px;
+  --font-size-display-sm:  32px;
+  --font-size-display-md:  40px;
+  --font-size-display-lg:  56px;
+
+  /* ─── Font Weights ─────────────────────────────────── */
+  --font-weight-regular:  400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+
+  /* ─── Line Heights ─────────────────────────────────── */
+  --line-height-tight:   1.2;
+  --line-height-snug:    1.375;
+  --line-height-normal:  1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose:   2;
+
+  /* ─── Letter Spacing ───────────────────────────────── */
+  --letter-spacing-tight:  -0.5px;
+  --letter-spacing-normal: 0px;
+  --letter-spacing-wide:   0.5px;
+  --letter-spacing-wider:  1px;
+
+  /* ─── Colors — Brand ───────────────────────────────── */
+  --color-brand-50:  #F0E8E8;
+  --color-brand-100: #E4D4D4;
+  --color-brand-200: #CFADAE;
+  --color-brand-300: #B88A8B;
+  --color-brand-400: #C98889;
+  --color-brand-500: #B25557;
+  --color-brand-600: #8E4446;
+  --color-brand-700: #6B3334;
+  --color-brand-800: #4B2425;
+  --color-brand-900: #2E1617;
+  --color-brand-950: #1B0D0D;
+
+  /* ─── Colors — Gray ────────────────────────────────── */
+  --color-gray-white: #FFFFFF;
+  --color-gray-50:    #FAFAFA;
+  --color-gray-100:   #F5F5F4;
+  --color-gray-200:   #E2E0DF;
+  --color-gray-300:   #D6D3D1;
+  --color-gray-400:   #AEA7A3;
+  --color-gray-500:   #847A75;
+  --color-gray-600:   #5B5552;
+  --color-gray-700:   #46413F;
+  --color-gray-800:   #2B2827;
+  --color-gray-900:   #1B1918;
+  --color-gray-950:   #0B0A0A;
+
+  /* ─── Colors — Red ─────────────────────────────────── */
+  --color-red-50:   #FEF2F3;
+  --color-red-100:  #FEE2E5;
+  --color-red-200:  #FECAD0;
+  --color-red-300:  #FCA5AF;
+  --color-red-400:  #F9A8D4;
+  --color-red-500:  #EF4458;
+  --color-red-600:  #DC263B;
+  --color-red-700:  #B91C2E;
+  --color-red-800:  #991B2A;
+  --color-red-900:  #7F1D28;
+  --color-red-950:  #450A11;
+
+  /* ─── Colors — Green ───────────────────────────────── */
+  --color-green-50:   #F0FDF4;
+  --color-green-100:  #DCFCE7;
+  --color-green-200:  #BBF7D0;
+  --color-green-300:  #86EFAC;
+  --color-green-400:  #4ADE80;
+  --color-green-500:  #22C55E;
+  --color-green-600:  #16A34A;
+  --color-green-700:  #15803D;
+  --color-green-800:  #166534;
+  --color-green-900:  #14532D;
+  --color-green-950:  #052E15;
+
+  /* ─── Colors — Blue ────────────────────────────────── */
+  --color-blue-50:   #EFF6FF;
+  --color-blue-100:  #DBEAFE;
+  --color-blue-200:  #BFDBFE;
+  --color-blue-300:  #93C5FD;
+  --color-blue-400:  #60A5FA;
+  --color-blue-500:  #3B82F6;
+  --color-blue-600:  #2563EB;
+  --color-blue-700:  #1D4ED8;
+  --color-blue-800:  #1E40AF;
+  --color-blue-900:  #1E3A8A;
+  --color-blue-950:  #11204B;
+
+  /* ─── Colors — Yellow ──────────────────────────────── */
+  --color-yellow-50:   #FFFBED;
+  --color-yellow-100:  #FFF7D4;
+  --color-yellow-200:  #FFEBA8;
+  --color-yellow-300:  #FFDA71;
+  --color-yellow-400:  #FFBF38;
+  --color-yellow-500:  #FDA712;
+  --color-yellow-600:  #E07900;
+  --color-yellow-700:  #BA5303;
+  --color-yellow-800:  #96400A;
+  --color-yellow-900:  #7C350B;
+  --color-yellow-950:  #471901;
+
+  /* ─── Colors — Orange ──────────────────────────────── */
+  --color-orange-50:   #FFF7ED;
+  --color-orange-100:  #FFEDD5;
+  --color-orange-200:  #FED7AA;
+  --color-orange-300:  #FDBA74;
+  --color-orange-400:  #FB923C;
+  --color-orange-500:  #F97316;
+  --color-orange-600:  #EA580C;
+  --color-orange-700:  #C2410C;
+  --color-orange-800:  #9A3412;
+  --color-orange-900:  #7C2D12;
+  --color-orange-950:  #591E09;
+
+  /* ─── Colors — Indigo ──────────────────────────────── */
+  --color-indigo-50:   #EEF2FF;
+  --color-indigo-100:  #E0E7FF;
+  --color-indigo-200:  #C7D2FE;
+  --color-indigo-300:  #A5B4FC;
+  --color-indigo-400:  #818CF8;
+  --color-indigo-500:  #6366F1;
+  --color-indigo-600:  #4F46E5;
+  --color-indigo-700:  #4338CA;
+  --color-indigo-800:  #3730A3;
+  --color-indigo-900:  #312E81;
+  --color-indigo-950:  #1D1B4B;
+
+  /* ─── Colors — Violet ──────────────────────────────── */
+  --color-violet-50:   #FAF5FF;
+  --color-violet-100:  #F3E8FF;
+  --color-violet-200:  #E9D5FF;
+  --color-violet-300:  #D8B4FE;
+  --color-violet-400:  #C084FC;
+  --color-violet-500:  #A855F7;
+  --color-violet-600:  #9333EA;
+  --color-violet-700:  #7E22CE;
+  --color-violet-800:  #6B21A8;
+  --color-violet-900:  #581C87;
+  --color-violet-950:  #411662;
+
+  /* ─── Colors — Pink ────────────────────────────────── */
+  --color-pink-50:   #FDF2F8;
+  --color-pink-100:  #FCE7F3;
+  --color-pink-200:  #FBCFE8;
+  --color-pink-300:  #F9A8D4;
+  --color-pink-400:  #F472B6;
+  --color-pink-500:  #EC4899;
+  --color-pink-600:  #DB2777;
+  --color-pink-700:  #B3185B;
+  --color-pink-800:  #9D174D;
+  --color-pink-900:  #831843;
+  --color-pink-950:  #500724;
+
+  /* ─── Semantic — Text ──────────────────────────────── */
+  --color-text-primary:    var(--color-gray-900);
+  --color-text-secondary:  var(--color-gray-700);
+  --color-text-tertiary:   var(--color-gray-500);
+  --color-text-disabled:   var(--color-gray-400);
+  --color-text-inverse:    var(--color-gray-50);
+  --color-text-brand:      var(--color-brand-500);
+  --color-text-link:       var(--color-blue-600);
+  --color-text-link-hover: var(--color-blue-700);
+  --color-text-error:      var(--color-red-600);
+  --color-text-success:    var(--color-green-700);
+  --color-text-warning:    var(--color-yellow-700);
+
+  /* ─── Semantic — Background ────────────────────────── */
+  --color-bg-default:   var(--color-gray-50);
+  --color-bg-subtle:    var(--color-gray-100);
+  --color-bg-surface:   var(--color-gray-white);
+  --color-bg-disabled:  var(--color-gray-200);
+  --color-bg-brand:     var(--color-brand-50);
+  --color-bg-brand-strong: var(--color-brand-500);
+
+  /* ─── Semantic — Border ────────────────────────────── */
+  --color-border-default:  var(--color-gray-600);
+  --color-border-subtle:   var(--color-gray-100);
+  --color-border-muted:    var(--color-gray-400);
+  --color-border-disabled: var(--color-gray-300);
+  --color-border-focus:    var(--color-brand-600);
+
+  /* ─── Semantic — Action/Primary ────────────────────── */
+  --color-action-primary:         var(--color-brand-500);
+  --color-action-primary-hover:   var(--color-brand-600);
+  --color-action-primary-pressed: var(--color-brand-700);
+
+  /* ─── Semantic — Action/Secondary ─────────────────── */
+  --color-action-secondary:         var(--color-indigo-600);
+  --color-action-secondary-hover:   var(--color-indigo-700);
+  --color-action-secondary-pressed: var(--color-indigo-800);
+
+  /* ─── Semantic — Action/Destructive ───────────────── */
+  --color-action-error:         var(--color-red-700);
+  --color-action-error-hover:   var(--color-red-800);
+  --color-action-error-pressed: var(--color-red-900);
+
+  /* ─── Semantic — Action/Warning ───────────────────── */
+  --color-action-warning:         var(--color-yellow-600);
+  --color-action-warning-hover:   var(--color-yellow-700);
+  --color-action-warning-pressed: var(--color-yellow-800);
+
+  /* ─── Semantic — Action/Success ───────────────────── */
+  --color-action-success:         var(--color-green-600);
+  --color-action-success-hover:   var(--color-green-700);
+  --color-action-success-pressed: var(--color-green-800);
+
+  /* ─── Semantic — Status ────────────────────────────── */
+  --color-status-success-bg:  var(--color-green-50);
+  --color-status-success-fg:  var(--color-green-700);
+  --color-status-error-bg:    var(--color-red-50);
+  --color-status-error-fg:    var(--color-red-700);
+  --color-status-warning-bg:  var(--color-yellow-50);
+  --color-status-warning-fg:  var(--color-yellow-700);
+  --color-status-info-bg:     var(--color-blue-50);
+  --color-status-info-fg:     var(--color-blue-700);
+  --color-status-disabled-bg: var(--color-gray-300);
+  --color-status-disabled-fg: var(--color-gray-400);
+  --color-status-orange-bg:   var(--color-orange-50);
+  --color-status-orange-fg:   var(--color-orange-700);
+  --color-status-indigo-bg:   var(--color-indigo-50);
+  --color-status-indigo-fg:   var(--color-indigo-700);
+  --color-status-violet-bg:   var(--color-violet-50);
+  --color-status-violet-fg:   var(--color-violet-700);
+  --color-status-pink-bg:     var(--color-pink-50);
+  --color-status-pink-fg:     var(--color-pink-700);
+
+  /* ─── Spacing ──────────────────────────────────────── */
+  --spacing-2xs: 2px;
+  --spacing-xs:  4px;
+  --spacing-sm:  8px;
+  --spacing-md:  16px;
+  --spacing-lg:  24px;
+  --spacing-xl:  32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+  --spacing-4xl: 96px;
+
+  /* ─── Border Radius ────────────────────────────────── */
+  --radius-none: 0px;
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   16px;
+  --radius-lg:   24px;
+  --radius-xl:   32px;
+  --radius-2xl:  48px;
+  --radius-full: 9999px;
+
+  /* ─── Border Width ─────────────────────────────────── */
+  --border-width-hairline: 0.5px;
+  --border-width-thin:     1px;
+  --border-width-medium:   2px;
+  --border-width-thick:    4px;
+
+  /* ─── Shadows ──────────────────────────────────────── */
+  --shadow-xs:    0 1px 4px rgba(35, 35, 35, 0.05);
+  --shadow-sm:    0 1px 2px rgba(35, 35, 35, 0.10), 0 1px 2px rgba(35, 35, 35, 0.12);
+  --shadow-md:    0 2px 4px rgba(35, 35, 35, 0.14), 0 4px 8px rgba(35, 35, 35, 0.10);
+  --shadow-lg:    0 4px 12px rgba(35, 35, 35, 0.16), 0 8px 24px rgba(35, 35, 35, 0.12);
+  --shadow-xl:    0 6px 16px rgba(20, 20, 30, 0.20), 0 12px 24px rgba(20, 20, 30, 0.14);
+  --shadow-2xl:   0 10px 28px rgba(35, 35, 35, 0.18), 0 16px 40px rgba(35, 35, 35, 0.14);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+
+  /* ─── Opacity ──────────────────────────────────────── */
+  --opacity-0:   0;
+  --opacity-5:   0.05;
+  --opacity-10:  0.10;
+  --opacity-20:  0.20;
+  --opacity-25:  0.25;
+  --opacity-50:  0.50;
+  --opacity-75:  0.75;
+  --opacity-90:  0.90;
+  --opacity-100: 1;
+
+  /* ─── Transitions ──────────────────────────────────── */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow:   400ms ease;
+}
+
+/* ─── Dark mode overrides ────────────────────────────── */
+[data-theme="dark"] {
+  /* Text */
+  --color-text-primary:    var(--color-gray-50);
+  --color-text-secondary:  var(--color-gray-300);
+  --color-text-tertiary:   var(--color-gray-400);
+  --color-text-disabled:   var(--color-gray-600);
+  --color-text-inverse:    var(--color-gray-900);
+  --color-text-brand:      var(--color-brand-400);
+  --color-text-link:       var(--color-blue-400);
+  --color-text-link-hover: var(--color-blue-300);
+  --color-text-error:      var(--color-red-400);
+  --color-text-success:    var(--color-green-400);
+  --color-text-warning:    var(--color-yellow-400);
+
+  /* Background */
+  --color-bg-default:      var(--color-gray-950);
+  --color-bg-subtle:       var(--color-gray-900);
+  --color-bg-surface:      var(--color-gray-800);
+  --color-bg-disabled:     var(--color-gray-700);
+  --color-bg-brand:        var(--color-brand-950);
+  --color-bg-brand-strong: var(--color-brand-600);
+
+  /* Border */
+  --color-border-default:  var(--color-gray-500);
+  --color-border-subtle:   var(--color-gray-800);
+  --color-border-muted:    var(--color-gray-600);
+  --color-border-disabled: var(--color-gray-700);
+  --color-border-focus:    var(--color-brand-400);
+
+  /* Action / Primary */
+  --color-action-primary:         var(--color-brand-400);
+  --color-action-primary-hover:   var(--color-brand-300);
+  --color-action-primary-pressed: var(--color-brand-200);
+
+  /* Action / Secondary */
+  --color-action-secondary:         var(--color-indigo-400);
+  --color-action-secondary-hover:   var(--color-indigo-300);
+  --color-action-secondary-pressed: var(--color-indigo-200);
+
+  /* Action / Destructive */
+  --color-action-error:         var(--color-red-400);
+  --color-action-error-hover:   var(--color-red-300);
+  --color-action-error-pressed: var(--color-red-200);
+
+  /* Action / Warning */
+  --color-action-warning:         var(--color-yellow-400);
+  --color-action-warning-hover:   var(--color-yellow-300);
+  --color-action-warning-pressed: var(--color-yellow-200);
+
+  /* Action / Success */
+  --color-action-success:         var(--color-green-400);
+  --color-action-success-hover:   var(--color-green-300);
+  --color-action-success-pressed: var(--color-green-200);
+
+  /* Status */
+  --color-status-success-bg:  var(--color-green-950);
+  --color-status-success-fg:  var(--color-green-400);
+  --color-status-error-bg:    var(--color-red-950);
+  --color-status-error-fg:    var(--color-red-400);
+  --color-status-warning-bg:  var(--color-yellow-950);
+  --color-status-warning-fg:  var(--color-yellow-400);
+  --color-status-info-bg:     var(--color-blue-950);
+  --color-status-info-fg:     var(--color-blue-400);
+  --color-status-disabled-bg: var(--color-gray-700);
+  --color-status-disabled-fg: var(--color-gray-500);
+  --color-status-orange-bg:   var(--color-orange-950);
+  --color-status-orange-fg:   var(--color-orange-400);
+  --color-status-indigo-bg:   var(--color-indigo-950);
+  --color-status-indigo-fg:   var(--color-indigo-400);
+  --color-status-violet-bg:   var(--color-violet-950);
+  --color-status-violet-fg:   var(--color-violet-400);
+  --color-status-pink-bg:     var(--color-pink-950);
+  --color-status-pink-fg:     var(--color-pink-400);
+}
+
+/* ─── Global resets ──────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-default);
+  -webkit-font-smoothing: antialiased;
+}

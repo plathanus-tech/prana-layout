@@ -1,0 +1,3114 @@
+/* ─── Shell ───────────────────────────────────────────────────────────────────*/
+.shell {
+  min-height: 100vh;
+  background: #F5F3EE;
+  font-family: var(--font-body);
+}
+
+.sidebarFixed {
+  position: fixed;
+  top: 0;
+  left: var(--proto-offset, 0px);
+  height: 100vh;
+  z-index: 100;
+}
+
+.contentWrap {
+  margin-left: 246px;
+  padding: 24px 24px 24px 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.contentWrapClosed {
+  margin-left: 78px;
+}
+
+/* ─── Content card ───────────────────────────────────────────────────────────
+   Padrão: gray/50 · flush left · radius 0 24 24 0
+   ─────────────────────────────────────────────────────────────────────────── */
+.contentCard {
+  background: var(--color-gray-50);
+  border-radius: 0 24px 24px 0;
+  border: 1px solid var(--color-gray-200);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: calc(100vh - 48px);
+}
+
+/* ─── Back navigation link ───────────────────────────────────────────────────
+   Acima do título, alinhado à esquerda; estilo discreto de link de navegação
+   ─────────────────────────────────────────────────────────────────────────── */
+.backNav {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  align-self: flex-start;
+}
+
+.backNav:hover {
+  color: var(--color-text-secondary);
+}
+
+/* ─── Page Header ────────────────────────────────────────────────────────────
+   Título do evento + data · "Realizar avaliação" (empresa)
+   ─────────────────────────────────────────────────────────────────────────── */
+.pageHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 24px;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.headerMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-display-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pageDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.pageDateIcon { color: var(--color-text-tertiary); flex-shrink: 0; }
+.pageDateId   { color: var(--color-text-tertiary); }
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Botão Realizar avaliação (empresa) */
+.avaliacaoBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  background: var(--color-brand-500);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast);
+}
+.avaliacaoBtn:hover { background: var(--color-brand-600); }
+
+/* ─── Tabs ───────────────────────────────────────────────────────────────────*/
+.tabs {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+  border-bottom: 1px solid var(--color-gray-200);
+  margin-bottom: 20px;
+}
+
+.tabWrap { position: relative; }
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+  border-radius: 6px 6px 0 0;
+}
+
+.tab:not(.tabDisabled):hover { color: var(--color-text-secondary); }
+
+.tabActive {
+  color: var(--color-brand-600) !important;
+  border-bottom-color: var(--color-brand-500) !important;
+  font-weight: var(--font-weight-semibold);
+}
+
+.tabDisabled { opacity: 0.38; cursor: not-allowed; }
+
+.tabIcon {
+  color: inherit;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.tabLockIcon { color: var(--color-text-tertiary); flex-shrink: 0; }
+
+/* ─── Tab Content ────────────────────────────────────────────────────────────*/
+.tabContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+}
+
+/* ─── Config Action Bar ──────────────────────────────────────────────────────
+   Barra abaixo das tabs, escopo da aba Visão Geral.
+   Status da configuração à esquerda · botões à direita.
+   ─────────────────────────────────────────────────────────────────────────── */
+.configActionBar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 10px;
+}
+
+/* Status badge com cores injetadas via inline style (tokens do design system) */
+.configStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.configActionBtns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Botão Editar */
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+.editBtn:hover {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
+  color: var(--color-text-primary);
+}
+.editBtn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Botão Salvar */
+.saveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  background: var(--color-brand-500);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast);
+}
+.saveBtn:hover { background: var(--color-brand-600); }
+
+/* Botão Cancelar */
+.cancelBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  background: none;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+.cancelBtn:hover {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Section card ───────────────────────────────────────────────────────────*/
+.section {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-gray-100);
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.sectionBadge {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 6px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.sectionBadgeEdit {
+  color: var(--color-brand-600);
+  background: var(--color-bg-brand);
+  border-color: var(--color-brand-300);
+}
+
+/* ─── Fields grid 2 colunas ──────────────────────────────────────────────────*/
+.fieldsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.field {
+  padding: 14px 20px;
+  border-right: 1px solid var(--color-gray-100);
+  border-bottom: 1px solid var(--color-gray-100);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+/* Remove borda direita nas colunas pares (última coluna) */
+.field:nth-child(even) { border-right: none; }
+
+/* Largura total */
+.fieldFull {
+  grid-column: 1 / -1;
+  border-right: none;
+}
+
+.fieldLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fieldValue {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.fieldEmpty {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+/* ─── CRM helpers ────────────────────────────────────────────────────────────*/
+.locationValue {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+.locationIcon { flex-shrink: 0; color: var(--color-text-tertiary); margin-top: 2px; }
+
+.serviceTags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.serviceTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.mailLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-brand-500);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+.mailLink:hover { color: var(--color-brand-700); text-decoration: underline; }
+
+.notesValue {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+/* ─── Config Groups ──────────────────────────────────────────────────────────*/
+.configGroup {
+  border-bottom: 1px solid var(--color-gray-100);
+}
+.configGroupLast { border-bottom: none; }
+
+.configGroupTitle {
+  display: block;
+  padding: 10px 20px 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  border-bottom: 1px solid var(--color-gray-100);
+  background: var(--color-gray-50);
+}
+
+.fieldsCol { display: flex; flex-direction: column; }
+
+/* ─── Schedule table (horários por dia) ──────────────────────────────────────*/
+.scheduleTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.scheduleTh {
+  padding: 9px 20px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: left;
+  background: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.scheduleTr:not(:last-child) .scheduleTd { border-bottom: 1px solid var(--color-gray-100); }
+
+.scheduleTd {
+  padding: 10px 20px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.scheduleDay {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* ─── Service table ──────────────────────────────────────────────────────────*/
+.serviceTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.serviceTh {
+  padding: 9px 20px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: left;
+  background: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.serviceTr:not(:last-child) .serviceTd { border-bottom: 1px solid var(--color-gray-100); }
+
+.serviceTd {
+  padding: 10px 20px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Survey table (pesquisa pós-evento) ─────────────────────────────────────*/
+.surveyTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.surveyTh {
+  padding: 9px 20px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: left;
+  background: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.surveyTr:not(:last-child) .surveyTd { border-bottom: 1px solid var(--color-gray-100); }
+
+.surveyTd {
+  padding: 10px 20px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  vertical-align: middle;
+}
+
+.surveyProfile {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* Estado "Não enviar" — texto atenuado */
+.surveyOff {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+/* ─── Edit inputs ────────────────────────────────────────────────────────────*/
+.editInput {
+  height: 34px;
+  width: 100%;
+  padding: 0 10px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-300);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.editInput:hover { border-color: var(--color-gray-400); }
+.editInput:focus {
+  border-color: var(--color-brand-400);
+  box-shadow: 0 0 0 3px rgba(178, 85, 87, 0.1);
+}
+
+.editInputNum  { max-width: 80px;  }
+.editInputTime { max-width: 106px; }
+.editInputFreq { max-width: 72px;  }
+
+.editNumWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editTimeRange {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editRangeSep {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.editSuffix {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+}
+
+/* Microcopy — texto de apoio abaixo do label de campo */
+.fieldHelp {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+  font-style: normal;
+  margin-bottom: 2px;
+}
+
+/* Empilha os dois inputs do Intervalo de ajuste verticalmente */
+.adjustInputsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editTextarea {
+  width: 100%;
+  min-height: 68px;
+  padding: 8px 10px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-300);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  line-height: 1.5;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.editTextarea:hover { border-color: var(--color-gray-400); }
+.editTextarea:focus {
+  border-color: var(--color-brand-400);
+  box-shadow: 0 0 0 3px rgba(178, 85, 87, 0.1);
+}
+
+/* Select */
+.editSelectWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.editSelect {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 34px;
+  min-width: 192px;
+  padding: 0 32px 0 10px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-300);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.editSelect:hover { border-color: var(--color-gray-400); }
+.editSelect:focus { border-color: var(--color-brand-400); }
+
+.editSelectChevron {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+  color: var(--color-text-tertiary);
+}
+
+/* Full-width variant for modal selects */
+.editSelectWrapFull {
+  display: flex;
+  width: 100%;
+}
+
+.editSelectExpand {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ─── Placeholder (tabs em desenvolvimento) ──────────────────────────────────*/
+.placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 64px 24px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.placeholderIcon  { color: var(--color-gray-300); }
+
+.placeholderTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.placeholderSub {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  max-width: 360px;
+  line-height: 1.6;
+}
+
+/* ─── Aba Profissionais ───────────────────────────────────────────────────────*/
+
+/* Barra superior da aba — "Adicionar profissional" */
+.profTabBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/* Lista de profissionais dentro de uma seção */
+.profList {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Cabeçalho esquerdo da seção: título + contador */
+.profSectionLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Indicador de progresso de confirmação (ex: "5/6 profissionais") */
+.profProgress {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 20px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+/* Bolinha com contagem de profissionais */
+.profCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 20px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+/* Container de cada linha de profissional */
+.profRow {
+  border-bottom: 1px solid var(--color-gray-100);
+}
+.profRow:last-child { border-bottom: none; }
+
+/* Parte principal da linha (sempre visível) */
+.profRowMain {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  min-width: 0;
+}
+
+/* Variante clicável — eventos concluídos com avaliação */
+.profRowClickable {
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.profRowClickable:hover { background: var(--color-gray-50); }
+
+/* Avatar circular com iniciais */
+.profAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-brand-100);
+  border: 1px solid var(--color-brand-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-brand-700);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* Bloco de informações do profissional */
+.profInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Linha com nome + badges de status */
+.profNameRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.profName {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+/* Badge de status (cores via inline style com tokens do sistema) */
+.profStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+/* Badge de disponibilidade parcial */
+.profPartialBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--color-status-info-bg, #EFF6FF);
+  border: 1px solid var(--color-blue-200, #BFDBFE);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-status-info-fg, #1D4ED8);
+  white-space: nowrap;
+}
+
+/* Linha com função + tag de especialidade */
+.profMeta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+
+.profRole {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.profTagDot {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.profTag {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* Dias de disponibilidade parcial */
+.profPartialDays {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+/* Área de ações à direita da linha */
+.profActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* ─── Painel de avaliação — eventos concluídos (não interativo) ──────────────*/
+
+/* Área abaixo da linha principal — título à esquerda, métricas à direita */
+.profRatingPanel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px 12px 72px;  /* 72px = 20px padding + 38px avatar + 14px gap */
+  background: var(--color-gray-50);
+  border-top: 1px solid var(--color-gray-100);
+}
+
+/* Título da seção de avaliação */
+.profRatingTitle {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Linha com estrelas + nota + label + contagem */
+.profRatingContent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Container das estrelas */
+.profRatingStars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Estrela cheia */
+.starOn  { color: var(--color-brand-400); flex-shrink: 0; }
+
+/* Estrela vazia */
+.starOff { color: var(--color-gray-300); flex-shrink: 0; }
+
+/* Wrapper para meia estrela */
+.starHalfWrap {
+  position: relative;
+  display: inline-flex;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+/* Meia estrela cheia — clip na metade direita */
+.starHalfFilled {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 50% 0 0);
+  z-index: 1;
+}
+
+/* Estrela vazia de fundo para a meia estrela */
+.starHalfEmpty {
+  position: absolute;
+  inset: 0;
+}
+
+/* Nota numérica */
+.profRatingScore {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* Separador "—" */
+.profRatingDash {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* Label textual (ex: "Muito bom") */
+.profRatingLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+/* Quantidade de avaliações */
+.profRatingCount {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ─── Modal de reenvio de convite ────────────────────────────────────────────*/
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 12, 10, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  backdrop-filter: blur(2px);
+}
+
+.modalCard {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  width: 440px;
+  max-width: calc(100vw - 48px);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modalTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modalTitleIcon {
+  color: var(--color-brand-500);
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.modalClose {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.modalClose:hover {
+  background: var(--color-gray-100);
+  color: var(--color-text-primary);
+}
+
+.modalInfo {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+}
+
+.modalFields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modalField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modalFieldLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+}
+
+.modalFieldRequired {
+  color: var(--color-status-error-fg, #DC2626);
+  font-weight: var(--font-weight-bold);
+}
+
+/* "(opcional)" em labels de campos não obrigatórios */
+.modalFieldOptional {
+  font-weight: var(--font-weight-regular, 400);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+.modalActions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-gray-100);
+}
+
+/* Botão secundário do modal — reutiliza visual do cancelBtn */
+.modalBtnSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  background: none;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+.modalBtnSecondary:hover {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
+  color: var(--color-text-secondary);
+}
+
+/* Botão primário do modal — reutiliza visual do saveBtn */
+.modalBtnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 16px;
+  background: var(--color-brand-500);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast);
+}
+.modalBtnPrimary:hover    { background: var(--color-brand-600); }
+.modalBtnPrimary:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ─── Variantes de largura do modal ─────────────────────────────────────────*/
+
+/* Médio — seleção manual de profissionais (lista + selecionados) */
+.modalCardMd {
+  width: 480px;
+  max-width: calc(100vw - 48px);
+}
+
+/* Largo — critérios (formulário em 2 etapas) */
+.modalCardLg {
+  width: 520px;
+  max-width: calc(100vw - 48px);
+}
+
+/* ─── Indicador de etapas do modal (numbered bubbles) ───────────────────────*/
+.modalStepBar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 10px 0 12px;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+/* Wrapper for each step (bubble + label) */
+.modalStep {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+/* Numbered / check bubble */
+.modalStepBubble {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Step label text */
+.modalStepLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* Current step — brand colour bubble + bold label */
+.modalStepCurrent .modalStepBubble {
+  background: var(--color-brand-500);
+  color: #fff;
+}
+.modalStepCurrent .modalStepLabel {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-brand-600);
+  cursor: default;
+}
+
+/* Completed step — success-tinted bubble + underlined clickable label */
+.modalStepComplete .modalStepBubble {
+  background: var(--color-status-success-bg, #F0FDF4);
+  border: 1px solid var(--color-green-300, #86EFAC);
+  color: var(--color-status-success-fg, #16A34A);
+}
+.modalStepComplete .modalStepLabel {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--transition-fast);
+}
+.modalStepComplete .modalStepLabel:hover { color: var(--color-brand-600); }
+
+/* Inactive step — muted grey bubble + tertiary label */
+.modalStepInactive .modalStepBubble {
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-gray-200);
+  color: var(--color-text-tertiary);
+}
+.modalStepInactive .modalStepLabel {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  cursor: default;
+}
+
+/* Horizontal line connector between steps */
+.modalStepLine {
+  flex: 1;
+  height: 1px;
+  background: var(--color-gray-200);
+  margin: 0 10px;
+}
+
+/* ─── Corpo do formulário de critérios (scrollável) ──────────────────────────*/
+.modalCriteriaBody {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+/* Grupo de campos com título */
+.modalCriteriaGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Título do grupo — uppercase + letra pequena + separador */
+.modalCriteriaGroupTitle {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+/* Campos dentro do grupo */
+.modalCriteriaFields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Legacy stepper classes — kept to avoid orphan errors, visually inert */
+.modalStepActive { display: none; }
+.modalStepNext   { display: none; }
+.modalStepDone   { display: none; }
+.modalStepSep    { display: none; }
+
+/* ─── Campo de busca do modal ────────────────────────────────────────────────*/
+.modalSearchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.modalSearchIcon {
+  position: absolute;
+  left: 10px;
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.modalSearchInput {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px 0 32px;
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.modalSearchInput::placeholder { color: var(--color-text-tertiary); }
+.modalSearchInput:focus {
+  border-color: var(--color-brand-400);
+  box-shadow: 0 0 0 3px rgba(178, 85, 87, 0.08);
+}
+
+/* ─── Lista de profissionais no modal ────────────────────────────────────────*/
+.modalProfList {
+  display: flex;
+  flex-direction: column;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 10px;
+}
+
+.modalEmpty {
+  padding: 24px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* Linha de profissional no modal */
+.modalProfRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-gray-100);
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  transition: background var(--transition-fast);
+}
+.modalProfRow:last-child { border-bottom: none; }
+.modalProfRow:hover { background: var(--color-gray-50); }
+
+/* Estado selecionado */
+.modalProfRowSelected { background: var(--color-bg-brand, #FEF2F2) !important; }
+
+/* Estado removido (critérios etapa 2) */
+.modalProfRowDeselected { opacity: 0.45; }
+
+/* Avatar pequeno */
+.modalProfAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-brand-100);
+  border: 1px solid var(--color-brand-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-brand-700);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* Info do profissional */
+.modalProfInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.modalProfName {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modalProfFunc {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* Rating no modal */
+.modalProfMeta {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.modalProfRatingVal {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+/* Checkbox visual */
+.modalProfCheck {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid var(--color-gray-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.modalProfCheckOn {
+  background: var(--color-brand-500);
+  border-color: var(--color-brand-500);
+  color: #fff;
+}
+
+/* Contagem de selecionados */
+.modalSelCount {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-right: auto;
+}
+
+/* Botão remover (etapa 2 critérios) */
+.modalRemoveBtn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 6px;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.modalRemoveBtn:hover {
+  background: var(--color-status-error-bg);
+  border-color: var(--color-red-300);
+  color: var(--color-status-error-fg);
+}
+
+/* Label "Removido" */
+.modalRemovedLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  flex-shrink: 0;
+}
+
+/* ─── Popover "Adicionar profissional" ───────────────────────────────────────*/
+
+/* Wrapper relativo para posicionar o popover */
+.addProfWrap { position: relative; }
+
+/* Backdrop para fechar o popover ao clicar fora */
+.popoverBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+}
+
+/* Cartão do popover */
+.popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 160;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+  min-width: 256px;
+  overflow: hidden;
+}
+
+/* Opção do popover */
+.popoverItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-gray-100);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.popoverItem:last-child { border-bottom: none; }
+.popoverItem:hover { background: var(--color-gray-50); }
+
+.popoverItemIcon {
+  color: var(--color-brand-500);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.popoverItemText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.popoverItemTitle {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.popoverItemSub {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ─── Toast de feedback — componente Feedback centralizado no topo ───────────*/
+
+/* Wrapper posicionado no topo-centro da tela */
+.toastWrap {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  min-width: 360px;
+  max-width: 520px;
+  width: max-content;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  animation: toastSlideDown 0.24s ease;
+}
+
+@keyframes toastSlideDown {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0);     }
+}
+
+/* Legado — mantidos para evitar erro de compilação se referenciados em outro lugar */
+.toast    { display: none; }
+.toastIcon { display: none; }
+.toastText { display: none; }
+
+/* ─── Seção persistente de selecionados (SelectProfModal) ───────────────────*/
+
+/* Wrapper da seção — separado da lista de busca por borda superior */
+.modalSelectedSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0 4px;
+  border-top: 1px solid var(--color-gray-200);
+}
+
+/* Linha de cabeçalho: título + contador */
+.modalSelectedHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 2px;
+}
+
+/* Título "Selecionados" */
+.modalSelectedTitle {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Bolinha com contagem de selecionados */
+.modalSelectedCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--color-brand-100);
+  border: 1px solid var(--color-brand-200);
+  border-radius: 20px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-brand-700);
+}
+
+/* Estado vazio da seção */
+.modalSelectedEmpty {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  padding: 4px 2px 6px;
+}
+
+/* Lista de profissionais selecionados — rolável */
+.modalSelectedList {
+  display: flex;
+  flex-direction: column;
+  max-height: 160px;
+  overflow-y: auto;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 10px;
+}
+
+/* Linha de profissional selecionado */
+.modalSelectedRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-gray-100);
+  background: var(--color-bg-brand, #FEF2F2);
+}
+.modalSelectedRow:last-child { border-bottom: none; }
+
+/* ─── Feedback de sucesso do modal (após reenvio) ────────────────────────────*/
+
+.modalSuccess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 28px 24px 24px;
+  gap: 8px;
+}
+
+/* Ícone circular com fundo success */
+.modalSuccessIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-status-success-bg);
+  border: 1px solid var(--color-green-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-status-success-fg);
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.modalSuccessTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.modalSuccessSub {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  line-height: 1.55;
+}
+
+/* ─── Aba Agendamentos ───────────────────────────────────────────────────────*/
+
+/* ── Summary cards ──────────────────────────────────────────────────────────*/
+.agSummary {
+  display: flex;
+  gap: 12px;
+}
+
+.agSummaryCard {
+  flex: 1;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.agSummaryValue {
+  font-family: var(--font-display);
+  font-size: var(--font-size-display-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+
+.agSummaryValueBrand { color: var(--color-brand-600); }
+.agSummaryValueWarn  { color: var(--color-status-warning-fg); }
+
+.agSummaryLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ── Controls row ───────────────────────────────────────────────────────────*/
+.agControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Segmented view toggle */
+.agViewToggle {
+  display: flex;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.agViewBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 14px;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.agViewBtn:hover:not(.agViewBtnActive) { background: var(--color-gray-50); }
+
+.agViewBtnActive {
+  background: var(--color-brand-500);
+  color: #fff;
+}
+
+.agFilters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Time view ──────────────────────────────────────────────────────────────*/
+.agDaySections { display: flex; flex-direction: column; gap: 12px; }
+
+.agDayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-gray-100);
+  gap: 12px;
+}
+
+.agDayTitle {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.agSlotList { display: flex; flex-direction: column; }
+
+.agSlotRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--color-gray-100);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition-fast);
+}
+.agSlotRow:last-child { border-bottom: none; }
+.agSlotRow:hover      { background: var(--color-gray-50); }
+.agSlotRowExpanded    { background: var(--color-gray-50); }
+
+.agSlotTime {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  min-width: 42px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Service pill — colours applied via inline style */
+.agSlotServicePill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.agSlotOccupancy {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+.agSlotOccupancyFull { color: var(--color-status-error-fg); }
+
+.agSlotBadges { display: flex; gap: 4px; flex-wrap: wrap; }
+
+.agSlotActions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Status badges shared base */
+.agBadgeFull,
+.agBadgeVagas,
+.agBadgeWaitlist,
+.agBadgeEncaixe,
+.agBadgeNoShow {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.agBadgeFull     { background: var(--color-status-error-bg);   border-color: var(--color-red-300);   color: var(--color-status-error-fg);   }
+.agBadgeVagas    { background: var(--color-status-success-bg); border-color: var(--color-green-300); color: var(--color-status-success-fg); }
+.agBadgeWaitlist { background: var(--color-status-warning-bg); border-color: #FDE047;                color: var(--color-status-warning-fg); }
+.agBadgeEncaixe  { background: #FFF7ED;                        border-color: #FED7AA;                color: #C2410C;                        }
+.agBadgeNoShow   { background: var(--color-gray-100);          border-color: var(--color-gray-300);  color: var(--color-text-tertiary);     }
+
+/* ── Slot detail (expanded) ─────────────────────────────────────────────────*/
+.agSlotDetail {
+  background: var(--color-gray-50);
+  border-top: 1px solid var(--color-gray-100);
+  border-bottom: 1px solid var(--color-gray-100);
+  padding: 12px 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.agSlotSection { display: flex; flex-direction: column; gap: 4px; }
+
+.agSlotSectionTitle {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 2px;
+}
+
+.agSlotPerson {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  min-height: 28px;
+}
+
+/* No-show: riscado, menor, atenuado */
+.agSlotNoShow {
+  text-decoration: line-through;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  opacity: 0.75;
+}
+
+.agSlotEmpty {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+/* ── Legend for capacity status ─────────────────────────────────────────────*/
+.agLegend {
+  display: flex;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendDotAvailable { background: var(--color-status-success-bg); border: 1px solid var(--color-green-300); }
+.legendDotWaitlist  { background: var(--color-status-warning-bg); border: 1px solid #FDE047; }
+.legendDotFull      { background: var(--color-status-error-bg);   border: 1px solid var(--color-red-300); }
+
+.legendLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+/* ── Day selector (visual, like SelectionScreenE) ────────────────────────────*/
+.agDaySelector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.agSelectorLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.agDayStrip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.agDayStrip::-webkit-scrollbar { display: none; }
+
+.agDayBtn {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 12px;
+  min-width: auto;
+  min-height: 48px;
+  border-radius: 8px;
+  border: 1px solid var(--color-gray-200);
+  background: var(--color-bg-surface);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.agDayBtn:hover {
+  border-color: var(--color-brand-300);
+  background: var(--color-brand-50);
+}
+
+.agDayBtnActive {
+  background: var(--color-brand-50);
+  border-color: var(--color-brand-500);
+  border-width: 2px;
+  box-shadow: none;
+}
+
+.agDayBtnName {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-regular);
+  text-transform: uppercase;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.agDayBtnNum {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+
+.agDayBtn:hover .agDayBtnNum { color: var(--color-brand-600); }
+.agDayBtnActive .agDayBtnNum { color: var(--color-brand-700); }
+
+.agDayBtnMonth {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.agDayBtn:hover .agDayBtnMonth { color: var(--color-brand-600); }
+.agDayBtnActive .agDayBtnMonth { color: var(--color-brand-700); }
+
+/* ── Time grid with capacity display ────────────────────────────────────────*/
+.agTimeGridWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.agTimeGridSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agTimeGridHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.agTimeGridServicePill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.agTimeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.agTimeBtn {
+  padding: 12px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--color-gray-200);
+  background: var(--color-bg-surface);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.agTimeBtn:hover {
+  border-color: var(--color-brand-300);
+  background: var(--color-brand-50);
+}
+
+.agTimeBtnAvailable {
+  border-color: var(--color-green-300);
+  background: #F0FDF4;
+}
+
+.agTimeBtnAvailable:hover {
+  border-color: var(--color-green-400);
+  background: #F0FDF4;
+}
+
+.agTimeBtnWaitlist {
+  border-color: #FDE047;
+  background: #FFFBEB;
+}
+
+.agTimeBtnWaitlist:hover {
+  border-color: #FCD34D;
+  background: #FFFBEB;
+}
+
+.agTimeBtnFull {
+  border-color: var(--color-red-300);
+  background: #FEF2F2;
+}
+
+.agTimeBtnFull:hover {
+  border-color: var(--color-red-400);
+  background: #FEF2F2;
+}
+
+.agTimeBtnTime {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.agTimeBtnCapacity {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── List view ──────────────────────────────────────────────────────────────*/
+.agTableNoShow {
+  text-decoration: line-through;
+  opacity: 0.6;
+  color: var(--color-text-tertiary);
+}
+
+/* ── Time Card Grid (new refactored view) ───────────────────────────────────*/
+.agTimeCardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.agTimeCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid var(--color-gray-200);
+  background: var(--color-bg-surface);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  min-height: 120px;
+  gap: 8px;
+}
+
+.agTimeCard:hover {
+  border-color: var(--color-brand-300);
+  background: var(--color-brand-50);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.agTimeCardAvailable {
+  border-color: var(--color-green-300);
+  background: #F0FDF4;
+}
+
+.agTimeCardAvailable:hover {
+  border-color: var(--color-green-400);
+  background: #E6FFFA;
+}
+
+.agTimeCardWaitlist {
+  border-color: #FDE047;
+  background: #FFFBEB;
+}
+
+.agTimeCardWaitlist:hover {
+  border-color: #FCD34D;
+  background: #FFFACD;
+}
+
+.agTimeCardFull {
+  border-color: var(--color-red-300);
+  background: #FEF2F2;
+  opacity: 0.8;
+}
+
+.agTimeCardFull:hover {
+  border-color: var(--color-red-400);
+  background: #FEE2E2;
+}
+
+.agTimeCardContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.agTimeCardTime {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.agTimeCardCapacity {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+.agTimeCardService {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
+}
+
+.agTimeCardBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* ── Modal enhancements ─────────────────────────────────────────────────────*/
+.modalCardLg {
+  max-width: 600px;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 16px 0;
+}
+
+.agTimeBtnActive {
+  border-color: var(--color-brand-600);
+  background: var(--color-brand-100);
+  color: var(--color-brand-700);
+  font-weight: var(--font-weight-semibold);
+}
+
+.agSlotEncaixeName {
+  text-decoration: line-through;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+/* ── Day Group Header (for grouped time view) ──────────────────────────────────*/
+.agDayGroupHeader {
+  margin-top: 24px;
+  margin-bottom: 12px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  padding-left: 4px;
+}
+
+.agDayGroupHeader:first-of-type {
+  margin-top: 0;
+}
+
+/* ── Feedback wrapper (fixed positioning) ──────────────────────────────────────*/
+.agFeedbackWrapper {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  max-width: 500px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   AVALIAÇÃO TAB — idêntico ao Impacto do Dashboard
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.impactoSection {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Stat Cards Row ─────────────────────────────────────────────────────────── */
+.statCardsRow {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.statCard {
+  flex: 1;
+  background: var(--color-bg-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-gray-200);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.statBody {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.statLabelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: var(--font-size-display-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+
+.statFooter {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.trendBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  border: 1px solid;
+  flex-shrink: 0;
+}
+
+.trendUp {
+  background: var(--color-status-success-bg);
+  border-color: var(--color-green-300);
+  color: var(--color-status-success-fg);
+}
+
+.trendDown {
+  background: var(--color-status-error-bg);
+  border-color: var(--color-red-300);
+  color: var(--color-status-error-fg);
+}
+
+.trendLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+}
+
+.statIconBox {
+  width: 44px;
+  height: 44px;
+  background: var(--color-bg-brand);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brand-700);
+  flex-shrink: 0;
+}
+
+/* ── Evolution + Participation row ──────────────────────────────────────────── */
+.impactoRow {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.chartCardWide {
+  background: var(--color-bg-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-gray-200);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.chartHeaderRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.lineLegend {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+.lineLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.lineDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Charts rows ─────────────────────────────────────────────────────────────── */
+.chartsRow {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.chartCard {
+  flex: 1;
+  min-height: 400px;
+  background: var(--color-bg-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-gray-200);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Variante com 40px a menos — usada por Participação e Radar */
+.chartCardSm {
+  min-height: 360px;
+}
+
+.chartTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+/* ── Bar chart ──────────────────────────────────────────────────────────────── */
+.barChartBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.barRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.barLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+  width: 104px;
+  text-align: right;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barTrackGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.barTrack {
+  flex: 1;
+  height: 14px;
+  background: #F0EDEC;
+  border-radius: 3px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.barFill {
+  height: 14px;
+  background: var(--color-brand-500);
+  border-radius: 3px;
+}
+
+.barPct {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  width: 28px;
+}
+
+/* ── NPS Distribution ───────────────────────────────────────────────────────── */
+.pieDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.npsSegmentWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  justify-content: center;
+}
+
+.npsBar {
+  display: flex;
+  flex-direction: row;
+  height: 28px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.npsBarSegment {
+  height: 100%;
+  transition: opacity 150ms;
+}
+.npsBarSegment:hover { opacity: 0.8; }
+
+.npsScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.npsScoreValue {
+  font-family: var(--font-display);
+  font-size: var(--font-size-display-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+
+.npsScoreLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.npsLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.npsLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.npsLegendLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  flex: 1;
+}
+
+.npsLegendPct {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ── Benchmark ──────────────────────────────────────────────────────────────── */
+.benchmarkRow {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.benchmarkCard {
+  flex: 1;
+  background: var(--color-bg-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-gray-200);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.benchmarkValues {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  gap: 8px;
+  flex: 1;
+}
+
+.benchmarkSide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.benchmarkValue {
+  font-family: var(--font-display);
+  font-size: var(--font-size-display-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.1;
+}
+
+.benchmarkMetric {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.benchmarkSideLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.benchmarkVs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.benchmarkNote {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+/* ── Qualitative comments ───────────────────────────────────────────────────── */
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.commentCard {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  padding: 12px;
+  background: var(--color-gray-50);
+  border-radius: 10px;
+  border: 1px solid var(--color-gray-200);
+}
+
+.commentIcon {
+  font-size: 18px;
+  color: var(--color-brand-200);
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.commentBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.commentText {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.commentAuthor {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ─── Aba Relatório ────────────────────────────────────────────────────────── */
+
+.relatorioWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Status bar (admin) */
+.relatorioStatusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.relatorioStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
+.relatorioStatusDraft {
+  background: var(--color-gray-100);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-gray-200);
+}
+
+.relatorioStatusPublished {
+  background: var(--color-status-success-bg, #ECFDF5);
+  color: var(--color-status-success-fg, #15803D);
+  border: 1px solid var(--color-status-success-border, #BBF7D0);
+}
+
+.relatorioStatusActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.relatorioPublishBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--color-brand-500, #B25557);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.relatorioPublishBtn:hover {
+  background: var(--color-brand-600, #9E3E40);
+}
+
+/* Document card */
+.relatorioDoc {
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-gray-200, #E5E7EB);
+  border-radius: 16px;
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Doc header */
+.relatorioDocHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-gray-100, #F3F4F6);
+}
+
+.relatorioTitle {
+  font-family: var(--font-display, var(--font-body));
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.relatorioTitleInput {
+  font-family: var(--font-display, var(--font-body));
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-gray-300, #D1D5DB);
+  border-radius: 8px;
+  padding: 6px 10px;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  background: var(--color-gray-50, #F9FAFB);
+  transition: border-color 120ms ease;
+}
+
+.relatorioTitleInput:focus {
+  border-color: var(--color-brand-500, #B25557);
+  background: #fff;
+}
+
+.relatorioMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.relatorioMetaItem {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.relatorioMetaDot {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-300, #D1D5DB);
+}
+
+.relatorioAiBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px;
+  background: linear-gradient(135deg, #EDE9FE, #FDF2F8);
+  color: #7C3AED;
+  border: 1px solid #DDD6FE;
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+/* Sections inside doc */
+.relatorioSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.relatorioSectionTitle {
+  font-family: var(--font-display, var(--font-body));
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin: 0;
+}
+
+.relatorioBody {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.relatorioInsights {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+  margin: 0;
+  white-space: pre-wrap;
+  background: var(--color-gray-50, #F9FAFB);
+  border: 1px solid var(--color-gray-100, #F3F4F6);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.relatorioTextarea {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  line-height: 1.7;
+  border: 1px solid var(--color-gray-300, #D1D5DB);
+  border-radius: 8px;
+  padding: 10px 12px;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  outline: none;
+  background: var(--color-gray-50, #F9FAFB);
+  transition: border-color 120ms ease;
+}
+
+.relatorioTextarea:focus {
+  border-color: var(--color-brand-500, #B25557);
+  background: #fff;
+}
+
+/* Metrics row inside doc */
+.relatorioMetricsRow {
+  display: flex;
+  gap: 12px;
+}
+
+.relatorioMetricCard {
+  flex: 1;
+  background: var(--color-gray-50, #F9FAFB);
+  border: 1px solid var(--color-gray-100, #F3F4F6);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.relatorioMetricValue {
+  font-family: var(--font-display, var(--font-body));
+  font-size: var(--font-size-display-sm, 30px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.relatorioMetricLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* Download button */
+.relatorioDownloadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--color-gray-100, #F3F4F6);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-gray-200, #E5E7EB);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.relatorioDownloadBtn:hover:not(:disabled) {
+  background: var(--color-gray-200, #E5E7EB);
+  border-color: var(--color-gray-300, #D1D5DB);
+}
+
+.relatorioDownloadBtnLoading {
+  opacity: .65;
+  cursor: wait;
+}
+
+/* Print area — no extra visual chrome, just separates content from obs */
+.relatorioPrintArea {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Separator before observações (visual only — now inside print area) */
+.relatorioObsSection {
+  padding-top: 24px;
+  border-top: 1px dashed var(--color-gray-200, #E5E7EB);
+  margin-top: 4px;
+}
+
+/* Charts stacked vertically in relatório (avoids whitespace from unequal heights) */
+.relatorioChartsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

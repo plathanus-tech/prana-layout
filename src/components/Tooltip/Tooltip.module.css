@@ -1,0 +1,34 @@
+.wrapper { position: relative; display: inline-flex; }
+
+.tip {
+  position: absolute;
+  z-index: 100;
+  background: var(--color-gray-900);
+  color: var(--color-gray-white);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-xs);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  box-shadow: var(--shadow-md);
+}
+.wrapper:hover .tip,
+.wrapper:focus-within .tip { opacity: 1; }
+
+.top    { bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
+.bottom { top: calc(100% + 8px);    left: 50%; transform: translateX(-50%); }
+.left   { right: calc(100% + 8px);  top: 50%;  transform: translateY(-50%); }
+.right  { left: calc(100% + 8px);   top: 50%;  transform: translateY(-50%); }
+
+.arrow {
+  position: absolute;
+  width: 6px; height: 6px;
+  background: var(--color-gray-900);
+  transform: rotate(45deg);
+}
+.top    .arrow { top: 100%; left: 50%; margin-left: -3px; margin-top: -3px; }
+.bottom .arrow { bottom: 100%; left: 50%; margin-left: -3px; margin-bottom: -3px; }
+.left   .arrow { left: 100%; top: 50%; margin-top: -3px; margin-left: -3px; }
+.right  .arrow { right: 100%; top: 50%; margin-top: -3px; margin-right: -3px; }

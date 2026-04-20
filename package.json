@@ -1,0 +1,36 @@
+{
+  "name": "prana-design-system",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006 --no-open",
+    "build-storybook": "storybook build"
+  },
+  "dependencies": {
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
+    "lucide-react": "^1.8.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@chromatic-com/storybook": "^1",
+    "@storybook/addon-essentials": "^8.6.12",
+    "@storybook/addon-interactions": "^8.6.12",
+    "@storybook/addon-onboarding": "^8.6.12",
+    "@storybook/blocks": "^8.6.12",
+    "@storybook/react": "^8.6.12",
+    "@storybook/react-vite": "^8.6.12",
+    "@storybook/test": "^8.6.12",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "storybook": "^8.6.12",
+    "typescript": "~5.6.2",
+    "vite": "^6.2.0"
+  }
+}

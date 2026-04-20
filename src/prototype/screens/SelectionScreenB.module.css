@@ -1,0 +1,419 @@
+/* ═══════════════════════════════════════════════════
+   VERSÃO B — CARD-BASED MODERNO
+   Filosofia: clareza por elevação. Cada seção é um
+   card próprio com sombra. Selecionado tem sombra
+   maior + outline brand. Day buttons como mini-cards.
+   ═══════════════════════════════════════════════════ */
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-subtle);
+  font-family: var(--font-body);
+}
+
+/* ─── Content ─────────────────────────────────────── */
+.content {
+  flex: 1;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* ─── Prototype toggle ────────────────────────────── */
+.protoToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-sm);
+  border: var(--border-width-thin) dashed var(--color-border-muted);
+}
+.protoLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ─── Event Banner — card elevado ─────────────────── */
+.eventBanner {
+  background: var(--color-bg-surface);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  box-shadow: var(--shadow-md);
+  border-top: 4px solid var(--color-brand-400);
+}
+
+.eventTag {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-brand-600);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wider);
+}
+
+.eventName {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: var(--line-height-tight);
+}
+
+.eventMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-xs);
+}
+
+.eventMetaItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.eventHint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: var(--spacing-xs) 0 0;
+  padding-top: var(--spacing-sm);
+  border-top: var(--border-width-thin) solid var(--color-border-subtle);
+}
+
+/* ─── Section ─────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  padding: 0 var(--spacing-xs);
+}
+
+/* ─── Service list ────────────────────────────────── */
+.serviceList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* ─── Card — elevado com sombra ───────────────────── */
+.card {
+  background: var(--color-bg-surface);
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.card:not(.cardDisabled):hover {
+  box-shadow: var(--shadow-sm);
+}
+
+/* Selecionado: sombra forte + outline brand */
+.cardSelected {
+  box-shadow: var(--shadow-md);
+  outline: 2px solid var(--color-brand-400);
+  outline-offset: 0px;
+}
+
+.cardDisabled {
+  opacity: 0.45;
+  box-shadow: none;
+}
+
+/* ─── Card header ─────────────────────────────────── */
+.cardHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition-fast);
+}
+
+.cardSelected .cardHeader {
+  background: var(--color-bg-brand);
+}
+
+.cardHeader:hover:not(:disabled) {
+  background: var(--color-bg-subtle);
+}
+
+.cardSelected .cardHeader:hover:not(:disabled) {
+  background: var(--color-brand-100);
+}
+
+/* Ícone — quadrado com radius maior */
+.cardIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.cardIconSelected {
+  background: var(--color-brand-100);
+  color: var(--color-brand-600);
+}
+
+/* Info */
+.cardInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.cardName {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.cardComplete {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-success);
+  font-weight: var(--font-weight-medium);
+  margin-top: 2px;
+}
+
+/* Selector */
+.selector { flex-shrink: 0; }
+
+.radio, .checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.checkbox { border-radius: var(--radius-xs); }
+
+.selectorSelected .radio,
+.selectorSelected .checkbox {
+  border-color: var(--color-brand-500);
+  background: var(--color-brand-500);
+}
+
+.radioDot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: white;
+}
+
+.checkmark {
+  font-size: 13px; color: white;
+  font-weight: var(--font-weight-bold); line-height: 1;
+}
+
+/* ─── Card body ───────────────────────────────────── */
+.cardBody {
+  padding: 0 var(--spacing-md) var(--spacing-md);
+  border-top: var(--border-width-thin) solid var(--color-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Waitlist */
+.waitlist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-md);
+}
+
+/* Scheduler */
+.scheduler {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding-top: var(--spacing-md);
+}
+
+.pickerSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.pickerLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+/* ─── Day strip — mini-cards com sombra ───────────── */
+.dayStrip {
+  display: flex;
+  gap: var(--spacing-xs);
+  overflow-x: auto;
+  padding-bottom: var(--spacing-xs);
+  scrollbar-width: none;
+}
+.dayStrip::-webkit-scrollbar { display: none; }
+
+.dayBtn {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--spacing-sm);
+  min-width: 52px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.dayBtn:hover {
+  box-shadow: var(--shadow-sm);
+  background: var(--color-bg-subtle);
+}
+
+.dayBtnActive {
+  background: var(--color-brand-500);
+  box-shadow: var(--shadow-sm);
+}
+
+.dayName {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+}
+
+.dayNum {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.dayMonth {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.dayBtnActive .dayName,
+.dayBtnActive .dayNum,
+.dayBtnActive .dayMonth {
+  color: white;
+}
+
+/* ─── Time grid — border + rounded ───────────────── */
+.timeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.timeBtn {
+  padding: var(--spacing-sm) var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+  background: var(--color-bg-surface);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+  text-align: center;
+  box-shadow: var(--shadow-xs);
+}
+
+.timeBtn:hover:not(:disabled) {
+  border-color: var(--color-brand-400);
+  background: var(--color-bg-brand);
+  box-shadow: var(--shadow-sm);
+}
+
+.timeBtnActive {
+  background: var(--color-brand-500);
+  border-color: var(--color-brand-500);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+  box-shadow: var(--shadow-sm);
+}
+
+.timeBtnActive:hover {
+  background: var(--color-brand-600) !important;
+  border-color: var(--color-brand-600) !important;
+}
+
+.timeBtnUnavailable {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+  text-decoration: line-through;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* ─── CTA bar ─────────────────────────────────────── */
+.ctaBar {
+  padding: var(--spacing-xl) var(--spacing-md) var(--spacing-md);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.ctaInner {
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}

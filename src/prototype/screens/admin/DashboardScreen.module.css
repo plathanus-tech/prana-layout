@@ -1,0 +1,775 @@
+/* ─── Shell ──────────────────────────────────────────────────────────────────
+   Fundo geral = mesma cor da sidebar (#F5F3EE)
+   Sidebar é fixed; main faz scroll
+   ─────────────────────────────────────────────────────────────────────────── */
+.shell {
+  min-height: 100vh;
+  background: #F5F3EE;
+  font-family: var(--font-body);
+}
+
+/* Sidebar wrapper — fixed, full height.
+   --proto-offset é injetado via inline style quando dentro do PrototypingShell. */
+.sidebarFixed {
+  position: fixed;
+  top: 0;
+  left: var(--proto-offset, 0px);
+  height: 100vh;
+  z-index: 100;
+}
+
+/* ─── Main content area ──────────────────────────────────────────────────────
+   Offset left = largura da sidebar do app + offset do protótipo (se houver).
+   ─────────────────────────────────────────────────────────────────────────── */
+.contentWrap {
+  /* só a largura do sidebar do app — o offset do proto já é absorvido
+     pelo margin-left:200px do PrototypingShell (.content) */
+  margin-left: 246px;
+  /* colado no sidebar à esquerda · 24px topo, direita e base */
+  padding: 24px 24px 24px 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.contentWrapClosed {
+  margin-left: 78px;
+}
+
+/* ─── Content card ───────────────────────────────────────────────────────────
+   Card branco flutuando sobre o fundo off-white.
+   Padding interno: 32px. Radius: 24px.
+   ─────────────────────────────────────────────────────────────────────────── */
+.contentCard {
+  background: var(--color-gray-50);
+  /* cantos direitos arredondados · esquerda reta (colada no sidebar) */
+  border-radius: 0 24px 24px 0;
+  border: 1px solid var(--color-gray-200);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-height: calc(100vh - 48px);
+}
+
+/* ─── Page title ─────────────────────────────────────────────────────────────
+   Raleway SemiBold 40px text-primary
+   ─────────────────────────────────────────────────────────────────────────── */
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-display-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.1;
+}
+
+/* ─── Top section ────────────────────────────────────────────────────────────*/
+.topSection {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ─── Tabs row ───────────────────────────────────────────────────────────────*/
+.tabsRow {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.tab {
+  padding: 0 12px;
+  height: 44px;
+  background: none;
+  border: none;
+  border-bottom: 4px solid transparent;
+  margin-bottom: -1px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.tab:hover { color: var(--color-text-primary); }
+
+.tabActive {
+  color: var(--color-brand-500);
+  border-bottom-color: var(--color-brand-500);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ─── Stat cards row ─────────────────────────────────────────────────────────
+   4 cards fill igual, gap:16
+   ─────────────────────────────────────────────────────────────────────────── */
+.statCardsRow {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+/* ─── Stat card ──────────────────────────────────────────────────────────────
+   bg white, radius:16, pad:16, stroke gray-200
+   ─────────────────────────────────────────────────────────────────────────── */
+.statCard {
+  flex: 1;
+  /* altura adaptável — hug content */
+  background: var(--color-bg-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-gray-200);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.statBody {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* sem altura fixa — expande com conteúdo */
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.statLabelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: var(--font-size-display-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+
+.statFooter {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.trendBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  border: 1px solid;
+  flex-shrink: 0;
+}
+
+.trendUp {
+  background: var(--color-status-success-bg);
+  border-color: var(--color-green-300);
+  color: var(--color-status-success-fg);
+}
+
+.trendDown {
+  background: var(--color-status-error-bg);
+  border-color: var(--color-red-300);
+  color: var(--color-status-error-fg);
+}
+
+.trendLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+}
+
+.statIconBox {
+  width: 44px;
+  height: 44px;
+  background: var(--color-bg-brand);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brand-700);
+  flex-shrink: 0;
+}
+
+/* ─── Events card ────────────────────────────────────────────────────────────
+   Card branco, radius:16, pad:24 16, gap:12
+   ─────────────────────────────────────────────────────────────────────────── */
+.eventsCard {
+  background: var(--color-bg-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-gray-200);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.eventsList {
+  display: flex;
+  flex-direction: column;
+}
+
+.eventRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 16px 20px;
+}
+
+.eventDivider {
+  height: 1px;
+  background: var(--color-gray-200);
+  margin: 0 16px;
+}
+
+.eventDateBox {
+  width: 100px;
+  height: 100px;
+  border-radius: 12px;
+  background: rgba(207, 173, 174, 0.24);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.eventDateTop {
+  font-family: var(--font-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-brand-700);
+  line-height: 1.2;
+  text-align: center;
+}
+
+.eventDateBottom {
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-brand-700);
+  text-align: center;
+}
+
+.eventDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.eventTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.eventMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eventMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+}
+
+.eventMetaIcon {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+}
+
+.eventStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+/* ─── Charts row ─────────────────────────────────────────────────────────────
+   3 cards fill igual, gap:16
+   ─────────────────────────────────────────────────────────────────────────── */
+.chartsRow {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.chartCard {
+  flex: 1;
+  min-height: 400px;
+  background: var(--color-bg-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-gray-200);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.chartTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+/* ─── Bar chart ──────────────────────────────────────────────────────────────
+   Labels right-aligned fixos + track com fill + pct inline (não absoluto)
+   ─────────────────────────────────────────────────────────────────────────── */
+.barChartBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.barRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.barLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+  width: 104px;
+  text-align: right;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Track + fill em flexbox normal — sem position absolute */
+.barTrackGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.barTrack {
+  flex: 1;
+  height: 14px;
+  background: #F0EDEC;
+  border-radius: 3px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.barFill {
+  height: 14px;
+  background: var(--color-brand-500);
+  border-radius: 3px;
+}
+
+.barPct {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  width: 28px;
+}
+
+
+/* ─── Pie chart ──────────────────────────────────────────────────────────────
+   Sólido (sem furo). Sim 84% brand-500, Não 16% brand-200
+   ─────────────────────────────────────────────────────────────────────────── */
+.pieBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  justify-content: center;
+}
+
+.pieWrap {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  flex-shrink: 0;
+}
+
+
+.pieLegend {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+}
+
+.pieLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pieDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pieLegendText {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   IMPACTO TAB
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.impactoSection {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Row: linha (3fr) + barras agrupadas (2fr) */
+.impactoRow {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+/* Chart card full-width variant */
+.chartCardWide {
+  background: var(--color-bg-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-gray-200);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Header row inside chart (title + inline legend) */
+.chartHeaderRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+/* ─── Line legend ──────────────────────────────────────────────────────────── */
+.lineLegend {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+.lineLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.lineDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ─── NPS Segmented bar ────────────────────────────────────────────────────── */
+.npsSegmentWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  justify-content: center;
+}
+
+.npsBar {
+  display: flex;
+  flex-direction: row;
+  height: 28px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.npsBarSegment {
+  height: 100%;
+  transition: opacity 150ms;
+}
+.npsBarSegment:hover { opacity: 0.8; }
+
+.npsScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.npsScoreValue {
+  font-family: var(--font-display);
+  font-size: var(--font-size-display-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+
+.npsScoreLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.npsLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.npsLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.npsLegendLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  flex: 1;
+}
+
+.npsLegendPct {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ─── Benchmark ────────────────────────────────────────────────────────────── */
+.benchmarkRow {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.benchmarkCard {
+  flex: 1;
+  background: var(--color-bg-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-gray-200);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.benchmarkValues {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  gap: 8px;
+  flex: 1;
+}
+
+.benchmarkSide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.benchmarkValue {
+  font-family: var(--font-display);
+  font-size: var(--font-size-display-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.1;
+}
+
+.benchmarkMetric {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.benchmarkSideLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.benchmarkVs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.benchmarkNote {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+/* ─── Qualitative comments ─────────────────────────────────────────────────── */
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.commentCard {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  padding: 12px;
+  background: var(--color-gray-50);
+  border-radius: 10px;
+  border: 1px solid var(--color-gray-200);
+}
+
+.commentIcon {
+  font-size: 18px;
+  color: var(--color-brand-200);
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.commentBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.commentText {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.commentAuthor {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ─── Page header (título + filtros) ─────────────────────────────────────────*/
+.pageHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pageFilters {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+}
+
+.filterWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filterSelect {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 36px;
+  padding: 0 32px 0 12px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  outline: none;
+  min-width: 164px;
+  transition: border-color var(--transition-fast);
+}
+
+.filterSelect:hover { border-color: var(--color-gray-300); }
+.filterSelect:focus { border-color: var(--color-brand-400); }
+
+.filterChevron {
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+  color: var(--color-text-tertiary);
+}
