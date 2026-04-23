@@ -311,7 +311,7 @@
   align-items: center;
   gap: 2px;
   padding: var(--spacing-sm);
-  min-width: 52px;
+  width: 68px;
   border-radius: var(--radius-sm);
   border: none;
   background: var(--color-bg-surface);

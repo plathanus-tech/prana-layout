@@ -296,47 +296,94 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  min-width: 48px;
-  border-radius: 100px;
-  border: none;
-  background: var(--color-bg-subtle);
+  gap: 2px;
+  padding: var(--spacing-sm);
+  width: 68px;             /* largura fixa padronizada */
+  border-radius: var(--radius-sm);
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-xs);
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .dayBtn:hover {
-  background: var(--color-brand-100);
+  border-color: var(--color-brand-300);
+  background: var(--color-brand-50);
 }
 
 .dayBtnActive {
-  background: var(--color-brand-500);
+  background: var(--color-brand-50);
+  border-color: var(--color-brand-500);
+  border-width: 2px;
+  box-shadow: none;
 }
 
 .dayName {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-xs);             /* Body/XXS — 10px */
   color: var(--color-text-tertiary);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-regular);
   text-transform: uppercase;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
 }
 
 .dayNum {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-lg);             /* Subtitle/L — 18px */
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
-  line-height: 1;
+  line-height: 1.1;
+  letter-spacing: 0em;
 }
 
 .dayMonth {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-xs);             /* Body/XXS — 10px */
   color: var(--color-text-tertiary);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
 }
 
 .dayBtnActive .dayName,
 .dayBtnActive .dayNum,
 .dayBtnActive .dayMonth {
-  color: white;
+  color: var(--color-brand-700);
+}
+
+.dayBtnExhausted {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border-subtle);
+  box-shadow: none;
+}
+
+.dayBtnExhausted .dayName,
+.dayBtnExhausted .dayNum,
+.dayBtnExhausted .dayMonth {
+  color: var(--color-text-disabled);
+}
+
+.dayExhaustedTag {
+  font-size: var(--font-size-xs);             /* Body/XXS — 10px */
+  font-weight: var(--font-weight-regular);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text-disabled);
+  line-height: 1.4;
+  margin-top: 1px;
+}
+
+.dayBtnWaitlisted {
+  background: var(--color-brand-50);
+  border-color: var(--color-brand-300);
+  border-width: 2px;
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.dayBtnWaitlisted .dayName,
+.dayBtnWaitlisted .dayNum,
+.dayBtnWaitlisted .dayMonth,
+.dayBtnWaitlisted .dayExhaustedTag {
+  color: var(--color-brand-600);
 }
 
 /* ─── Time grid — pills sem borda ─────────────────── */

@@ -184,8 +184,7 @@ export function SelectionScreenE({ viewport = 'desktop', scenario = 'A', onNavig
 
       setSchedules(nextSchedules);
       setSelectedIds(multiMode ? new Set([...selectedIds, id]) : new Set([id]));
-      // Serviço globalmente esgotado não precisa de expansão de scheduler
-      setExpandedId(svc.globallyExhausted ? null : id);
+      setExpandedId(id);
     }
   }
 
@@ -195,7 +194,7 @@ export function SelectionScreenE({ viewport = 'desktop', scenario = 'A', onNavig
 
   function setDay(serviceId: string, dayKey: string) {
     const svc       = config.services.find(s => s.id === serviceId)!;
-    const exhausted = (svc.exhaustedDayKeys ?? []).includes(dayKey);
+    const exhausted = !!svc.globallyExhausted || (svc.exhaustedDayKeys ?? []).includes(dayKey);
     setSchedules(prev => ({
       ...prev,
       [serviceId]: { dayKey, time: null, waitlisted: exhausted },
@@ -212,11 +211,9 @@ export function SelectionScreenE({ viewport = 'desktop', scenario = 'A', onNavig
   // ── Estado de conclusão ─────────────────────────────────
 
   function isServiceComplete(id: string): boolean {
-    const svc = config.services.find(s => s.id === id)!;
-    if (svc.globallyExhausted) return true;   // auto na lista de espera
     const sch = schedules[id];
     if (!sch?.dayKey) return false;
-    if (sch.waitlisted) return true;            // na lista de espera do dia
+    if (sch.waitlisted) return true;  // na lista de espera do dia
     return !!sch.time;
   }
 
@@ -298,8 +295,8 @@ export function SelectionScreenE({ viewport = 'desktop', scenario = 'A', onNavig
           <div className={styles.serviceList}>
             {config.services.map(svc => {
               const isSelected  = selectedIds.has(svc.id);
-              const isExpanded  = isSelected && !svc.globallyExhausted && (!multiMode || expandedId === svc.id);
-              const isCollapsed = isSelected && multiMode && (svc.globallyExhausted || expandedId !== svc.id);
+              const isExpanded  = isSelected && (!multiMode || expandedId === svc.id);
+              const isCollapsed = isSelected && multiMode && expandedId !== svc.id;
               const isDisabled  = !isSelected && selectedCount >= effectiveMax;
               const sch         = schedules[svc.id];
               const isComplete  = isSelected && isServiceComplete(svc.id);
@@ -345,7 +342,7 @@ export function SelectionScreenE({ viewport = 'desktop', scenario = 'A', onNavig
 
                       {/* Confirmação quando expandido */}
                       {isExpanded && isComplete && (
-                        <span className={styles.cardComplete}>
+                        <span className={[styles.cardComplete, isWaitlist ? styles.cardCompleteWaitlist : ''].filter(Boolean).join(' ')}>
                           <CheckCircle2 size={12} />
                           {isWaitlist
                             ? `Na lista de espera${sch?.dayKey ? ` · ${formatDayLabel(sch.dayKey)}` : ''}`
@@ -367,19 +364,8 @@ export function SelectionScreenE({ viewport = 'desktop', scenario = 'A', onNavig
                     </div>
                   </button>
 
-                  {/* Feedback de lista de espera global (serviço 100% esgotado) */}
-                  {isSelected && svc.globallyExhausted && (
-                    <div className={styles.cardBody}>
-                      <Feedback
-                        type="warning"
-                        title="Horários esgotados"
-                        message="Você foi adicionado à lista de espera. Entraremos em contato se uma vaga abrir."
-                      />
-                    </div>
-                  )}
-
                   {/* Scheduler (dias e horários) */}
-                  {isExpanded && !svc.globallyExhausted && (
+                  {isExpanded && (
                     <div className={styles.cardBody}>
                       <div className={styles.scheduler}>
 
@@ -389,7 +375,7 @@ export function SelectionScreenE({ viewport = 'desktop', scenario = 'A', onNavig
                             <h3 className={styles.pickerLabel}>Escolha o dia</h3>
                             <div className={styles.dayStrip}>
                               {DAYS.map(day => {
-                                const isExhausted   = (svc.exhaustedDayKeys ?? []).includes(day.key);
+                                const isExhausted   = !!svc.globallyExhausted || (svc.exhaustedDayKeys ?? []).includes(day.key);
                                 const isActive      = sch?.dayKey === day.key;
                                 const isWaitlisted  = isActive && sch?.waitlisted;
 
@@ -423,7 +409,7 @@ export function SelectionScreenE({ viewport = 'desktop', scenario = 'A', onNavig
                             <Feedback
                               type="info"
                               title="Na lista de espera"
-                              message={`Você será notificado caso abra uma vaga para ${formatDayLabel(sch.dayKey)}.`}
+                              message={`Após confirmar seleção, você entrará na lista de espera e será notificado caso abra uma vaga para ${formatDayLabel(sch.dayKey)}.`}
                             />
                           ) : (
                             <div className={styles.pickerSection}>

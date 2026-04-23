@@ -285,6 +285,10 @@
   margin-top: 2px;
 }
 
+.cardCompleteWaitlist {
+  color: var(--color-status-info-fg);
+}
+
 /* Selector */
 .selector { flex-shrink: 0; }
 
@@ -360,8 +364,8 @@
 
 /* Ícone de serviço em estado de lista de espera */
 .cardIconWaitlist {
-  background: var(--color-status-warning-bg, #FEF3C7);
-  color: var(--color-status-warning, #92400E);
+  background: var(--color-status-info-bg);
+  color: var(--color-status-info-fg);
 }
 
 /* ─── Day strip — cards quadrados ─────────────────── */
@@ -381,7 +385,7 @@
   align-items: center;
   gap: 2px;
   padding: var(--spacing-sm);
-  min-width: 52px;
+  width: 68px;
   border-radius: var(--radius-sm);
   border: var(--border-width-thin) solid var(--color-border-subtle);
   background: var(--color-bg-surface);
@@ -462,7 +466,7 @@
 /* Esgotado selecionado = na lista de espera */
 .dayBtnWaitlisted {
   background: var(--color-brand-50);
-  border-color: var(--color-brand-300);
+  border-color: var(--color-brand-500);
   border-width: 2px;
   border-style: dashed;
   box-shadow: none;
@@ -472,7 +476,7 @@
 .dayBtnWaitlisted .dayNum,
 .dayBtnWaitlisted .dayMonth,
 .dayBtnWaitlisted .dayExhaustedTag {
-  color: var(--color-brand-600);
+  color: var(--color-brand-700);
 }
 
 /* ─── Time grid ───────────────────────────────────── */
