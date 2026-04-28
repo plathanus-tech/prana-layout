@@ -404,6 +404,54 @@
   width: fit-content;
 }
 
+/* ─── Survey table (pesquisa pós-evento) ────────────────────────────────────*/
+.surveyTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.surveyTh {
+  padding: 8px 16px;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--color-gray-100);
+  white-space: nowrap;
+}
+
+.surveyTr:not(:last-child) {
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.surveyTd {
+  padding: 10px 16px;
+  vertical-align: middle;
+}
+
+.surveyProfile {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.surveyOff {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.fieldHelp {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
 /* ─── Notes value ────────────────────────────────────────────────────────────*/
 .notesValue {
   font-family: var(--font-body);

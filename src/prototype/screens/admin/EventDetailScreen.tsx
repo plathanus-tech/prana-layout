@@ -4,12 +4,13 @@
 //   admin   → CRM read-only + Config editável (Editar/Salvar abaixo das tabs) + aba Relatório
 //   empresa → CRM read-only + Config somente leitura + aba Relatório desabilitada
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Fragment } from 'react';
 import {
   ArrowLeft, Pencil, Check, X, ChevronDown, ChevronRight,
   MapPin, Mail, Users, Calendar, Search, SlidersHorizontal,
   BarChart2, ClipboardList, Star, AlertCircle,
-  Send, UserPlus, Clock, List, Trash2, TrendingUp, Activity, Heart, Target, Download,
+  Send, UserPlus, Clock, Trash2, TrendingUp, Activity, Heart, Target, Download, DollarSign, Zap,
+  Sparkles, Wind, Footprints, Ear, Dumbbell, HandHeart, Palette, Leaf, Hand,
 } from 'lucide-react';
 import { Sidebar } from '../../../components/Sidebar/Sidebar';
 import { Feedback } from '../../../components/Feedback/Feedback';
@@ -30,14 +31,17 @@ interface DaySchedule {
 }
 
 interface SurveyConfig {
-  model: string; // chave de SURVEY_MODELS
-  delay: string; // chave de DELAY_OPTIONS
+  model:    string; // chave de SURVEY_MODELS
+  delay:    string; // chave de DELAY_OPTIONS
+  gatilho:  string; // chave de GATILHO_OPTIONS
+  canal:    string; // chave de CANAL_OPTIONS
 }
 
 interface ServiceConfig {
-  name:     string;
-  repasse:  number;  // valor em R$ (não %)
-  duration: number;  // minutos
+  name:      string;
+  repasse:   number;  // valor em R$ (não %)
+  duration:  number;  // minutos
+  profCount: number;  // qtd. máxima de profissionais confirmados para este serviço
 }
 
 interface EventDetail {
@@ -51,13 +55,19 @@ interface EventDetail {
   // — Configuração (editável pelo admin) ————————————————————————————————————
   emailPrimary:    string;
   emailSecondary:  string;
-  configEmail:     string;
   configSchedule:     DaySchedule[];
-  intervalFrequency:  string;  // ex: '1h30' — frequência de recorrência do intervalo de ajuste
-  intervalDuration:   number;  // minutos    — duração de cada pausa
+  intervalFrequency:  number;  // minutos — frequência do intervalo de ajuste (ex: 90 = a cada 90 min)
+  intervalDuration:   number;  // minutos — duração de cada pausa
   lunchStart:         string;
-  lunchEnd:        string;
-  serviceConfig:   ServiceConfig[];
+  lunchEnd:           string;
+  serviceConfig:      ServiceConfig[];
+  // — Agendamento múltiplo ──────────────────────────────────────────────────
+  allowMultipleServices:      boolean;
+  maxServicesPerBeneficiary?: number;  // indefinido = ilimitado
+  // — Dados de cadastro do beneficiário ─────────────────────────────────────
+  requireThirdPartyCompany: boolean;
+  requireEventCode:         boolean;
+  eventCode?:               string;
   survey: {
     beneficiario: SurveyConfig;
     profissional: SurveyConfig;
@@ -112,6 +122,21 @@ interface EventDetail {
     delta: number;
     positive: boolean;
   };
+  // — Resposta do Gestor ────────────────────────────────────────────────────────
+  gestorAvaliacao?: {
+    respondente:  string;
+    participantes: number;
+    servicos:     string[];
+    localizacao:  string;
+    periodo:      string;
+    escala:       number; // 1–5
+    objetivas: Array<{
+      pergunta: string;
+      resposta: 'sim' | 'parcialmente' | 'nao';
+    }>;
+    diferenciais: string[];
+    melhorias:    string[];
+  };
 }
 
 // ─── Opções de pesquisa ──────────────────────────────────────────────────────
@@ -131,8 +156,98 @@ const DELAY_OPTIONS = [
   { value: 'recorrente', label: 'Recorrente (1× por mês)' },
 ] as const;
 
-function surveyModelLabel(v: string) { return SURVEY_MODELS.find(m => m.value === v)?.label ?? v; }
-function delayLabel(v: string)       { return DELAY_OPTIONS.find(d => d.value === v)?.label  ?? v; }
+const GATILHO_OPTIONS = [
+  { value: 'pos-evento',       label: 'Pós-evento'       },
+  { value: 'pos-atendimento',  label: 'Pós-atendimento'  },
+] as const;
+
+const CANAL_OPTIONS = [
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'email',    label: 'E-mail'   },
+  { value: 'ambos',    label: 'Ambos'    },
+] as const;
+
+function surveyModelLabel(v: string)  { return SURVEY_MODELS.find(m => m.value === v)?.label     ?? v; }
+function delayLabel(v: string)        { return DELAY_OPTIONS.find(d => d.value === v)?.label      ?? v; }
+function gatilhoLabel(v: string)      { return GATILHO_OPTIONS.find(g => g.value === v)?.label    ?? v; }
+function canalLabel(v: string)        { return CANAL_OPTIONS.find(c => c.value === v)?.label      ?? v; }
+function delayTimeLabel(v: string): string {
+  switch (v) {
+    case '2h':         return '2h';
+    case '24h':        return '24h';
+    case '48h':        return '48h';
+    case '1sem':       return '1 semana';
+    case 'recorrente': return 'Mensal';
+    default:           return v;
+  }
+}
+
+/** Opções de tempo de disparo para a tabela de pesquisa — sem "recorrente", labels apenas com o tempo */
+const DELAY_OPTIONS_EVENT = [
+  { value: '2h',   label: '2h'       },
+  { value: '24h',  label: '24h'      },
+  { value: '48h',  label: '48h'      },
+  { value: '1sem', label: '1 semana' },
+] as const;
+
+
+/** Gera código de evento a partir do nome (ex: "SIPAT - Itaú" → "SIPAT-ITAU-2026") */
+function generateEventCode(eventName: string): string {
+  const stopWords = new Set(['de','da','do','dos','das','e','em','para','o','a','os','as','–','·']);
+  const words = eventName
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')  // remove acentos
+    .toUpperCase()
+    .split(/[\s\-–—·/]+/)
+    .filter(w => w.length > 1 && !stopWords.has(w.toLowerCase()))
+    .slice(0, 2);
+  return `${words.join('-')}-2026`;
+}
+
+/** Converte 'DD/MM' → 'Seg, 13 de abril' (ano base 2026 para o protótipo) */
+function dayScheduleLabel(ddmm: string): string {
+  const parts = ddmm.split('/');
+  if (parts.length !== 2) return ddmm;
+  const day   = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1; // 0-indexed
+  const date  = new Date(2026, month, day);
+  const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const MONTHS   = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  return `${WEEKDAYS[date.getDay()]}, ${day} de ${MONTHS[month]}`;
+}
+
+/** Toggle switch reutilizável — segue tokens do design system */
+function Toggle({ checked, onChange, disabled = false }: {
+  checked:   boolean;
+  onChange?: (v: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange?.(!checked)}
+      style={{
+        display: 'inline-flex', alignItems: 'center',
+        width: 36, height: 20, borderRadius: 10,
+        background: checked ? 'var(--color-brand-500)' : 'var(--color-gray-300)',
+        border: 'none', padding: 2, flexShrink: 0,
+        cursor: disabled ? 'default' : 'pointer',
+        transition: 'background 200ms ease',
+        opacity: disabled ? 0.6 : 1,
+      }}
+    >
+      <span style={{
+        display: 'block', width: 16, height: 16, borderRadius: '50%',
+        background: 'white', flexShrink: 0,
+        transform: checked ? 'translateX(16px)' : 'translateX(0)',
+        transition: 'transform 200ms ease',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.15)',
+      }} />
+    </button>
+  );
+}
 
 // ─── Mock de detalhes ─────────────────────────────────────────────────────────
 const DEFAULT_DETAIL: EventDetail = {
@@ -144,24 +259,26 @@ const DEFAULT_DETAIL: EventDetail = {
   notes: '',
   emailPrimary: 'contato@prana.com.br',
   emailSecondary: '',
-  configEmail: 'evento@app.prana.com.br',
-  configSchedule: [{ day: 'Dia 01', start: '08:00', end: '17:00' }],
-  intervalFrequency: '1h',
+  configSchedule: [{ day: '01/01', start: '08:00', end: '17:00' }],
+  intervalFrequency: 60,
   intervalDuration: 5,
   lunchStart: '12:00',
   lunchEnd: '13:00',
-  serviceConfig: [{ name: 'Quick Massage', repasse: 120, duration: 15 }],
+  serviceConfig: [{ name: 'Quick Massage', repasse: 120, duration: 15, profCount: 1 }],
+  allowMultipleServices: false,
+  requireThirdPartyCompany: false,
+  requireEventCode: false,
   survey: {
-    beneficiario: { model: 'nps-padrao',  delay: '24h' },
-    profissional:  { model: 'pos-evento', delay: '48h' },
-    empresa:       { model: 'nao-enviar', delay: '24h' },
+    beneficiario: { model: 'nps-padrao',  delay: '24h', gatilho: 'pos-evento',      canal: 'whatsapp' },
+    profissional:  { model: 'pos-evento', delay: '48h', gatilho: 'pos-atendimento', canal: 'email'    },
+    empresa:       { model: 'nao-enviar', delay: '24h', gatilho: 'pos-evento',      canal: 'email'    },
   },
   helpCostText: '',
 };
 
 const MOCK_DETAIL: Record<string, EventDetail> = {
   'EVT-001': {
-    services: ['Quick Massage', 'Acupuntura', 'Podologia'],
+    services: ['Quick Massage', 'Reflexologia', 'Auriculoterapia'],
     days: '13, 14 e 15 de abril de 2026',
     hours: '08h às 17h',
     location: 'Presencial — Av. Faria Lima, 3400, 9º andar · São Paulo - SP',
@@ -169,25 +286,29 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
     notes: 'Cliente VIP · Prioridade alta. Confirmar acesso com segurança 30 min antes do início. Estacionamento disponível no subsolo — solicitar credencial na recepção.',
     emailPrimary: 'carolina.mendes@prana.com.br',
     emailSecondary: 'sipat.itau@prana.com.br',
-    configEmail: 'sipat-itau@app.prana.com.br',
     configSchedule: [
       { day: '13/04', start: '08:00', end: '17:00' },
       { day: '14/04', start: '08:00', end: '17:00' },
       { day: '15/04', start: '08:00', end: '15:00' },
     ],
-    intervalFrequency: '1h30',
+    intervalFrequency: 90,
     intervalDuration: 10,
     lunchStart: '12:00',
     lunchEnd: '13:00',
     serviceConfig: [
-      { name: 'Quick Massage', repasse: 120, duration: 15 },
-      { name: 'Acupuntura',    repasse: 180, duration: 30 },
-      { name: 'Podologia',     repasse: 150, duration: 25 },
+      { name: 'Quick Massage',   repasse: 120, duration: 15, profCount: 3 },
+      { name: 'Reflexologia',    repasse: 150, duration: 25, profCount: 2 },
+      { name: 'Auriculoterapia', repasse: 180, duration: 30, profCount: 2 },
     ],
+    allowMultipleServices: true,
+    maxServicesPerBeneficiary: 2,
+    requireThirdPartyCompany: false,
+    requireEventCode: true,
+    eventCode: 'SIPAT-2026',
     survey: {
-      beneficiario: { model: 'nps-padrao',  delay: '24h'       },
-      profissional:  { model: 'pos-evento', delay: '48h'       },
-      empresa:       { model: 'satisfacao', delay: '24h'       },
+      beneficiario: { model: 'nps-padrao',  delay: '24h', gatilho: 'pos-evento',      canal: 'whatsapp' },
+      profissional:  { model: 'pos-evento', delay: '48h', gatilho: 'pos-atendimento', canal: 'email'    },
+      empresa:       { model: 'satisfacao', delay: '24h', gatilho: 'pos-evento',      canal: 'email'    },
     },
     helpCostText: 'R$ 50,00 por profissional · válido para deslocamento acima de 50 km',
 
@@ -220,9 +341,9 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
       { period: 'Semana 3', nps: 82, ibe: 78 },
     ],
     serviceRatings: [
-      { name: 'Quick Massage', rating: 9.2 },
-      { name: 'Acupuntura',    rating: 8.7 },
-      { name: 'Podologia',     rating: 8.1 },
+      { name: 'Quick Massage',   rating: 9.2 },
+      { name: 'Reflexologia',    rating: 8.1 },
+      { name: 'Auriculoterapia', rating: 8.7 },
     ],
     participationByDay: [
       { label: '13/04', convidados: 90, presentes: 75 },
@@ -230,11 +351,10 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
       { label: '15/04', convidados: 70, presentes: 53 },
     ],
     radarDimensions: [
-      { axis: 'Bem-estar',   value: 8.2 },
-      { axis: 'Relaxamento', value: 7.8 },
-      { axis: 'Foco',        value: 7.1 },
-      { axis: 'Engajamento', value: 8.5 },
-      { axis: 'Clima',       value: 9.0 },
+      { axis: 'Engajamento',       value: 8.5 },
+      { axis: 'Satisfação',        value: 8.2 },
+      { axis: 'Impacto percebido', value: 7.8 },
+      { axis: 'Retenção',          value: 8.0 },
     ],
     evaluationComments: [
       { text: 'A meditação transformou meu dia! Muito relaxante e inspirador.', author: 'Colaborador · TI' },
@@ -248,6 +368,23 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
       delta: 1.1,
       positive: true,
     },
+    gestorAvaliacao: {
+      respondente:   'Fernanda Lima',
+      participantes: 250,
+      servicos:      ['Quick Massage', 'Meditação Guiada', 'Yoga Corporativo'],
+      localizacao:   'São Paulo, SP',
+      periodo:       'Abril 2026',
+      escala:        5,
+      objetivas: [
+        { pergunta: 'Os serviços atenderam às expectativas da equipe?',              resposta: 'sim'          },
+        { pergunta: 'O evento foi bem organizado e ocorreu no horário previsto?',    resposta: 'sim'          },
+        { pergunta: 'Os profissionais demonstraram competência e cordialidade?',     resposta: 'sim'          },
+        { pergunta: 'O espaço disponibilizado foi adequado para os atendimentos?',   resposta: 'parcialmente' },
+        { pergunta: 'Você recomendaria repetir este evento para a sua equipe?',      resposta: 'sim'          },
+      ],
+      diferenciais: ['Pontualidade', 'Variedade de serviços', 'Profissionais atenciosos', 'Boa estrutura'],
+      melhorias:    ['Ampliar o espaço de atendimento', 'Adicionar serviços de nutrição'],
+    },
   },
   'EVT-002': {
     services: ['Meditação Guiada', 'Yoga Corporativo'],
@@ -258,23 +395,25 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
     notes: 'Confirmar número de participantes com RH da Natura até 48h antes.',
     emailPrimary: 'bruno.almeida@prana.com.br',
     emailSecondary: '',
-    configEmail: 'saude-natura@app.prana.com.br',
     configSchedule: [
       { day: '14/04', start: '09:00', end: '18:00' },
       { day: '15/04', start: '09:00', end: '18:00' },
     ],
-    intervalFrequency: '2h',
+    intervalFrequency: 120,
     intervalDuration: 10,
     lunchStart: '12:30',
     lunchEnd: '13:30',
     serviceConfig: [
-      { name: 'Meditação Guiada', repasse: 150, duration: 45 },
-      { name: 'Yoga Corporativo', repasse: 160, duration: 60 },
+      { name: 'Meditação Guiada', repasse: 150, duration: 45, profCount: 2 },
+      { name: 'Yoga Corporativo', repasse: 160, duration: 60, profCount: 3 },
     ],
+    allowMultipleServices: false,
+    requireThirdPartyCompany: false,
+    requireEventCode: false,
     survey: {
-      beneficiario: { model: 'nps-padrao',  delay: '24h' },
-      profissional:  { model: 'pos-evento', delay: '48h' },
-      empresa:       { model: 'nao-enviar', delay: '24h' },
+      beneficiario: { model: 'nps-padrao',  delay: '24h', gatilho: 'pos-evento',      canal: 'whatsapp' },
+      profissional:  { model: 'pos-evento', delay: '48h', gatilho: 'pos-atendimento', canal: 'email'    },
+      empresa:       { model: 'nao-enviar', delay: '24h', gatilho: 'pos-evento',      canal: 'email'    },
     },
     helpCostText: '',
   },
@@ -287,24 +426,27 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
     notes: 'Confirmar local com facilities da Ambev. Solicitar mesas para atendimento de Quick Massage.',
     emailPrimary: 'fernanda.costa@prana.com.br',
     emailSecondary: 'dia-saude@ambev.com.br',
-    configEmail: 'dia-saude-ambev@app.prana.com.br',
     configSchedule: [
       { day: '20/05', start: '07:00', end: '16:00' },
       { day: '21/05', start: '07:00', end: '16:00' },
     ],
-    intervalFrequency: '1h30',
+    intervalFrequency: 90,
     intervalDuration: 5,
     lunchStart: '11:30',
     lunchEnd: '12:30',
     serviceConfig: [
-      { name: 'Quick Massage',     repasse: 120, duration: 15 },
-      { name: 'Ginástica Laboral', repasse: 100, duration: 30 },
-      { name: 'Nutrição',          repasse: 130, duration: 20 },
+      { name: 'Quick Massage',     repasse: 120, duration: 15, profCount: 3 },
+      { name: 'Ginástica Laboral', repasse: 100, duration: 30, profCount: 2 },
+      { name: 'Nutrição',          repasse: 130, duration: 20, profCount: 2 },
     ],
+    allowMultipleServices: true,
+    requireThirdPartyCompany: true,
+    requireEventCode: true,
+    eventCode: 'AMBEV-SAUDE',
     survey: {
-      beneficiario: { model: 'nps-padrao',  delay: '24h' },
-      profissional:  { model: 'pos-evento', delay: '48h' },
-      empresa:       { model: 'satisfacao', delay: '1sem' },
+      beneficiario: { model: 'nps-padrao',  delay: '24h',  gatilho: 'pos-evento',      canal: 'ambos'    },
+      profissional:  { model: 'pos-evento', delay: '48h',  gatilho: 'pos-atendimento', canal: 'email'    },
+      empresa:       { model: 'satisfacao', delay: '1sem', gatilho: 'pos-evento',      canal: 'email'    },
     },
     helpCostText: 'R$ 45,00 por profissional · inclui refeição no local',
   },
@@ -317,23 +459,25 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
     notes: 'Evento concluído.',
     emailPrimary: 'mariana.fonseca@prana.com.br',
     emailSecondary: '',
-    configEmail: 'ginastica-bradesco@app.prana.com.br',
     configSchedule: [
       { day: '10/03', start: '08:00', end: '17:00' },
       { day: '11/03', start: '08:00', end: '17:00' },
     ],
-    intervalFrequency: '1h',
+    intervalFrequency: 60,
     intervalDuration: 10,
     lunchStart: '12:00',
     lunchEnd: '13:00',
     serviceConfig: [
-      { name: 'Ginástica Laboral', repasse: 130, duration: 30 },
-      { name: 'Quick Massage',     repasse: 120, duration: 15 },
+      { name: 'Ginástica Laboral', repasse: 130, duration: 30, profCount: 3 },
+      { name: 'Quick Massage',     repasse: 120, duration: 15, profCount: 3 },
     ],
+    allowMultipleServices: false,
+    requireThirdPartyCompany: false,
+    requireEventCode: false,
     survey: {
-      beneficiario: { model: 'nps-padrao',  delay: '24h' },
-      profissional:  { model: 'pos-evento', delay: '48h' },
-      empresa:       { model: 'satisfacao', delay: '24h' },
+      beneficiario: { model: 'nps-padrao',  delay: '24h', gatilho: 'pos-evento',      canal: 'whatsapp' },
+      profissional:  { model: 'pos-evento', delay: '48h', gatilho: 'pos-atendimento', canal: 'email'    },
+      empresa:       { model: 'satisfacao', delay: '24h', gatilho: 'pos-evento',      canal: 'email'    },
     },
     helpCostText: '',
 
@@ -373,11 +517,10 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
       { name: 'Quick Massage',     rating: 8.9 },
     ],
     radarDimensions: [
-      { axis: 'Bem-estar',   value: 8.8 },
-      { axis: 'Relaxamento', value: 8.1 },
-      { axis: 'Foco',        value: 7.9 },
-      { axis: 'Engajamento', value: 9.0 },
-      { axis: 'Clima',       value: 8.5 },
+      { axis: 'Engajamento',       value: 9.0 },
+      { axis: 'Satisfação',        value: 8.8 },
+      { axis: 'Impacto percebido', value: 8.1 },
+      { axis: 'Retenção',          value: 8.5 },
     ],
     evaluationComments: [
       { text: 'A ginástica laboral foi ótima para aliviar as tensões do dia a dia!', author: 'Colaborador · Operações' },
@@ -389,6 +532,23 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
       benchmarkScore: 7.1,
       delta: 1.0,
       positive: true,
+    },
+    gestorAvaliacao: {
+      respondente:   'Ricardo Andrade',
+      participantes: 180,
+      servicos:      ['Ginástica Laboral', 'Quick Massage'],
+      localizacao:   'São Paulo, SP',
+      periodo:       'Março 2026',
+      escala:        4,
+      objetivas: [
+        { pergunta: 'Os serviços atenderam às expectativas da equipe?',              resposta: 'sim'          },
+        { pergunta: 'O evento foi bem organizado e ocorreu no horário previsto?',    resposta: 'sim'          },
+        { pergunta: 'Os profissionais demonstraram competência e cordialidade?',     resposta: 'sim'          },
+        { pergunta: 'O espaço disponibilizado foi adequado para os atendimentos?',   resposta: 'sim'          },
+        { pergunta: 'Você recomendaria repetir este evento para a sua equipe?',      resposta: 'sim'          },
+      ],
+      diferenciais: ['Agilidade nos atendimentos', 'Profissionais qualificados', 'Impacto positivo no humor da equipe'],
+      melhorias:    ['Aumentar o número de profissionais', 'Divulgar o evento com mais antecedência'],
     },
   },
 };
@@ -430,16 +590,30 @@ function ratingLabel(score: number): string {
   return 'Muito ruim';
 }
 
+// Ícone do serviço — padrão Lucide, igual às telas de beneficiário/profissional
+function ServiceIcon({ name, size = 13 }: { name: string; size?: number }) {
+  if (name === 'Quick Massage')     return <Sparkles   size={size} />;
+  if (name === 'Podologia')         return <Footprints size={size} />;
+  if (name === 'Reflexologia')      return <Footprints size={size} />;  // mesmo ícone de Podologia
+  if (name === 'Yoga Corporativo')  return <Wind       size={size} />;
+  if (name === 'Meditação Guiada')  return <Wind       size={size} />;
+  if (name === 'Ginástica Laboral') return <Dumbbell   size={size} />;
+  if (name === 'Acupuntura')        return <Target     size={size} />;
+  if (name === 'Auriculoterapia')   return <Ear        size={size} />;
+  if (name === 'Nutrição')          return <Heart      size={size} />;
+  return <Sparkles size={size} />;
+}
+
 const MOCK_PROFISSIONAIS: Record<string, Profissional[]> = {
   'EVT-001': [
-    { id:'p1', name:'Ana Silva',      func:'Massoterapeuta',    tag:'Quick Massage', status:'confirmado', repasse:120 },
-    { id:'p2', name:'Bruno Costa',    func:'Acupunturista',     tag:'Acupuntura',    status:'pendente',   repasse:180, partialDays:['seg','qua','sex'] },
-    { id:'p3', name:'Carlos Lima',    func:'Podólogo',          tag:'Podologia',     status:'confirmado', repasse:150 },
-    { id:'p4', name:'Diana Melo',     func:'Massoterapeuta',    tag:'Quick Massage', status:'confirmado', repasse:120 },
-    { id:'p5', name:'Eduardo Santos', func:'Acupunturista',     tag:'Acupuntura',    status:'pendente',   repasse:180, partialDays:['ter','qui'] },
-    { id:'p6', name:'Fernanda Alves', func:'Massoterapeuta',    tag:'Quick Massage', status:'pendente',   repasse:120 },
-    { id:'p7', name:'Gabriel Rocha',  func:'Podólogo',          tag:'Podologia',     status:'pendente',   repasse:150 },
-    { id:'p8', name:'Helena Torres',  func:'Massoterapeuta',    tag:'Quick Massage', status:'recusado',   repasse:120 },
+    { id:'p1', name:'Ana Silva',      func:'Massoterapeuta',         tag:'Quick Massage',  status:'confirmado', repasse:120 },
+    { id:'p2', name:'Bruno Costa',    func:'Auriculoterapeuta',      tag:'Auriculoterapia',status:'pendente',   repasse:180, partialDays:['seg','qua','sex'] },
+    { id:'p3', name:'Carlos Lima',    func:'Reflexologista',         tag:'Reflexologia',   status:'confirmado', repasse:150 },
+    { id:'p4', name:'Diana Melo',     func:'Massoterapeuta',         tag:'Quick Massage',  status:'confirmado', repasse:120 },
+    { id:'p5', name:'Eduardo Santos', func:'Auriculoterapeuta',      tag:'Auriculoterapia',status:'pendente',   repasse:180, partialDays:['ter','qui'] },
+    { id:'p6', name:'Fernanda Alves', func:'Massoterapeuta',         tag:'Quick Massage',  status:'pendente',   repasse:120 },
+    { id:'p7', name:'Gabriel Rocha',  func:'Reflexologista',         tag:'Reflexologia',   status:'pendente',   repasse:150 },
+    { id:'p8', name:'Helena Torres',  func:'Massoterapeuta',         tag:'Quick Massage',  status:'recusado',   repasse:120 },
   ],
   'EVT-002': [
     { id:'p1', name:'Isabela Nunes',  func:'Instrutora de Yoga',   tag:'Yoga Corporativo',  status:'confirmado', repasse:160 },
@@ -630,6 +804,33 @@ function generateTimeSlots(
   return slots;
 }
 
+// Returns the start time of every globally-blocked period for a day:
+// lunch break + adjustment intervals. Used to build uniform "blocked" rows.
+function computeBlockedTimes(
+  dayStart: string, dayEnd: string,
+  lunchStart: string, lunchEnd: string,
+  intervalFrequency: number, intervalDuration: number,
+): string[] {
+  const blocked = new Set<string>();
+  const startM  = timeToMin(dayStart);
+  const endM    = timeToMin(dayEnd);
+  const lS      = timeToMin(lunchStart);
+  const lE      = timeToMin(lunchEnd);
+
+  // Lunch block
+  if (lS > startM && lS < endM) blocked.add(minToTime(lS));
+
+  // Adjustment intervals: first break after intervalFrequency minutes of work,
+  // then every (intervalFrequency + intervalDuration) minutes after that.
+  let breakAt = startM + intervalFrequency;
+  while (breakAt < endM) {
+    if (!(breakAt >= lS && breakAt < lE)) blocked.add(minToTime(breakAt));
+    breakAt += intervalFrequency + intervalDuration;
+  }
+
+  return [...blocked].sort((a, b) => timeToMin(a) - timeToMin(b));
+}
+
 function getServiceCapacity(service: string, eventId: string): number {
   const profs = MOCK_PROFISSIONAIS[eventId] ?? [];
   const n = profs.filter(p => p.tag === service && p.status === 'confirmado').length;
@@ -775,8 +976,8 @@ function CRMSection({ event, detail, role }: {
         <span className={styles.sectionBadge}>CRM · Somente leitura</span>
       </div>
       <div className={styles.fieldsGrid}>
-        <Field label="Nome do evento">  {event.name}    </Field>
-        <Field label="Empresa cliente">{event.company}  </Field>
+        <Field label="Nome do evento">{event.name}   </Field>
+        <Field label="Empresa">       {event.company}</Field>
         <Field label="Data(s)">        {detail.days}    </Field>
         <Field label="Horário">        {detail.hours}   </Field>
         <Field label="Local / Modalidade" fullWidth>
@@ -804,14 +1005,23 @@ function CRMSection({ event, detail, role }: {
 }
 
 // ─── Config Section ───────────────────────────────────────────────────────────
-function ConfigSection({ role, detail, editMode, ev, setEv }: {
-  role:      UserRole;
-  detail:    EventDetail;
-  editMode:  boolean;
-  ev:        EventDetail;      // valores exibidos (editValues quando em modo edição, detail caso contrário)
-  setEv:     React.Dispatch<React.SetStateAction<EventDetail>>;
+function ConfigSection({ role, detail, editMode, ev, setEv, eventName = '' }: {
+  role:       UserRole;
+  detail:     EventDetail;
+  editMode:   boolean;
+  ev:         EventDetail;      // valores exibidos (editValues quando em modo edição, detail caso contrário)
+  setEv:      React.Dispatch<React.SetStateAction<EventDetail>>;
+  eventName?: string;
 }) {
   const canEdit = role === 'adm' && editMode;
+
+  // Auto-popula o código quando requireEventCode é ativado e o campo está vazio
+  useEffect(() => {
+    if (ev.requireEventCode && !ev.eventCode && eventName) {
+      setEv(d => ({ ...d, eventCode: generateEventCode(eventName) }));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ev.requireEventCode]);
 
   // Helpers inline
   function readOrInput(
@@ -871,14 +1081,6 @@ function ConfigSection({ role, detail, editMode, ev, setEv }: {
                 : <span className={styles.fieldEmpty}>—</span>
             }
           </div>
-          <div className={styles.field}>
-            <span className={styles.fieldLabel}>E-mail do evento</span>
-            {readOrInput(
-              ev.configEmail,
-              v => setEv(d => ({ ...d, configEmail: v })),
-              'evento@app.prana.com.br',
-            )}
-          </div>
         </div>
       </div>
 
@@ -899,7 +1101,7 @@ function ConfigSection({ role, detail, editMode, ev, setEv }: {
             {ev.configSchedule.map((row, i) => (
               <tr key={row.day} className={styles.scheduleTr}>
                 <td className={styles.scheduleTd}>
-                  <span className={styles.scheduleDay}>{row.day}</span>
+                  <span className={styles.scheduleDay}>{dayScheduleLabel(row.day)}</span>
                 </td>
                 <td className={styles.scheduleTd}>
                   {canEdit
@@ -945,16 +1147,16 @@ function ConfigSection({ role, detail, editMode, ev, setEv }: {
             </span>
             {canEdit
               ? <div className={styles.adjustInputsStack}>
-                  {/* Frequência: a cada quanto tempo o intervalo ocorre */}
+                  {/* Frequência: a cada quantos minutos o intervalo ocorre */}
                   <div className={styles.editNumWrap}>
                     <span className={styles.editSuffix}>A cada</span>
                     <input
-                      className={[styles.editInput, styles.editInputFreq].join(' ')}
-                      type="text"
-                      placeholder="1h30"
+                      className={[styles.editInput, styles.editInputNum].join(' ')}
+                      type="number" min={5} step={5}
                       value={ev.intervalFrequency}
-                      onChange={e => setEv(d => ({ ...d, intervalFrequency: e.target.value }))}
+                      onChange={e => setEv(d => ({ ...d, intervalFrequency: Number(e.target.value) }))}
                     />
+                    <span className={styles.editSuffix}>min</span>
                   </div>
                   {/* Duração: quanto tempo dura cada pausa */}
                   <div className={styles.editNumWrap}>
@@ -969,7 +1171,7 @@ function ConfigSection({ role, detail, editMode, ev, setEv }: {
                   </div>
                 </div>
               : <span className={styles.fieldValue}>
-                  A cada {ev.intervalFrequency} · Duração: {ev.intervalDuration} min
+                  A cada {ev.intervalFrequency} min · Duração: {ev.intervalDuration} min
                 </span>
             }
           </div>
@@ -1004,6 +1206,7 @@ function ConfigSection({ role, detail, editMode, ev, setEv }: {
               <th className={styles.serviceTh}>Serviço</th>
               <th className={styles.serviceTh}>Valor de repasse</th>
               <th className={styles.serviceTh}>Duração</th>
+              <th className={styles.serviceTh}>Qtd. profissionais</th>
             </tr>
           </thead>
           <tbody>
@@ -1046,21 +1249,99 @@ function ConfigSection({ role, detail, editMode, ev, setEv }: {
                     : <span className={styles.fieldValue}>{svc.duration} min</span>
                   }
                 </td>
+                <td className={styles.serviceTd}>
+                  {canEdit
+                    ? <div className={styles.editNumWrap}>
+                        <input
+                          className={[styles.editInput, styles.editInputNum].join(' ')}
+                          type="number" min={1}
+                          value={svc.profCount}
+                          onChange={e => setEv(d => {
+                            const sc = [...d.serviceConfig];
+                            sc[i] = { ...sc[i], profCount: Number(e.target.value) };
+                            return { ...d, serviceConfig: sc };
+                          })}
+                        />
+                        <span className={styles.editSuffix}>prof.</span>
+                      </div>
+                    : <span className={styles.fieldValue}>{svc.profCount} prof.</span>
+                  }
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+
+        {/* ── Agendamento múltiplo ───────────────────────────────────────── */}
+        <div className={styles.configSubGroup}>
+          <div className={styles.toggleRow}>
+            <div className={styles.toggleLabelStack}>
+              <span className={styles.fieldLabel}>Permitir múltiplos serviços por beneficiário</span>
+              <span className={styles.fieldHelp}>
+                Se ativado, o beneficiário pode agendar mais de um tipo de serviço no mesmo evento
+              </span>
+            </div>
+            <Toggle
+              checked={ev.allowMultipleServices}
+              onChange={canEdit ? v => setEv(d => ({
+                ...d,
+                allowMultipleServices: v,
+                maxServicesPerBeneficiary: v ? d.maxServicesPerBeneficiary : undefined,
+              })) : undefined}
+              disabled={!canEdit}
+            />
+          </div>
+
+          {ev.allowMultipleServices && (
+            <div className={styles.field} style={{ marginTop: 12 }}>
+              <span className={styles.fieldLabel}>
+                Quantidade máxima de serviços por beneficiário
+                <span className={styles.fieldOptional}> (opcional)</span>
+              </span>
+              <span className={styles.fieldHelp}>
+                Sem limite definido, o beneficiário pode agendar todos os tipos disponíveis
+              </span>
+              {canEdit
+                ? <div className={styles.editNumWrap}>
+                    <input
+                      className={[styles.editInput, styles.editInputNumWide].join(' ')}
+                      type="number" min={2}
+                      placeholder="Ilimitado"
+                      value={ev.maxServicesPerBeneficiary ?? ''}
+                      onChange={e => setEv(d => ({
+                        ...d,
+                        maxServicesPerBeneficiary: e.target.value ? Number(e.target.value) : undefined,
+                      }))}
+                    />
+                    <span className={styles.editSuffix}>serviços</span>
+                  </div>
+                : <span className={styles.fieldValue}>
+                    {ev.maxServicesPerBeneficiary
+                      ? `${ev.maxServicesPerBeneficiary} serviços`
+                      : <span className={styles.fieldEmpty}>Ilimitado</span>
+                    }
+                  </span>
+              }
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ── Pesquisa pós-evento ────────────────────────────────────────────── */}
       <div className={styles.configGroup}>
         <span className={styles.configGroupTitle}>Pesquisa pós-evento</span>
+        <span className={styles.fieldHelp} style={{ display: 'block', padding: '4px 20px 12px' }}>
+          Selecione o modelo geral de pesquisa para cada perfil. Além da pesquisa geral, serão enviadas automaticamente{' '}
+          <strong>perguntas específicas dos serviços</strong> realizados pelo beneficiário.
+        </span>
         <table className={styles.surveyTable}>
           <thead>
             <tr>
               <th className={styles.surveyTh}>Perfil</th>
-              <th className={styles.surveyTh}>Modelo de pesquisa</th>
+              <th className={styles.surveyTh}>Modelo geral de pesquisa</th>
               <th className={styles.surveyTh}>Tempo de disparo</th>
+              <th className={styles.surveyTh}>Gatilho</th>
+              <th className={styles.surveyTh}>Canal</th>
             </tr>
           </thead>
           <tbody>
@@ -1095,11 +1376,35 @@ function ConfigSection({ role, detail, editMode, ev, setEv }: {
                       ? <EditSelect
                           value={cfg.delay}
                           onChange={v => setEv(d => ({ ...d, survey: { ...d.survey, [key]: { ...d.survey[key], delay: v } } }))}
-                          options={DELAY_OPTIONS}
+                          options={DELAY_OPTIONS_EVENT}
                         />
                       : isOff
                         ? <span className={styles.surveyOff}>—</span>
-                        : <span className={styles.fieldValue}>{delayLabel(cfg.delay)}</span>
+                        : <span className={styles.fieldValue}>{delayTimeLabel(cfg.delay)}</span>
+                    }
+                  </td>
+                  <td className={styles.surveyTd}>
+                    {canEdit && !isOff
+                      ? <EditSelect
+                          value={cfg.gatilho}
+                          onChange={v => setEv(d => ({ ...d, survey: { ...d.survey, [key]: { ...d.survey[key], gatilho: v } } }))}
+                          options={GATILHO_OPTIONS}
+                        />
+                      : <span className={isOff ? styles.surveyOff : styles.fieldValue}>
+                          {isOff ? '—' : gatilhoLabel(cfg.gatilho)}
+                        </span>
+                    }
+                  </td>
+                  <td className={styles.surveyTd}>
+                    {canEdit && !isOff
+                      ? <EditSelect
+                          value={cfg.canal}
+                          onChange={v => setEv(d => ({ ...d, survey: { ...d.survey, [key]: { ...d.survey[key], canal: v } } }))}
+                          options={CANAL_OPTIONS}
+                        />
+                      : <span className={isOff ? styles.surveyOff : styles.fieldValue}>
+                          {isOff ? '—' : canalLabel(cfg.canal)}
+                        </span>
                     }
                   </td>
                 </tr>
@@ -1107,6 +1412,67 @@ function ConfigSection({ role, detail, editMode, ev, setEv }: {
             })}
           </tbody>
         </table>
+        <span className={styles.fieldHelp} style={{ display: 'block', padding: '8px 20px 4px' }}>
+          As pesquisas por serviço são enviadas automaticamente, utilizando as perguntas cadastradas para cada serviço, conforme os serviços agendados pelo beneficiário.
+        </span>
+      </div>
+
+      {/* ── Dados de cadastro do beneficiário ──────────────────────────────── */}
+      <div className={styles.configGroup}>
+        <span className={styles.configGroupTitle}>Dados de cadastro do beneficiário</span>
+        <span className={styles.fieldHelp} style={{ marginBottom: 12, display: 'block', padding: '0 20px' }}>
+          Define quais campos o beneficiário deve preencher ao se autenticar para agendamento
+        </span>
+
+        {/* Toggle: Empresa terceirizada */}
+        <div className={styles.toggleRow}>
+          <div className={styles.toggleLabelStack}>
+            <span className={styles.fieldLabel}>Empresa terceirizada</span>
+            <span className={styles.fieldHelp}>
+              Se ativado, o beneficiário informará a empresa terceirizada na autenticação
+            </span>
+          </div>
+          <Toggle
+            checked={ev.requireThirdPartyCompany}
+            onChange={canEdit ? v => setEv(d => ({ ...d, requireThirdPartyCompany: v })) : undefined}
+            disabled={!canEdit}
+          />
+        </div>
+
+        {/* Toggle: Código do evento */}
+        <div className={styles.toggleRow} style={{ marginTop: 16 }}>
+          <div className={styles.toggleLabelStack}>
+            <span className={styles.fieldLabel}>Código do evento</span>
+            <span className={styles.fieldHelp}>
+              Se ativado, o beneficiário deverá informar o código ao se autenticar
+            </span>
+          </div>
+          <Toggle
+            checked={ev.requireEventCode}
+            onChange={canEdit ? v => setEv(d => ({
+              ...d,
+              requireEventCode: v,
+              eventCode: v ? (d.eventCode || generateEventCode(eventName)) : d.eventCode,
+            })) : undefined}
+            disabled={!canEdit}
+          />
+        </div>
+
+        {ev.requireEventCode && (
+          <div className={styles.field} style={{ marginTop: 12 }}>
+            <span className={styles.fieldLabel}>Código</span>
+            {canEdit
+              ? <EditInput
+                  value={ev.eventCode ?? ''}
+                  onChange={v => setEv(d => ({ ...d, eventCode: v }))}
+                  placeholder="Ex: SIPAT-2026"
+                />
+              : <span className={styles.fieldValue}>
+                  {ev.eventCode || <span className={styles.fieldEmpty}>—</span>}
+                </span>
+            }
+          </div>
+        )}
       </div>
 
       {/* ── Ajuda de custo ────────────────────────────────────────────────── */}
@@ -1262,8 +1628,9 @@ function SelectProfModal({ onClose, onSend }: { onClose: () => void; onSend: () 
                     className={styles.modalRemoveBtn}
                     onClick={() => toggle(p.id)}
                     aria-label={`Remover ${p.name}`}
+                    title="Remover"
                   >
-                    <X size={13} />
+                    <Trash2 size={13} />
                   </button>
                 </div>
               ))}
@@ -1285,20 +1652,17 @@ function SelectProfModal({ onClose, onSend }: { onClose: () => void; onSend: () 
 }
 
 // ─── CriteriaModal ────────────────────────────────────────────────────────────
-function CriteriaModal({ serviceConfig, onClose, onSend }: {
-  serviceConfig: ServiceConfig[];
+function CriteriaModal({ activeService, onClose, onSend }: {
+  activeService: string;
   onClose: () => void;
   onSend:  () => void;
 }) {
-  const [step,         setStep]        = useState<1 | 2>(1);
-  const [specialty,    setSpecialty]   = useState('');
-  const [minRating,    setMinRating]   = useState('0');
-  const [gender,       setGender]      = useState('');
-  const [minEvents,    setMinEvents]   = useState('');         // string para suportar placeholder
-  const [maxDistStr,   setMaxDistStr]  = useState('');         // opcional, string para placeholder
-  const [serviceSlots, setServiceSlots] = useState(
-    serviceConfig.map(s => ({ name: s.name, slots: 1 }))
-  );
+  const [step,       setStep]      = useState<1 | 2>(1);
+  const [specialty,  setSpecialty] = useState('');
+  const [minRating,  setMinRating] = useState('0');
+  const [gender,     setGender]    = useState('');
+  const [minEvents,  setMinEvents] = useState('');    // string para suportar placeholder
+  const [maxDistStr, setMaxDistStr] = useState('');   // opcional, string para placeholder
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const SPECIALTY_OPTS = [
@@ -1379,6 +1743,15 @@ function CriteriaModal({ serviceConfig, onClose, onSend }: {
                 <span className={styles.modalCriteriaGroupTitle}>Perfil do profissional</span>
                 <div className={styles.modalCriteriaFields}>
 
+                  {/* Serviço — informativo; definido pela aba selecionada */}
+                  <div className={styles.modalField}>
+                    <span className={styles.modalFieldLabel}>Serviço</span>
+                    <div className={styles.criteriaServiceTag}>
+                      <ServiceIcon name={activeService} size={13} />
+                      <span>{activeService}</span>
+                    </div>
+                  </div>
+
                   {/* Especialidade — obrigatório */}
                   <div className={styles.modalField}>
                     <span className={styles.modalFieldLabel}>
@@ -1387,33 +1760,6 @@ function CriteriaModal({ serviceConfig, onClose, onSend }: {
                     </span>
                     <EditSelect value={specialty} onChange={setSpecialty} options={SPECIALTY_OPTS} fullWidth />
                   </div>
-
-                  {/* Vagas por serviço — obrigatório; define quantos profissionais
-                      serão necessários para cada serviço do evento */}
-                  {serviceSlots.map((ss, i) => (
-                    <div key={ss.name} className={styles.modalField}>
-                      <span className={styles.modalFieldLabel}>
-                        {ss.name}
-                        <span className={styles.modalFieldRequired}> *</span>
-                      </span>
-                      <div className={styles.editNumWrap}>
-                        <input
-                          className={[styles.editInput, styles.editInputNum].join(' ')}
-                          type="number"
-                          min={1}
-                          value={ss.slots}
-                          onChange={e => setServiceSlots(sl => {
-                            const n = [...sl];
-                            n[i] = { ...n[i], slots: Math.max(1, Number(e.target.value)) };
-                            return n;
-                          })}
-                        />
-                        <span className={styles.editSuffix}>
-                          vaga{ss.slots !== 1 ? 's' : ''}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
 
                   {/* Qualificação mínima */}
                   <div className={styles.modalField}>
@@ -1512,7 +1858,8 @@ function CriteriaModal({ serviceConfig, onClose, onSend }: {
                               className={styles.modalRemoveBtn}
                               onClick={() => setSelectedIds(s => { const n = new Set(s); n.delete(p.id); return n; })}
                               aria-label={`Remover ${p.name}`}
-                            ><X size={13} /></button>
+                              title="Remover"
+                            ><Trash2 size={13} /></button>
                           : <span className={styles.modalRemovedLabel}>Removido</span>
                         }
                       </div>
@@ -1675,6 +2022,16 @@ function ProfissionaisTab({ role, event, serviceConfig, configStatus }: {
   const [addModal,     setAddModal]     = useState<'select' | 'criteria' | null>(null);
   const [toastVisible, setToastVisible] = useState(false);
 
+  // ── Toggle de serviço ─────────────────────────────────────
+  const services = serviceConfig.map(s => s.name);
+  const [activeService, setActiveService] = useState<string>(services[0] ?? '');
+
+  // Reseta ao trocar de evento
+  useEffect(() => {
+    setActiveService(serviceConfig[0]?.name ?? '');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event.id]);
+
   const isPast       = event.status === 'concluido';
   const isConfigured = configStatus === 'enviado';
 
@@ -1684,11 +2041,20 @@ function ProfissionaisTab({ role, event, serviceConfig, configStatus }: {
     setToastVisible(true);
     setTimeout(() => setToastVisible(false), 3000);
   }
-  const allProfs = MOCK_PROFISSIONAIS[event.id] ?? [];
 
-  const confirmed = allProfs.filter(p => p.status === 'confirmado');
-  const pending   = allProfs.filter(p => p.status === 'pendente');
-  const refused   = allProfs.filter(p => p.status === 'recusado');
+  const allProfs     = MOCK_PROFISSIONAIS[event.id] ?? [];
+  // Filtra apenas os profissionais do serviço ativo
+  const serviceProfs = allProfs.filter(p => p.tag === activeService);
+
+  const confirmed = serviceProfs.filter(p => p.status === 'confirmado');
+  const pending   = serviceProfs.filter(p => p.status === 'pendente');
+  const refused   = serviceProfs.filter(p => p.status === 'recusado');
+
+  // Botão desabilitado quando evento acabou, evento cheio, ou serviço ativo já tem profCount confirmados
+  const totalConfirmed  = allProfs.filter(p => p.status === 'confirmado').length;
+  const eventIsFull     = totalConfirmed >= event.professionals.needed;
+  const activeProfCount = serviceConfig.find(s => s.name === activeService)?.profCount ?? Infinity;
+  const serviceIsFull   = confirmed.length >= activeProfCount;
 
   // ── Linha de profissional ──────────────────────────────────────────────────
   function ProfRow({ prof }: { prof: Profissional }) {
@@ -1734,17 +2100,31 @@ function ProfissionaisTab({ role, event, serviceConfig, configStatus }: {
             )}
           </div>
 
-          {/* Ações à direita — reenvio apenas em eventos não concluídos */}
-          {role === 'adm' && prof.status === 'pendente' && !isPast && (
+          {/* Ações à direita */}
+          {((role === 'adm' && prof.status === 'pendente' && !isPast) || isPast) && (
             <div className={styles.profActions}>
-              <button
-                className={styles.editBtn}
-                onClick={e => { e.stopPropagation(); setModalTarget(prof); }}
-                aria-label={`Reenviar convite para ${prof.name}`}
-              >
-                <Send size={13} />
-                Reenviar
-              </button>
+              {/* Reenviar convite — apenas pendentes em eventos ativos */}
+              {role === 'adm' && prof.status === 'pendente' && !isPast && (
+                <button
+                  className={styles.editBtn}
+                  onClick={e => { e.stopPropagation(); setModalTarget(prof); }}
+                  aria-label={`Reenviar convite para ${prof.name}`}
+                >
+                  <Send size={13} />
+                  Reenviar
+                </button>
+              )}
+              {/* Baixar relatório — apenas em eventos concluídos */}
+              {isPast && (
+                <button
+                  className={styles.editBtn}
+                  onClick={e => e.stopPropagation()}
+                  aria-label={`Baixar relatório de ${prof.name}`}
+                >
+                  <Download size={13} />
+                  Baixar relatório
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -1818,14 +2198,40 @@ function ProfissionaisTab({ role, event, serviceConfig, configStatus }: {
 
   return (
     <>
-      {/* Barra superior da aba — "Adicionar profissional" (admin) */}
+      {/* ── Toggle de serviços ────────────────────────────── */}
+      <div className={styles.agViewToggle}>
+        {services.map(svcName => {
+          const svcConf     = allProfs.filter(p => p.tag === svcName && p.status === 'confirmado').length;
+          const svcProfCount = serviceConfig.find(s => s.name === svcName)?.profCount ?? 0;
+          const isSvcMet    = svcProfCount > 0 && svcConf >= svcProfCount;
+          return (
+            <button
+              key={svcName}
+              className={[styles.agViewBtn, activeService === svcName ? styles.agViewBtnActive : ''].filter(Boolean).join(' ')}
+              onClick={() => setActiveService(svcName)}
+            >
+              <ServiceIcon name={svcName} size={13} />
+              {svcName}
+              <span
+                className={styles.profServiceCount}
+                style={isSvcMet ? { background: 'var(--color-status-success-bg)', color: 'var(--color-status-success-fg)', borderColor: 'var(--color-green-300)' } : undefined}
+              >
+                {svcConf}/{svcProfCount}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── Área do serviço selecionado ───────────────────── */}
+
+      {/* Botão "Adicionar profissional" — contextual ao serviço ativo */}
       {role === 'adm' && (
         <div className={styles.profTabBar}>
           <div className={styles.addProfWrap}>
-            {/* Desabilitado antes da configuração ser enviada ou em eventos concluídos */}
             <button
               className={styles.editBtn}
-              disabled={isPast || !isConfigured}
+              disabled={isPast || eventIsFull || serviceIsFull}
               onClick={() => setAddPopover(o => !o)}
             >
               <UserPlus size={14} />
@@ -1842,11 +2248,11 @@ function ProfissionaisTab({ role, event, serviceConfig, configStatus }: {
         </div>
       )}
 
-      {allProfs.length === 0 ? (
+      {serviceProfs.length === 0 ? (
         <div className={styles.placeholder}>
           <span className={styles.placeholderIcon}><Users size={32} /></span>
           <span className={styles.placeholderTitle}>Nenhum profissional</span>
-          <span className={styles.placeholderSub}>Nenhum profissional foi cadastrado para este evento ainda.</span>
+          <span className={styles.placeholderSub}>Nenhum profissional cadastrado para este serviço.</span>
         </div>
       ) : (
         <>
@@ -1856,13 +2262,13 @@ function ProfissionaisTab({ role, event, serviceConfig, configStatus }: {
             progress={
               <span
                 className={styles.profProgress}
-                style={confirmed.length >= event.professionals.needed ? {
+                style={confirmed.length >= activeProfCount ? {
                   background:  'var(--color-status-success-bg)',
                   borderColor: 'var(--color-green-300)',
                   color:       'var(--color-status-success-fg)',
                 } : undefined}
               >
-                {confirmed.length}/{event.professionals.needed} profissionais
+                {confirmed.length}/{activeProfCount === Infinity ? '?' : activeProfCount} confirmados
               </span>
             }
           />
@@ -1904,7 +2310,7 @@ function ProfissionaisTab({ role, event, serviceConfig, configStatus }: {
       {/* Modal: convite por critérios (2 etapas) */}
       {addModal === 'criteria' && (
         <CriteriaModal
-          serviceConfig={serviceConfig}
+          activeService={activeService}
           onClose={() => setAddModal(null)}
           onSend={handleSendInvites}
         />
@@ -2090,7 +2496,9 @@ function SlotDetailModal({ slot, role, onClose, onAdd, onRemove }: {
               {slot.day} · {slot.time} — {slot.service}
             </span>
           </div>
-          <button className={styles.modalClose} onClick={onClose} aria-label="Fechar"><X size={16} /></button>
+          <button className={styles.modalClose} onClick={onClose} aria-label="Fechar">
+            <X size={16} />
+          </button>
         </div>
 
         <div className={styles.modalContent}>
@@ -2112,7 +2520,8 @@ function SlotDetailModal({ slot, role, onClose, onAdd, onRemove }: {
                         style={{ marginLeft:'auto' }}
                         onClick={() => onRemove(b)}
                         aria-label={`Remover ${b.beneficiary}`}
-                      ><X size={12} /></button>
+                        title="Remover"
+                      ><Trash2 size={12} /></button>
                     )}
                   </div>
                 ))}
@@ -2126,7 +2535,8 @@ function SlotDetailModal({ slot, role, onClose, onAdd, onRemove }: {
                         style={{ marginLeft:'auto' }}
                         onClick={() => onRemove(b)}
                         aria-label={`Remover ${b.beneficiary}`}
-                      ><X size={12} /></button>
+                        title="Remover"
+                      ><Trash2 size={12} /></button>
                     )}
                   </div>
                 ))}
@@ -2154,7 +2564,8 @@ function SlotDetailModal({ slot, role, onClose, onAdd, onRemove }: {
                       style={{ marginLeft:'auto' }}
                       onClick={() => onRemove(b)}
                       aria-label={`Remover ${b.beneficiary}`}
-                    ><X size={12} /></button>
+                      title="Remover"
+                    ><Trash2 size={12} /></button>
                   )}
                 </div>
               ))}
@@ -2162,15 +2573,15 @@ function SlotDetailModal({ slot, role, onClose, onAdd, onRemove }: {
           )}
         </div>
 
-        <div className={styles.modalActions}>
-          <button className={styles.modalBtnSecondary} onClick={onClose}>Fechar</button>
-          {role === 'adm' && !slot.isFull && (
+        {role === 'adm' && !slot.isFull && (
+          <div className={styles.modalActions}>
+            <button className={styles.modalBtnSecondary} onClick={onClose}>Fechar</button>
             <button className={styles.modalBtnPrimary} onClick={onAdd}>
               <UserPlus size={13} />
               Adicionar
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -2206,7 +2617,15 @@ function NewAgendamentoModal({
         <div className={styles.modalHeader}>
           <div className={styles.modalTitleRow}>
             <UserPlus size={16} className={styles.modalTitleIcon} />
-            <span className={styles.modalTitle}>Novo agendamento ({step}/4)</span>
+            <div>
+              <span className={styles.modalTitle}>Novo agendamento ({step}/4)</span>
+              {data.service && data.day && data.time && (
+                <div className={styles.modalSubContext}>
+                  <Clock size={11} />
+                  {data.day} · {data.time} — {data.service}
+                </div>
+              )}
+            </div>
           </div>
           <button className={styles.modalClose} onClick={onClose} aria-label="Fechar"><X size={16} /></button>
         </div>
@@ -2353,53 +2772,297 @@ function formatDayLabel(dayKey: string): string {
   return `${dayName}, ${dayNum} de ${monthName}`;
 }
 
+// ─── Service icon map ─────────────────────────────────────────────────────────
+const SVC_ICON: Record<string, React.ReactNode> = {
+  'Quick Massage':        <Sparkles   size={14} />,
+  'Auriculoterapia':      <Ear        size={14} />,
+  'Yoga':                 <Leaf       size={14} />,
+  'Yoga Corporativo':     <Leaf       size={14} />,
+  'Massagem terapêutica': <HandHeart  size={14} />,
+  'Manicure':             <Palette    size={14} />,
+  'Ginástica Laboral':    <Dumbbell   size={14} />,
+  'Reflexologia':         <Footprints size={14} />,
+  'Meditação Guiada':     <Wind       size={14} />,
+  'Nutrição':             <Activity   size={14} />,
+  'Acupuntura':           <Ear        size={14} />,
+  'Podologia':            <Leaf       size={14} />,
+};
+function svcIcon(name: string): React.ReactNode {
+  return SVC_ICON[name] ?? <Hand size={14} />;
+}
+
+// ─── buildTimelineGrid ────────────────────────────────────────────────────────
+// Builds the full timeline grid (every valid slot per service/time, with or
+// without bookings).
+//   null     = out-of-range for this service at this time (different interval)
+//   'blocked' = globally-blocked period (lunch / adjustment interval) — same for all services
+function buildTimelineGrid(
+  bookings:          Booking[],
+  detail:            EventDetail,
+  eventId:           string,
+  selectedDay:       string,
+  filteredServices?: string[],
+): { allTimes: string[]; services: string[]; cells: Map<string, ComputedSlot | null | 'blocked'>; blockedTimes: Set<string> } {
+  // Apply optional service filter
+  const activeSvcDefs = filteredServices && filteredServices.length > 0
+    ? detail.serviceConfig.filter(s => filteredServices.includes(s.name))
+    : detail.serviceConfig;
+  const services    = activeSvcDefs.map(s => s.name);
+  const daySchedule = detail.configSchedule.find(d => d.day === selectedDay);
+
+  if (!daySchedule) return { allTimes: [], services, cells: new Map(), blockedTimes: new Set() };
+
+  // Global blocked periods for this day (lunch + adjustment intervals)
+  const blockedTimes = new Set(computeBlockedTimes(
+    daySchedule.start, daySchedule.end,
+    detail.lunchStart, detail.lunchEnd,
+    detail.intervalFrequency, detail.intervalDuration,
+  ));
+
+  // Per-service valid slot times for the selected day
+  const serviceSlotTimes = new Map<string, Set<string>>();
+  for (const svc of activeSvcDefs) {
+    const times = generateTimeSlots(
+      daySchedule.start, daySchedule.end,
+      svc.duration,
+      detail.lunchStart, detail.lunchEnd,
+    );
+    serviceSlotTimes.set(svc.name, new Set(times));
+  }
+
+  // Union of all times across all services + blocked times, sorted chronologically
+  const timeSet = new Set<string>();
+  serviceSlotTimes.forEach(times => times.forEach(t => timeSet.add(t)));
+  blockedTimes.forEach(t => timeSet.add(t));
+  const allTimes = [...timeSet].sort((a, b) => timeToMin(a) - timeToMin(b));
+
+  // Accumulate bookings for the selected day
+  type Acc = { confirmed: Booking[]; noShows: Booking[]; encaixes: Booking[]; waitlist: Booking[] };
+  const bookingMap = new Map<string, Acc>();
+  for (const b of bookings) {
+    if (b.day !== selectedDay) continue;
+    const key = `${b.time}|${b.service}`;
+    if (!bookingMap.has(key)) bookingMap.set(key, { confirmed: [], noShows: [], encaixes: [], waitlist: [] });
+    const acc = bookingMap.get(key)!;
+    if      (b.status === 'waitlist') acc.waitlist.push(b);
+    else if (b.noShow)                acc.noShows.push(b);
+    else if (b.encaixeFor)            acc.encaixes.push(b);
+    else                              acc.confirmed.push(b);
+  }
+
+  // Build cell map
+  const cells = new Map<string, ComputedSlot | null | 'blocked'>();
+  for (const time of allTimes) {
+    // Globally-blocked row: mark every service cell as 'blocked'
+    if (blockedTimes.has(time)) {
+      for (const svc of activeSvcDefs) {
+        cells.set(`${time}|${svc.name}`, 'blocked');
+      }
+      continue;
+    }
+
+    for (const svc of activeSvcDefs) {
+      const cellKey = `${time}|${svc.name}`;
+      if (!serviceSlotTimes.get(svc.name)!.has(time)) {
+        cells.set(cellKey, null);
+        continue;
+      }
+      const data   = bookingMap.get(`${time}|${svc.name}`) ?? { confirmed: [], noShows: [], encaixes: [], waitlist: [] };
+      const cap    = getServiceCapacity(svc.name, eventId);
+      const active = data.confirmed.length + data.encaixes.length;
+      cells.set(cellKey, {
+        key:        `${selectedDay}|${time}|${svc.name}`,
+        day:        selectedDay,
+        time,
+        service:    svc.name,
+        capacity:   cap,
+        confirmed:  data.confirmed,
+        noShows:    data.noShows,
+        encaixes:   data.encaixes,
+        waitlist:   data.waitlist,
+        isFull:     active >= cap,
+        hasEncaixe: data.encaixes.length > 0,
+      });
+    }
+  }
+
+  return { allTimes, services, cells, blockedTimes };
+}
+
+// ─── AgendaGridView ───────────────────────────────────────────────────────────
+// Timeline grid: columns = services, rows = time slots, cells = status.
+function AgendaGridView({
+  detail, bookingsList, event, role,
+  selectedDay, onSlotClick, onEmptySlotClick,
+  filteredServices,
+}: {
+  detail:            EventDetail;
+  bookingsList:      Booking[];
+  event:             EventItem;
+  role:              UserRole;
+  selectedDay:       string;
+  onSlotClick:       (slot: ComputedSlot) => void;
+  onEmptySlotClick:  (service: string, day: string, time: string) => void;
+  filteredServices:  string[];
+}) {
+  const { allTimes, services, cells, blockedTimes } = buildTimelineGrid(
+    bookingsList, detail, event.id, selectedDay, filteredServices,
+  );
+
+  if (allTimes.length === 0) {
+    return (
+      <div className={styles.placeholder}>
+        <span className={styles.placeholderIcon}><Calendar size={28} /></span>
+        <span className={styles.placeholderTitle}>Sem horários configurados</span>
+        <span className={styles.placeholderSub}>Configure a agenda do evento na aba Visão Geral.</span>
+      </div>
+    );
+  }
+
+  const colTemplate = `64px repeat(${services.length}, minmax(160px, 1fr))`;
+
+  return (
+    <div className={styles.agGridOuter}>
+      <div className={styles.agGridTable} style={{ gridTemplateColumns: colTemplate }}>
+
+        {/* ── Sticky header row ──────────────────────────────────────────── */}
+        <div className={styles.agGridCorner} />
+        {services.map(svc => (
+          <div key={svc} className={styles.agGridColHeader}>
+            <span className={styles.agGridColName}>
+              <span className={styles.agGridColIcon}>{svcIcon(svc)}</span>
+              {svc}
+            </span>
+          </div>
+        ))}
+
+        {/* ── Time rows ──────────────────────────────────────────────────── */}
+        {allTimes.map(time => {
+          const isBlocked = blockedTimes.has(time);
+          return (
+            <Fragment key={time}>
+              {/* Time label — sticky left */}
+              <div className={[styles.agGridTimeCell, isBlocked ? styles.agGridTimeCellBlocked : ''].filter(Boolean).join(' ')}>
+                <span className={styles.agGridTimeLabelText}>{time}</span>
+              </div>
+
+              {/* Service cells */}
+              {services.map(svc => {
+                const cell = cells.get(`${time}|${svc}`);
+
+                // Globally-blocked period — same visual for every service column
+                if (cell === 'blocked') {
+                  return <div key={svc} className={styles.agGridCellBlocked} />;
+                }
+
+                // Out-of-range for this service's own slot interval — still bookable
+                if (cell === null) {
+                  return (
+                    <button
+                      key={svc}
+                      type="button"
+                      className={[styles.agGridCellSlot, styles.agGridCellEmpty].join(' ')}
+                      onClick={() => role === 'adm' ? onEmptySlotClick(svc, selectedDay, time) : undefined}
+                      title={role === 'adm' ? `${time} · ${svc} — clique para agendar` : `${time} · ${svc}`}
+                    >
+                      {role === 'adm' && <span className={styles.agGridCellEmptyPlus} aria-hidden>+</span>}
+                    </button>
+                  );
+                }
+
+                const active  = cell.confirmed.length + cell.encaixes.length;
+                const isEmpty = active === 0 && cell.waitlist.length === 0;
+                const status  = getCapacityStatus(active, cell.capacity, cell.waitlist.length);
+
+                if (isEmpty) {
+                  return (
+                    <button
+                      key={svc}
+                      type="button"
+                      className={[styles.agGridCellSlot, styles.agGridCellEmpty].join(' ')}
+                      onClick={() => role === 'adm' ? onEmptySlotClick(svc, selectedDay, time) : undefined}
+                      title={role === 'adm' ? `${time} · ${svc} — clique para agendar` : `${time} · ${svc}`}
+                    >
+                      {role === 'adm' && <span className={styles.agGridCellEmptyPlus} aria-hidden>+</span>}
+                    </button>
+                  );
+                }
+
+                const statusMod = status === 'available' ? styles.agGridCellAvailable
+                  : status === 'waitlist'                ? styles.agGridCellWaitlist
+                  :                                        styles.agGridCellFull;
+
+                return (
+                  <button
+                    key={svc}
+                    type="button"
+                    className={[styles.agGridCellSlot, statusMod].join(' ')}
+                    onClick={() => onSlotClick(cell)}
+                    title={`${time} · ${svc} · ${active}/${cell.capacity}`}
+                  >
+                    <span className={styles.agGridCellCap}>{active}/{cell.capacity}</span>
+                    {status !== 'available' && (
+                      <span className={styles.agGridCellTag}>
+                        {status === 'waitlist' ? `${cell.waitlist.length} espera` : 'Cheio'}
+                      </span>
+                    )}
+                    {cell.hasEncaixe && (
+                      <span className={[styles.agGridCellTag, styles.agGridCellTagEncaixe].join(' ')}>Encaixe</span>
+                    )}
+                  </button>
+                );
+              })}
+            </Fragment>
+          );
+        })}
+
+      </div>
+    </div>
+  );
+}
+
 // ─── AgendamentosTab ──────────────────────────────────────────────────────────
 function AgendamentosTab({ role, event, detail }: {
   role:   UserRole;
   event:  EventItem;
   detail: EventDetail;
 }) {
-  const [viewMode,        setViewMode]        = useState<'horario' | 'lista'>('horario');
-  const [filterService,   setFilterService]   = useState('');
-  const [filterDay,       setFilterDay]       = useState('');
-  const [detailSlot,      setDetailSlot]      = useState<ComputedSlot | null>(null);
-  const [removeTarget,    setRemoveTarget]    = useState<Booking | null>(null);
+  const [selectedDay,        setSelectedDay]        = useState<string>(detail.configSchedule[0]?.day ?? '');
+  const [filteredServices,   setFilteredServices]   = useState<string[]>([]);
+  const [detailSlot,         setDetailSlot]         = useState<ComputedSlot | null>(null);
+  const [removeTarget,       setRemoveTarget]       = useState<Booking | null>(null);
   const [showNewAgendamento, setShowNewAgendamento] = useState(false);
   const [newAgendamentoStep, setNewAgendamentoStep] = useState<1 | 2 | 3 | 4>(1);
-  const [newAgendamentoData, setNewAgendamentoData] = useState({
-    service: '',
-    day: '',
-    time: '',
-    name: '',
-    email: '',
-    phone: '',
-  });
-  const [bookingsList,    setBookingsList]    = useState<Booking[]>(MOCK_BOOKINGS[event.id] ?? []);
-  const [successMessage,  setSuccessMessage]  = useState<string | null>(null);
+  const [newAgendamentoData, setNewAgendamentoData] = useState({ service: '', day: '', time: '', name: '', email: '', phone: '' });
+  const [bookingsList,       setBookingsList]       = useState<Booking[]>(MOCK_BOOKINGS[event.id] ?? []);
+  const [successMessage,     setSuccessMessage]     = useState<string | null>(null);
 
-  // Auto-dismiss success message after 3 seconds
+  // Auto-dismiss success message
   useEffect(() => {
     if (successMessage) {
-      const timer = setTimeout(() => {
-        setSuccessMessage(null);
-      }, 3000);
+      const timer = setTimeout(() => setSuccessMessage(null), 3000);
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
 
-  const slots       = computeSlots(bookingsList, detail, event.id, filterService, filterDay);
+  // Reset selected day when event changes
+  useEffect(() => {
+    setSelectedDay(detail.configSchedule[0]?.day ?? '');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event.id]);
+
   const totalVagas  = computeTotalVagas(detail, event.id);
   const agendadas   = bookingsList.filter(b => b.status === 'confirmed' && !b.noShow).length;
   const listaEspera = bookingsList.filter(b => b.status === 'waitlist').length;
 
   const svcOptions = [
-    { value:'', label:'Todos os serviços' },
-    ...detail.serviceConfig.map(s => ({ value:s.name, label:s.name })),
+    { value: '', label: 'Todos os serviços' },
+    ...detail.serviceConfig.map(s => ({ value: s.name, label: s.name })),
   ] as const;
 
   const dayOptions = [
-    { value:'', label:'Todos os dias' },
-    ...detail.configSchedule.map(d => ({ value:d.day, label:d.day })),
+    { value: '', label: 'Todos os dias' },
+    ...detail.configSchedule.map(d => ({ value: d.day, label: d.day })),
   ] as const;
 
   function handleRemoveConfirm() {
@@ -2431,21 +3094,22 @@ function AgendamentosTab({ role, event, detail }: {
     setNewAgendamentoData({ service: '', day: '', time: '', name: '', email: '', phone: '' });
   }
 
+  function handleEmptySlotClick(service: string, day: string, time: string) {
+    setNewAgendamentoData(prev => ({ ...prev, service, day, time }));
+    setNewAgendamentoStep(4);
+    setShowNewAgendamento(true);
+  }
+
   return (
     <>
       {/* ── Success Feedback ──────────────────────────────────────────────── */}
       {successMessage && (
         <div className={styles.agFeedbackWrapper}>
-          <Feedback
-            type="success"
-            message={successMessage}
-            dismissible={true}
-            onDismiss={() => setSuccessMessage(null)}
-          />
+          <Feedback type="success" message={successMessage} dismissible onDismiss={() => setSuccessMessage(null)} />
         </div>
       )}
 
-      {/* ── Summary ──────────────────────────────────────────────────────── */}
+      {/* ── KPI Summary ───────────────────────────────────────────────────── */}
       <div className={styles.agSummary}>
         <div className={styles.agSummaryCard}>
           <span className={styles.agSummaryValue}>{totalVagas}</span>
@@ -2461,155 +3125,81 @@ function AgendamentosTab({ role, event, detail }: {
         </div>
       </div>
 
-      {/* ── Controls ─────────────────────────────────────────────────────── */}
-      <div className={styles.agControls}>
-        <div className={styles.agViewToggle}>
-          <button
-            className={[styles.agViewBtn, viewMode === 'horario' ? styles.agViewBtnActive : ''].filter(Boolean).join(' ')}
-            onClick={() => setViewMode('horario')}
-          >
-            <Clock size={13} />
-            Por horário
-          </button>
-          <button
-            className={[styles.agViewBtn, viewMode === 'lista' ? styles.agViewBtnActive : ''].filter(Boolean).join(' ')}
-            onClick={() => setViewMode('lista')}
-          >
-            <List size={13} />
-            Por lista
-          </button>
-        </div>
-
-        <div className={styles.agFilters}>
-          <EditSelect value={filterService} onChange={v => { setFilterService(v); setDetailSlot(null); }} options={svcOptions} />
-          <EditSelect value={filterDay}     onChange={v => { setFilterDay(v);     setDetailSlot(null); }} options={dayOptions} />
-          {role === 'adm' && (
+      {/* ── Service filter — exibido apenas quando há mais de 5 serviços ── */}
+      {detail.serviceConfig.length > 5 && (
+        <div className={styles.agServiceFilter}>
+          <span className={styles.agServiceFilterLabel}>Filtrar:</span>
+          <div className={styles.agServiceFilterChips}>
+            {detail.serviceConfig.map(svc => {
+              const isActive = filteredServices.includes(svc.name);
+              return (
+                <button
+                  key={svc.name}
+                  type="button"
+                  className={[styles.agServiceChip, isActive ? styles.agServiceChipActive : ''].filter(Boolean).join(' ')}
+                  onClick={() =>
+                    setFilteredServices(prev =>
+                      isActive ? prev.filter(s => s !== svc.name) : [...prev, svc.name]
+                    )
+                  }
+                >
+                  <span className={styles.agServiceChipIcon}>{svcIcon(svc.name)}</span>
+                  {svc.name}
+                </button>
+              );
+            })}
+          </div>
+          {filteredServices.length > 0 && (
             <button
-              className={styles.editBtn}
-              onClick={() => setShowNewAgendamento(true)}
+              type="button"
+              className={styles.agServiceFilterClear}
+              onClick={() => setFilteredServices([])}
             >
-              <UserPlus size={14} />
-              Novo agendamento
+              <X size={12} />
+              Limpar
             </button>
           )}
         </div>
+      )}
+
+      {/* ── Day selector + Novo agendamento ─────────────────────────────── */}
+      <div className={styles.agDayBar}>
+        {/* Esquerda: pílulas de dias */}
+        {detail.configSchedule.length > 0 && (
+          <div className={styles.agDayStrip}>
+            {detail.configSchedule.map(d => (
+              <button
+                key={d.day}
+                type="button"
+                className={[styles.agDayBtn, d.day === selectedDay ? styles.agDayBtnActive : ''].filter(Boolean).join(' ')}
+                onClick={() => setSelectedDay(d.day)}
+              >
+                {formatDayLabel(d.day)}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Direita: ação */}
+        {role === 'adm' && (
+          <button type="button" className={styles.editBtn} onClick={() => setShowNewAgendamento(true)}>
+            <UserPlus size={14} />
+            Novo agendamento
+          </button>
+        )}
       </div>
 
-      {/* ── Time view — Grid cards layout ────────────────────────────────── */}
-      {viewMode === 'horario' && (
-        <>
-          {/* ── Grid cards view ──────────────────────────────────────────── */}
-          {slots.length === 0 ? (
-            <div className={styles.placeholder}>
-              <span className={styles.placeholderIcon}><Calendar size={28} /></span>
-              <span className={styles.placeholderTitle}>Nenhum agendamento</span>
-              <span className={styles.placeholderSub}>Não há agendamentos para os filtros selecionados.</span>
-            </div>
-          ) : (
-            <>
-              {filterDay === '' ? (
-                // ── With day grouping (when viewing all days) ──
-                <>
-                  {(() => {
-                    const slotsByDay = new Map<string, ComputedSlot[]>();
-                    slots.forEach(slot => {
-                      if (!slotsByDay.has(slot.day)) {
-                        slotsByDay.set(slot.day, []);
-                      }
-                      slotsByDay.get(slot.day)!.push(slot);
-                    });
-                    const sortedDays = Array.from(slotsByDay.keys()).sort((a, b) => {
-                      const [aD, aM] = a.split('/').map(Number);
-                      const [bD, bM] = b.split('/').map(Number);
-                      return aM === bM ? aD - bD : aM - bM;
-                    });
-
-                    return sortedDays.map(day => (
-                      <div key={day}>
-                        <div className={styles.agDayGroupHeader}>{formatDayLabel(day)}</div>
-                        <div className={styles.agTimeCardGrid}>
-                          {slotsByDay.get(day)!.map(slot => {
-                            const active = slot.confirmed.length + slot.encaixes.length;
-                            const status = getCapacityStatus(active, slot.capacity, slot.waitlist.length);
-                            const statusColor = status === 'available' ? 'available' : status === 'waitlist' ? 'waitlist' : 'full';
-                            const pill = svcPill(slot.service);
-
-                            return (
-                              <button
-                                key={slot.key}
-                                className={[styles.agTimeCard, styles[`agTimeCard${statusColor}`]].filter(Boolean).join(' ')}
-                                onClick={() => setDetailSlot(slot)}
-                                title={`${slot.day} às ${slot.time} · ${slot.service}`}
-                              >
-                                <div className={styles.agTimeCardContent}>
-                                  <div className={styles.agTimeCardTime}>{slot.time}</div>
-                                  <div className={styles.agTimeCardCapacity}>{active}/{slot.capacity}</div>
-                                  <div className={styles.agTimeCardService} style={{ background: pill.bg, borderColor: pill.border, color: pill.color }}>
-                                    {slot.service}
-                                  </div>
-                                </div>
-                                {status !== 'available' && (
-                                  <div className={styles.agTimeCardBadge}>
-                                    {status === 'waitlist' ? `${slot.waitlist.length} espera` : 'Cheio'}
-                                  </div>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ));
-                  })()}
-                </>
-              ) : (
-                // ── Without day grouping (when specific day is filtered) ──
-                <div className={styles.agTimeCardGrid}>
-                  {slots.map(slot => {
-                    const active = slot.confirmed.length + slot.encaixes.length;
-                    const status = getCapacityStatus(active, slot.capacity, slot.waitlist.length);
-                    const statusColor = status === 'available' ? 'available' : status === 'waitlist' ? 'waitlist' : 'full';
-                    const pill = svcPill(slot.service);
-
-                    return (
-                      <button
-                        key={slot.key}
-                        className={[styles.agTimeCard, styles[`agTimeCard${statusColor}`]].filter(Boolean).join(' ')}
-                        onClick={() => setDetailSlot(slot)}
-                        title={`${slot.day} às ${slot.time} · ${slot.service}`}
-                      >
-                        <div className={styles.agTimeCardContent}>
-                          <div className={styles.agTimeCardTime}>{slot.time}</div>
-                          <div className={styles.agTimeCardCapacity}>{active}/{slot.capacity}</div>
-                          <div className={styles.agTimeCardService} style={{ background: pill.bg, borderColor: pill.border, color: pill.color }}>
-                            {slot.service}
-                          </div>
-                        </div>
-                        {status !== 'available' && (
-                          <div className={styles.agTimeCardBadge}>
-                            {status === 'waitlist' ? `${slot.waitlist.length} espera` : 'Cheio'}
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </>
-          )}
-        </>
-      )}
-
-      {/* ── List view ────────────────────────────────────────────────────── */}
-      {viewMode === 'lista' && (
-        <AgendaListView
-          bookings={bookingsList.filter(b =>
-            (!filterService || b.service === filterService) &&
-            (!filterDay    || b.day     === filterDay)
-          )}
-          role={role}
-          onRemove={setRemoveTarget}
-        />
-      )}
+      {/* ── Timeline grid ────────────────────────────────────────────────── */}
+      <AgendaGridView
+        detail={detail}
+        bookingsList={bookingsList}
+        event={event}
+        role={role}
+        selectedDay={selectedDay}
+        filteredServices={filteredServices}
+        onSlotClick={setDetailSlot}
+        onEmptySlotClick={handleEmptySlotClick}
+      />
 
       {/* ── Modals ───────────────────────────────────────────────────────── */}
       {detailSlot && (
@@ -2621,8 +3211,8 @@ function AgendamentosTab({ role, event, detail }: {
             setNewAgendamentoData(prev => ({
               ...prev,
               service: detailSlot.service,
-              day: detailSlot.day,
-              time: detailSlot.time,
+              day:     detailSlot.day,
+              time:    detailSlot.time,
             }));
             setNewAgendamentoStep(4);
             setShowNewAgendamento(true);
@@ -2725,8 +3315,9 @@ function TrendArrow({ dir }: { dir: TrendDir }) {
 interface StatCardProps {
   label: string; value: string; trend: string;
   trendDir: TrendDir; icon: React.ReactNode;
+  hideTrend?: boolean;
 }
-function StatCard({ label, value, trend, trendDir, icon }: StatCardProps) {
+function StatCard({ label, value, trend, trendDir, icon, hideTrend = false }: StatCardProps) {
   return (
     <div className={styles.statCard}>
       <div className={styles.statBody}>
@@ -2734,13 +3325,15 @@ function StatCard({ label, value, trend, trendDir, icon }: StatCardProps) {
           <span className={styles.statLabel}>{label}</span>
           <span className={styles.statValue}>{value}</span>
         </div>
-        <div className={styles.statFooter}>
-          <span className={[styles.trendBadge, trendDir === 'up' ? styles.trendUp : styles.trendDown].join(' ')}>
-            <TrendArrow dir={trendDir} />
-            {trend}
-          </span>
-          <span className={styles.trendLabel}>vs mês anterior</span>
-        </div>
+        {!hideTrend && (
+          <div className={styles.statFooter}>
+            <span className={[styles.trendBadge, trendDir === 'up' ? styles.trendUp : styles.trendDown].join(' ')}>
+              <TrendArrow dir={trendDir} />
+              {trend}
+            </span>
+            <span className={styles.trendLabel}>vs mês anterior</span>
+          </div>
+        )}
       </div>
       <div className={styles.statIconBox}>{icon}</div>
     </div>
@@ -2890,7 +3483,44 @@ function ParticipationBarChart({ eventDetail }: { eventDetail?: EventDetail }) {
   );
 }
 
-// ─── NPS Distribution ─────────────────────────────────────────────────────────
+// ─── NPS Gauge — idêntico ao Dashboard > Impacto ──────────────────────────────
+function NPSGaugeReport({ npsScore = 48 }: { npsScore?: number }) {
+  const nps = npsScore;
+  const VW = 200, VH = 126, cx = 100, cy = 106, R = 80, SW = 18, GAP = 0.012;
+  const px = (t: number) => +(cx - R * Math.cos(t * Math.PI)).toFixed(2);
+  const py = (t: number) => +(cy - R * Math.sin(t * Math.PI)).toFixed(2);
+  const seg = (t1: number, t2: number) =>
+    `M ${px(t1)} ${py(t1)} A ${R} ${R} 0 0 1 ${px(t2)} ${py(t2)}`;
+  const tN = 0.5, tP = 0.85;
+  const tNeedle = (nps + 100) / 200;
+  const nLen = R - SW / 2 - 6;
+  const nx = +(cx - nLen * Math.cos(tNeedle * Math.PI)).toFixed(2);
+  const ny = +(cy - nLen * Math.sin(tNeedle * Math.PI)).toFixed(2);
+  return (
+    <div className={styles.chartCard} style={{ minHeight: 'unset' }}>
+      <span className={styles.chartTitle}>NPS Score</span>
+      <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '100%' }}>
+          <svg viewBox={`0 0 ${VW} ${VH}`} width="100%" style={{ display: 'block' }}>
+            <path d={seg(0, 1)}          fill="none" stroke="#EDE8E5" strokeWidth={SW} strokeLinecap="butt" />
+            <path d={seg(0, tN - GAP)}  fill="none" stroke="#9B4F4F" strokeWidth={SW} strokeLinecap="butt" />
+            <path d={seg(tN + GAP, tP - GAP)} fill="none" stroke="#C49A6E" strokeWidth={SW} strokeLinecap="butt" />
+            <path d={seg(tP + GAP, 1)}  fill="none" stroke="#7A9270" strokeWidth={SW} strokeLinecap="butt" />
+            <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#3B2C2D" strokeWidth="2" strokeLinecap="round" />
+            <circle cx={cx} cy={cy} r={5}   fill="#3B2C2D" />
+            <circle cx={cx} cy={cy} r={2.5} fill="#F7F4F2" />
+            <text x={cx} y={cy - 18} textAnchor="middle" fontFamily="var(--font-display)" fontSize="22" fontWeight="600" fill="#3B2C2D">{nps}</text>
+            <text x={cx} y={cy - 4}  textAnchor="middle" fontFamily="var(--font-body)"    fontSize="9"  fill="#9E8E8F">NPS Score</text>
+            <text x={px(0)} y={cy + 18} textAnchor="middle" fontFamily="var(--font-body)" fontSize="8" fill="#B8ADAB">−100</text>
+            <text x={px(1)} y={cy + 18} textAnchor="middle" fontFamily="var(--font-body)" fontSize="8" fill="#B8ADAB">+100</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── NPS Distribution (legacy — mantido por compatibilidade, não usado no Relatório)
 const NPS_SEGMENTS = [
   { label: 'Promotores',  pct: 62, color: '#22C55E', bg: '#F0FDF4', border: '#86EFAC' },
   { label: 'Neutros',     pct: 24, color: '#EAB308', bg: '#FEFCE8', border: '#FDE047' },
@@ -2951,21 +3581,23 @@ function NPSDistribution({ npsScore }: { npsScore?: number }) {
   );
 }
 
-// ─── Radar Chart ─────────────────────────────────────────────────────────────
-function RadarChart({ data }: { data?: Array<{ axis: string; value: number }> }) {
-  const chartData = data || [
-    { axis: 'Bem-estar',   value: 8.2 },
-    { axis: 'Relaxamento', value: 7.8 },
-    { axis: 'Foco',        value: 7.1 },
-    { axis: 'Engajamento', value: 8.5 },
-    { axis: 'Clima',       value: 9.0 },
-  ];
+// ─── Radar Chart — 4 pilares + 2 períodos ────────────────────────────────────
+const RADAR_AXES = ['Engajamento', 'Satisfação', 'Impacto percebido', 'Retenção'];
 
-  const [hovered, setHovered] = useState<{ label: string; value: number; x: number; y: number } | null>(null);
+function RadarChart({ data }: { data?: Array<{ axis: string; value: number }> }) {
+  // Usa dados passados (4 pilares) ou fallback
+  const current: Array<{ axis: string; value: number }> = (data && data.length === 4)
+    ? data
+    : RADAR_AXES.map((axis, i) => ({ axis, value: [8.5, 8.2, 7.8, 8.0][i] }));
+
+  // Mês anterior — ≈ 8% abaixo
+  const previous = current.map(d => ({ ...d, value: +(d.value * 0.92).toFixed(1) }));
+
+  const [hovered, setHovered] = useState<{ label: string; curr: number; prev: number; x: number; y: number } | null>(null);
 
   const VW = 400, VH = 340;
-  const cx = 200, cy = 170, maxR = 95, maxVal = 10;
-  const n = chartData.length;
+  const cx = 200, cy = 175, maxR = 95, maxVal = 10;
+  const n = RADAR_AXES.length;
   const angleOf = (i: number) => -Math.PI / 2 + (2 * Math.PI * i) / n;
   const ptOf = (v: number, i: number) => ({
     x: cx + (v / maxVal) * maxR * Math.cos(angleOf(i)),
@@ -2973,66 +3605,78 @@ function RadarChart({ data }: { data?: Array<{ axis: string; value: number }> })
   });
 
   const levels = [2, 4, 6, 8, 10];
-  const dataPolygon = chartData.map((d, i) => {
-    const p = ptOf(d.value, i);
-    return `${p.x},${p.y}`;
-  }).join(' ');
+  const polyStr = (arr: typeof current) =>
+    arr.map((d, i) => { const p = ptOf(d.value, i); return `${p.x},${p.y}`; }).join(' ');
 
   return (
     <div className={styles.chartCard} style={{ minHeight: 'unset' }}>
-      <span className={styles.chartTitle}>Radar de Pesquisa</span>
+      <div className={styles.chartHeaderRow}>
+        <span className={styles.chartTitle}>Radar de Pesquisa</span>
+        {/* Legenda */}
+        <div className={styles.lineLegend}>
+          <div className={styles.lineLegendItem}>
+            <span className={styles.lineDot} style={{ background: '#B25557' }} />
+            Mês atual
+          </div>
+          <div className={styles.lineLegendItem}>
+            <span className={styles.lineDot} style={{ background: '#EAB308' }} />
+            Mês anterior
+          </div>
+        </div>
+      </div>
       <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         <svg viewBox={`0 0 ${VW} ${VH}`} width="100%" style={{ display: 'block' }}>
           {/* Grid rings */}
           {levels.map(lv => {
-            const pts = chartData.map((_, i) => { const p = ptOf(lv, i); return `${p.x},${p.y}`; }).join(' ');
+            const pts = RADAR_AXES.map((_, i) => { const p = ptOf(lv, i); return `${p.x},${p.y}`; }).join(' ');
             return <polygon key={lv} points={pts} fill="none" stroke="#F0EDEC" strokeWidth="1" />;
           })}
-          {/* Level labels (inner) */}
+          {/* Level labels */}
           {[4, 8].map(lv => {
             const p = ptOf(lv, 2);
             return <text key={lv} x={p.x + 3} y={p.y + 3} fontSize="8" fill="#C8C0C0">{lv}</text>;
           })}
           {/* Axes */}
-          {chartData.map((_, i) => {
+          {RADAR_AXES.map((_, i) => {
             const end = ptOf(maxVal, i);
             return <line key={i} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="#E8DFE0" strokeWidth="1" />;
           })}
-          {/* Data fill */}
-          <polygon points={dataPolygon} fill="#B25557" fillOpacity="0.18" stroke="#B25557" strokeWidth="2" />
-          {/* Data points */}
-          {chartData.map((d, i) => {
+          {/* Mês anterior (amarelo, abaixo) */}
+          <polygon points={polyStr(previous)} fill="#EAB308" fillOpacity="0.12" stroke="#EAB308" strokeWidth="1.5" strokeDasharray="4 3" />
+          {/* Mês atual (brand, acima) */}
+          <polygon points={polyStr(current)} fill="#B25557" fillOpacity="0.18" stroke="#B25557" strokeWidth="2" />
+          {/* Pontos — mês atual (interativos) */}
+          {current.map((d, i) => {
             const p = ptOf(d.value, i);
             const isHov = hovered?.label === d.axis;
             return (
               <circle key={i} cx={p.x} cy={p.y} r={isHov ? 7 : 5}
                 fill="#B25557" stroke="#fff" strokeWidth="2"
                 style={{ cursor: 'pointer', transition: 'r 120ms' }}
-                onMouseMove={(e) => setHovered({ label: d.axis, value: d.value, x: e.clientX, y: e.clientY })}
+                onMouseMove={(e) => setHovered({ label: d.axis, curr: d.value, prev: previous[i].value, x: e.clientX, y: e.clientY })}
                 onMouseLeave={() => setHovered(null)} />
             );
           })}
           {/* Axis labels */}
-          {chartData.map((d, i) => {
+          {RADAR_AXES.map((axis, i) => {
             const angle = angleOf(i);
             const lx = cx + (maxR + 28) * Math.cos(angle);
             const ly = cy + (maxR + 28) * Math.sin(angle);
             const anchor = Math.cos(angle) > 0.15 ? 'start' : Math.cos(angle) < -0.15 ? 'end' : 'middle';
             return (
               <text key={i} x={lx} y={ly + 4} textAnchor={anchor} fontSize="11" fill="#9E8E8F" fontWeight="500">
-                {d.axis}
+                {axis}
               </text>
             );
           })}
         </svg>
-        {/* HTML tooltip */}
         {hovered && (
           <div className={tooltipStyles.tip} style={{
             position: 'fixed', left: hovered.x, top: hovered.y - 44,
             transform: 'translateX(-50%)', pointerEvents: 'none',
             whiteSpace: 'nowrap', zIndex: 9999, opacity: 1,
           }}>
-            {hovered.label}: {hovered.value} / 10
+            {hovered.label} · Atual {hovered.curr} · Anterior {hovered.prev}
           </div>
         )}
       </div>
@@ -3077,12 +3721,58 @@ function ServiceRatings({ data }: { data?: Array<{ name: string; rating: number 
   );
 }
 
+// ─── Ranking de áreas mais participativas ─────────────────────────────────────
+const RANKING_AREAS = [
+  { label: 'Tecnologia',  pct: 38 },
+  { label: 'RH',          pct: 22 },
+  { label: 'Financeiro',  pct: 18 },
+  { label: 'Operações',   pct: 15 },
+  { label: 'Jurídico',    pct: 7  },
+];
+
+function RankingAreas() {
+  const [hovered, setHovered] = useState<{ label: string; pct: number; x: number; y: number } | null>(null);
+  return (
+    <div className={styles.chartCard} style={{ minHeight: 'unset' }}>
+      <span className={styles.chartTitle}>Ranking de áreas</span>
+      <div className={styles.barChartBody} style={{ gap: 16, justifyContent: 'flex-start' }}>
+        {RANKING_AREAS.map((item, i) => (
+          <div key={item.label} className={styles.barRow} style={{ cursor: 'pointer' }}
+            onMouseMove={e => setHovered({ label: item.label, pct: item.pct, x: e.clientX, y: e.clientY })}
+            onMouseLeave={() => setHovered(null)}
+          >
+            <span className={styles.barLabel} style={{ minWidth: 80 }}>
+              <span style={{ color: '#B8ADAB', fontSize: 11, marginRight: 4 }}>{i + 1}º</span>
+              {item.label}
+            </span>
+            <div className={styles.barTrackGroup}>
+              <div className={styles.barTrack} style={{ height: 20 }}>
+                <div className={styles.barFill} style={{ width: `${item.pct}%`, height: 20 }} />
+              </div>
+              <span className={styles.barPct}>{item.pct}%</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      {hovered && (
+        <div className={tooltipStyles.tip} style={{
+          position: 'fixed', left: hovered.x, top: hovered.y - 44,
+          transform: 'translateX(-50%)', pointerEvents: 'none',
+          whiteSpace: 'nowrap', zIndex: 9999,
+        }}>
+          {hovered.label} · {hovered.pct}% de participação
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Qualitative Comments ─────────────────────────────────────────────────────
 function QualitativeComments({ data }: { data?: Array<{ text: string; author: string }> }) {
   const comments = data || [];
 
   return (
-    <div className={styles.chartCard}>
+    <div className={styles.chartCard} style={{ minHeight: 'unset' }}>
       <span className={styles.chartTitle}>Comentários qualitativos</span>
       <div className={styles.commentsList}>
         {comments.map((c, i) => (
@@ -3203,42 +3893,249 @@ function EventoVsMediaCard({ detail }: { detail: EventDetail }) {
   );
 }
 
+// ─── Respostas vs Inscritos Chart ────────────────────────────────────────────
+function RespostasChart({ inscritos, respondentes }: { inscritos: number; respondentes: number }) {
+  const W = 400, H = 148;
+  const padL = 8, padT = 24, padR = 8, padB = 44;
+  const chartH = H - padT - padB;
+  const maxVal = Math.max(inscritos, respondentes, 1);
+  const barW = 44, barGap = 14;
+  const cx = W / 2;
+  const bH = (v: number) => (v / maxVal) * chartH;
+  const bY = (v: number) => padT + chartH - bH(v);
+
+  return (
+    <div className={styles.chartCard} style={{ minHeight: 'unset' }}>
+      <div className={styles.chartHeaderRow}>
+        <span className={styles.chartTitle}>Inscritos vs Respondentes</span>
+        <div className={styles.lineLegend}>
+          <div className={styles.lineLegendItem}><span className={styles.lineDot} style={{ background: '#CFADAE', borderRadius: 2 }} />Inscritos</div>
+          <div className={styles.lineLegendItem}><span className={styles.lineDot} style={{ background: '#B25557', borderRadius: 2 }} />Respondentes</div>
+        </div>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
+        <line x1={padL} y1={padT + chartH} x2={W - padR} y2={padT + chartH} stroke="#F0EDEC" strokeWidth="1" />
+        {/* Inscritos bar */}
+        <rect x={cx - barGap / 2 - barW} y={bY(inscritos)} width={barW} height={bH(inscritos)} fill="#CFADAE" rx="3" />
+        <text x={cx - barGap / 2 - barW / 2} y={bY(inscritos) - 5} textAnchor="middle" fontSize="11" fill="#6B5B5C" fontWeight="600">{inscritos}</text>
+        <text x={cx - barGap / 2 - barW / 2} y={H - 8} textAnchor="middle" fontSize="10" fill="#9E8E8F">Inscritos</text>
+        {/* Respondentes bar */}
+        <rect x={cx + barGap / 2} y={bY(respondentes)} width={barW} height={bH(respondentes)} fill="#B25557" rx="3" />
+        <text x={cx + barGap / 2 + barW / 2} y={bY(respondentes) - 5} textAnchor="middle" fontSize="11" fill="#6B5B5C" fontWeight="600">{respondentes}</text>
+        <text x={cx + barGap / 2 + barW / 2} y={H - 8} textAnchor="middle" fontSize="10" fill="#9E8E8F">Respondentes</text>
+      </svg>
+    </div>
+  );
+}
+
+// ─── Service Respostas (% respondentes por serviço) ───────────────────────────
+function ServiceRespostas({ data }: { data: Array<{ name: string; pct: number }> }) {
+  const [hovered, setHovered] = useState<{ label: string; pct: number; x: number; y: number } | null>(null);
+  const sorted = [...data].sort((a, b) => b.pct - a.pct);
+
+  return (
+    <div className={styles.chartCard} style={{ minHeight: 'unset' }}>
+      <span className={styles.chartTitle}>Respondentes por serviço</span>
+      <div className={styles.barChartBody} style={{ gap: 20, justifyContent: 'flex-start' }}>
+        {sorted.map(s => (
+          <div key={s.name} className={styles.barRow} style={{ cursor: 'pointer' }}
+            onMouseMove={e => setHovered({ label: s.name, pct: s.pct, x: e.clientX, y: e.clientY })}
+            onMouseLeave={() => setHovered(null)}
+          >
+            <span className={styles.barLabel}>{s.name}</span>
+            <div className={styles.barTrackGroup}>
+              <div className={styles.barTrack} style={{ height: 20 }}>
+                <div className={styles.barFill} style={{ width: `${s.pct}%`, height: 20 }} />
+              </div>
+              <span className={styles.barPct}>{s.pct}%</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      {hovered && (
+        <div className={tooltipStyles.tip} style={{
+          position: 'fixed', left: hovered.x, top: hovered.y - 44,
+          transform: 'translateX(-50%)', pointerEvents: 'none',
+          whiteSpace: 'nowrap', zIndex: 9999,
+        }}>
+          {hovered.label} · {hovered.pct}% respondentes
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── GestorAvaliacaoView ──────────────────────────────────────────────────────
+function GestorAvaliacaoView({ data }: { data: NonNullable<EventDetail['gestorAvaliacao']> }) {
+  return (
+    <div className={styles.gestorAvalWrap}>
+
+      {/* Informações gerais */}
+      <div className={styles.gestorAvalSection}>
+        <div className={styles.gestorAvalSectionHeader}>
+          <span className={styles.gestorAvalSectionTitle}>Informações gerais</span>
+        </div>
+        <div className={styles.gestorAvalFieldsGrid}>
+          <div className={styles.gestorAvalField}>
+            <span className={styles.gestorAvalFieldLabel}>Respondente</span>
+            <span className={styles.gestorAvalFieldValue}>{data.respondente}</span>
+          </div>
+          <div className={styles.gestorAvalField}>
+            <span className={styles.gestorAvalFieldLabel}>Participantes</span>
+            <span className={styles.gestorAvalFieldValue}>{data.participantes} pessoas</span>
+          </div>
+          <div className={styles.gestorAvalField}>
+            <span className={styles.gestorAvalFieldLabel}>Localização</span>
+            <span className={styles.gestorAvalFieldValue}>{data.localizacao}</span>
+          </div>
+          <div className={styles.gestorAvalField}>
+            <span className={styles.gestorAvalFieldLabel}>Período</span>
+            <span className={styles.gestorAvalFieldValue}>{data.periodo}</span>
+          </div>
+          <div className={styles.gestorAvalField}>
+            <span className={styles.gestorAvalFieldLabel}>Avaliação geral</span>
+            <div className={styles.gestorAvalEscala}>
+              {Array.from({ length: 5 }, (_, i) => (
+                <Star key={i} size={16}
+                  fill={i < data.escala ? '#F59E0B' : 'none'}
+                  stroke={i < data.escala ? '#F59E0B' : 'var(--color-gray-300)'}
+                />
+              ))}
+              <span className={styles.gestorAvalEscalaLabel}>{data.escala} / 5</span>
+            </div>
+          </div>
+          <div className={[styles.gestorAvalField, styles.gestorAvalFieldFull].join(' ')}>
+            <span className={styles.gestorAvalFieldLabel}>Serviços avaliados</span>
+            <span className={styles.gestorAvalFieldValue}>{data.servicos.join(' · ')}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Perguntas objetivas */}
+      <div className={styles.gestorAvalSection}>
+        <div className={styles.gestorAvalSectionHeader}>
+          <span className={styles.gestorAvalSectionTitle}>Perguntas objetivas</span>
+          <span className={styles.gestorAvalSectionBadge}>{data.objetivas.length} perguntas</span>
+        </div>
+        {data.objetivas.map((obj, i) => (
+          <div key={i} className={styles.gestorAvalObjRow}>
+            <span className={styles.gestorAvalObjNum}>{String(i + 1).padStart(2, '0')}</span>
+            <span className={styles.gestorAvalObjText}>{obj.pergunta}</span>
+            <span className={[
+              styles.gestorAvalObjBadge,
+              obj.resposta === 'sim'          ? styles.gestorAvalObjSim          :
+              obj.resposta === 'parcialmente' ? styles.gestorAvalObjParcialmente  :
+              styles.gestorAvalObjNao,
+            ].join(' ')}>
+              {obj.resposta === 'sim' ? 'Sim' : obj.resposta === 'parcialmente' ? 'Parcialmente' : 'Não'}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Diferenciais */}
+      <div className={styles.gestorAvalSection}>
+        <div className={styles.gestorAvalSectionHeader}>
+          <span className={styles.gestorAvalSectionTitle}>Diferenciais destacados</span>
+          <span className={styles.gestorAvalSectionBadge}>{data.diferenciais.length}</span>
+        </div>
+        {data.diferenciais.length > 0 ? (
+          <div className={styles.gestorAvalChipsWrap}>
+            {data.diferenciais.map((d, i) => <span key={i} className={styles.gestorAvalChip}>{d}</span>)}
+          </div>
+        ) : (
+          <span className={styles.gestorAvalChipEmpty}>Nenhum diferencial informado.</span>
+        )}
+      </div>
+
+      {/* Sugestões de melhoria */}
+      <div className={styles.gestorAvalSection}>
+        <div className={styles.gestorAvalSectionHeader}>
+          <span className={styles.gestorAvalSectionTitle}>Sugestões de melhoria</span>
+          <span className={styles.gestorAvalSectionBadge}>{data.melhorias.length}</span>
+        </div>
+        {data.melhorias.length > 0 ? (
+          <div className={styles.gestorAvalChipsWrap}>
+            {data.melhorias.map((m, i) => <span key={i} className={styles.gestorAvalChip}>{m}</span>)}
+          </div>
+        ) : (
+          <span className={styles.gestorAvalChipEmpty}>Nenhuma sugestão informada.</span>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
 // ─── Avaliação Tab ────────────────────────────────────────────────────────────
-function AvaliacaoTab({ detail }: {
+function AvaliacaoTab({ role, detail }: {
   role: UserRole;
   event: EventItem;
   detail: EventDetail;
 }) {
+  const [view, setView] = useState<'beneficiario' | 'gestor'>('beneficiario');
+
+  // Dados calculados para a aba Beneficiário
+  const inscritos    = detail.participationData?.total ?? 250;
+  const respondentes = Math.round((detail.participationData?.attended ?? 208) * 0.73);
+  const taxaResp     = inscritos > 0 ? Math.round((respondentes / inscritos) * 100) : 0;
+
+  // % por serviço — derivado das notas
+  const svcRespostas = (detail.serviceRatings ?? []).map((s, i) => ({
+    name: s.name,
+    pct:  Math.min(100, Math.round((s.rating / 10) * taxaResp * (1 - i * 0.04))),
+  }));
+
   return (
     <div className={styles.impactoSection}>
-      {/* KPIs — NPS · IBE · Participação · Impactados */}
-      <div className={styles.statCardsRow}>
-        <StatCard label="NPS"                       value={detail.npsData?.npsScore.toString() ?? '—'}                                    trend={detail.npsData?.trend ?? '—'}                 trendDir={detail.npsData?.trendDir ?? 'up'}                 icon={<TrendingUp size={24} />} />
-        <StatCard label="IBE"                       value={detail.ibeScore?.score.toString() ?? '—'}                                    trend={detail.ibeScore?.trend ?? '—'}                trendDir={detail.ibeScore?.trendDir ?? 'up'}                icon={<Activity   size={24} />} />
-        <StatCard label="Taxa de Participação"      value={detail.participationData ? `${detail.participationData.percentage}%` : '—'} trend={detail.participationData?.trend ?? '—'}     trendDir={detail.participationData?.trendDir ?? 'up'}     icon={<Users     size={24} />} />
-        <StatCard label="Colaboradores Impactados"  value={detail.collaboratorsImpacted?.count.toString() ?? '—'}                       trend={detail.collaboratorsImpacted?.trend ?? '—'} trendDir={detail.collaboratorsImpacted?.trendDir ?? 'up'} icon={<Heart     size={24} />} />
+
+      {/* ── Toggle Beneficiário / Gestor ──────────────────────────── */}
+      <div className={styles.agViewToggle} style={{ marginBottom: 20 }}>
+        <button
+          type="button"
+          className={[styles.agViewBtn, view === 'beneficiario' ? styles.agViewBtnActive : ''].filter(Boolean).join(' ')}
+          onClick={() => setView('beneficiario')}
+        >
+          Beneficiário
+        </button>
+        <button
+          type="button"
+          className={[styles.agViewBtn, view === 'gestor' ? styles.agViewBtnActive : ''].filter(Boolean).join(' ')}
+          onClick={() => setView('gestor')}
+        >
+          Gestor
+        </button>
       </div>
 
-      {/* Evolução + Participação */}
-      <div className={styles.impactoRow}>
-        <EvolutionLineChart data={detail.evaluationHistory} />
-        <ParticipationBarChart eventDetail={detail} />
-      </div>
+      {/* ── Aba Beneficiário ──────────────────────────────────────── */}
+      {view === 'beneficiario' && (
+        <>
+          {/* KPIs */}
+          <div className={styles.statCardsRow}>
+            <StatCard label="Total de inscritos"  value={inscritos.toString()}    trend="—" trendDir="up" icon={<Users         size={24} />} />
+            <StatCard label="Total de respostas"  value={respondentes.toString()} trend="—" trendDir="up" icon={<ClipboardList size={24} />} />
+            <StatCard label="Taxa de resposta"    value={`${taxaResp}%`}          trend="—" trendDir="up" icon={<Target        size={24} />} />
+          </div>
 
-      {/* Distribuição NPS + Radar */}
-      <div className={styles.chartsRow}>
-        <NPSDistribution npsScore={detail.npsData?.npsScore} />
-        <RadarChart data={detail.radarDimensions} />
-      </div>
+          {/* % respondentes por serviço */}
+          {svcRespostas.length > 0 && <ServiceRespostas data={svcRespostas} />}
 
-      {/* Notas por serviço */}
-      <ServiceRatings data={detail.serviceRatings} />
+          {/* Comentários — visível apenas para admin */}
+          {role === 'adm' && <QualitativeComments data={detail.evaluationComments} />}
+        </>
+      )}
 
-      {/* Comentários qualitativos */}
-      <QualitativeComments data={detail.evaluationComments} />
+      {/* ── Aba Gestor ───────────────────────────────────────────── */}
+      {view === 'gestor' && (
+        detail.gestorAvaliacao
+          ? <GestorAvaliacaoView data={detail.gestorAvaliacao} />
+          : <Feedback
+              type="info"
+              title="Pesquisa do gestor ainda não respondida"
+              description="A pesquisa será enviada ao gestor responsável após a conclusão do evento. Os dados aparecerão aqui assim que forem registrados."
+            />
+      )}
 
-      {/* Evento vs. Média */}
-      <EventoVsMediaCard detail={detail} />
     </div>
   );
 }
@@ -3414,9 +4311,15 @@ function RelatorioTab({
     }
   }
 
-  const ibe      = detail.ibeScore?.score ?? 7.8;
-  const partPct  = detail.participationData?.percentage ?? 83;
-  const attended = detail.participationData?.attended ?? 208;
+  const ibe           = detail.ibeScore?.score ?? 7.8;
+  const nps           = detail.npsData?.npsScore ?? 48;
+  const partPct       = detail.participationData?.percentage ?? 83;
+  const attended      = detail.participationData?.attended ?? 208;
+  const totalVagas    = computeTotalVagas(detail, event.id);
+  const inscritos     = detail.participationData?.total ?? 250;
+  const respondentes  = Math.round(attended * 0.73);
+  const taxaEngaj     = totalVagas > 0 ? Math.round((inscritos / totalVagas) * 100) : 0;
+  const taxaResp      = inscritos > 0  ? Math.round((respondentes / inscritos) * 100) : 0;
 
   /* ── Locked view (empresa, not published) ─────────────────────── */
   if (role === 'empresa' && !published) {
@@ -3527,28 +4430,120 @@ function RelatorioTab({
           {/* Métricas */}
           <section className={styles.relatorioSection}>
             <h3 className={styles.relatorioSectionTitle}>Métricas do evento</h3>
+            {/* Linha 1: IBE · NPS · Total de vagas · Total de inscritos */}
             <div className={styles.relatorioMetricsRow}>
               <div className={styles.relatorioMetricCard}>
                 <span className={styles.relatorioMetricValue} style={{ color: '#B25557' }}>{ibe}</span>
                 <span className={styles.relatorioMetricLabel}>IBE</span>
               </div>
               <div className={styles.relatorioMetricCard}>
-                <span className={styles.relatorioMetricValue} style={{ color: 'var(--color-brand-600)' }}>{partPct}%</span>
-                <span className={styles.relatorioMetricLabel}>Participação</span>
+                <span className={styles.relatorioMetricValue} style={{ color: 'var(--color-brand-600)' }}>{nps}</span>
+                <span className={styles.relatorioMetricLabel}>NPS</span>
               </div>
               <div className={styles.relatorioMetricCard}>
-                <span className={styles.relatorioMetricValue}>{attended}</span>
-                <span className={styles.relatorioMetricLabel}>Colaboradores atendidos</span>
+                <span className={styles.relatorioMetricValue}>{totalVagas}</span>
+                <span className={styles.relatorioMetricLabel}>Total de vagas</span>
               </div>
+              <div className={styles.relatorioMetricCard}>
+                <span className={styles.relatorioMetricValue}>{inscritos}</span>
+                <span className={styles.relatorioMetricLabel}>Total de inscritos</span>
+              </div>
+            </div>
+            {/* Linha 2: Taxa de engajamento · Total de respondentes · Taxa de respostas */}
+            <div className={[styles.relatorioMetricsRow, styles.relatorioMetricsRowSecond].join(' ')}>
+              <div className={styles.relatorioMetricCard}>
+                <span className={styles.relatorioMetricValue}>{taxaEngaj}%</span>
+                <span className={styles.relatorioMetricLabel}>Taxa de engajamento</span>
+              </div>
+              <div className={styles.relatorioMetricCard}>
+                <span className={styles.relatorioMetricValue}>{respondentes}</span>
+                <span className={styles.relatorioMetricLabel}>Total de respondentes</span>
+              </div>
+              <div className={styles.relatorioMetricCard}>
+                <span className={styles.relatorioMetricValue}>{taxaResp}%</span>
+                <span className={styles.relatorioMetricLabel}>Taxa de respostas</span>
+              </div>
+              {/* Spacer to align 3 cards with 4-column row above */}
+              <div className={styles.relatorioMetricSpacer} />
             </div>
           </section>
 
-          {/* Gráficos — stacked (column) to avoid whitespace in ServiceRatings */}
+          {/* Visualizações */}
           <section className={styles.relatorioSection}>
             <h3 className={styles.relatorioSectionTitle}>Visualizações</h3>
+            <div className={styles.chartsRow}>
+              <NPSGaugeReport npsScore={detail.npsData?.npsScore} />
+              <RadarChart data={detail.radarDimensions} />
+            </div>
             <div className={styles.relatorioChartsStack}>
               <ParticipationBarChart eventDetail={detail} />
-              <ServiceRatings data={detail.serviceRatings} />
+              <RankingAreas />
+            </div>
+          </section>
+
+          {/* Evento vs Média + KPIs de bem-estar — mesma linha */}
+          <section className={styles.relatorioSection}>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 16, alignItems: 'stretch' }}>
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                <EventoVsMediaCard detail={detail} />
+              </div>
+              <StatCard
+                label="Melhora de bem-estar"
+                value="+18%"
+                trend="vs. mês anterior"
+                trendDir="up"
+                icon={<Heart size={24} />}
+              />
+              <StatCard
+                label="Redução de estresse"
+                value="+24%"
+                trend="vs. mês anterior"
+                trendDir="up"
+                icon={<Activity size={24} />}
+              />
+              <StatCard
+                label="Melhora de foco"
+                value="+21%"
+                trend="vs. mês anterior"
+                trendDir="up"
+                icon={<Zap size={24} />}
+              />
+            </div>
+          </section>
+
+          {/* Comentários qualitativos — HUG (sem altura fixa) */}
+          <section className={styles.relatorioSection}>
+            <QualitativeComments data={detail.evaluationComments ?? []} />
+          </section>
+
+          {/* Métricas financeiras */}
+          <section className={styles.relatorioSection}>
+            <h3 className={styles.relatorioSectionTitle}>Métricas financeiras</h3>
+            <div className={styles.statCardsRow}>
+              <StatCard
+                label="Investimento total"
+                value="R$ 42,8k"
+                trend=""
+                trendDir="up"
+                hideTrend
+                icon={<DollarSign size={24} />}
+              />
+              <StatCard
+                label="Custo por colaborador impactado"
+                value="R$ 34,52"
+                trend=""
+                trendDir="up"
+                hideTrend
+                icon={<Users size={24} />}
+              />
+              <StatCard
+                label="Custo por ação"
+                value="R$ 18,70"
+                trend=""
+                trendDir="up"
+                hideTrend
+                icon={<TrendingUp size={24} />}
+              />
             </div>
           </section>
 
@@ -3693,7 +4688,6 @@ export function EventDetailScreen({
                   {event.endDate
                     ? `${event.startDate} – ${event.endDate}`
                     : event.startDate}
-                  <span className={styles.pageDateId}> · {event.id}</span>
                 </span>
               </div>
             </div>
@@ -3782,6 +4776,7 @@ export function EventDetailScreen({
                   editMode={editMode}
                   ev={displayValues}
                   setEv={setEditValues}
+                  eventName={event.name}
                 />
               </>
             )}

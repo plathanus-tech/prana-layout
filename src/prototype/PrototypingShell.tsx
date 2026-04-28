@@ -2,7 +2,7 @@
 // Não faz parte do sistema final; serve para navegar entre telas e testar perfis.
 
 import { useState } from 'react';
-import { LayoutDashboard, TrendingUp, Layers, Eye, EyeOff, List, FileText, Users, ContactRound, Building2 } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, Layers, Eye, EyeOff, List, FileText, Users, ContactRound, Building2, LogIn, KeyRound, Tag } from 'lucide-react';
 import { DashboardScreen, type UserRole, type ActiveTab } from './screens/admin/DashboardScreen';
 import { EventsScreen, type EventItem } from './screens/admin/EventsScreen';
 import { EventDetailScreen } from './screens/admin/EventDetailScreen';
@@ -15,10 +15,12 @@ import { ClienteDetailScreen } from './screens/admin/ClienteDetailScreen';
 import { PesquisaScreen, type Pesquisa } from './screens/admin/PesquisaScreen';
 import { PesquisaDetailScreen } from './screens/admin/PesquisaDetailScreen';
 import { ProfessionalSurveyScreen, type EventSurvey } from './screens/ProfessionalSurveyScreen';
+import { AdminLoginScreen, type LoginView } from './screens/admin/AdminLoginScreen';
+import { ServicosScreen } from './screens/admin/ServicosScreen';
 import styles from './PrototypingShell.module.css';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
-type ActiveJourney  = 'dashboard' | 'eventos' | 'usuarios' | 'profissionais' | 'clientes' | 'pesquisa' | 'pesquisa-profissional';
+type ActiveJourney  = 'login' | 'dashboard' | 'eventos' | 'usuarios' | 'profissionais' | 'servicos' | 'clientes' | 'pesquisa' | 'pesquisa-profissional';
 type EventsView    = 'lista' | 'detalhe';
 type ProfView      = 'lista' | 'detalhe';
 type ClientesView  = 'lista' | 'detalhe';
@@ -37,6 +39,35 @@ interface ScreenDef {
 
 // ─── Telas registradas ────────────────────────────────────────────────────────
 const SCREENS: ScreenDef[] = [
+  // — Jornada: Login ————————————————————————————————————————————————————————
+  {
+    id: 'login',
+    journey: 'login',
+    index: 1,
+    label: 'Login',
+    sub: 'E-mail · Senha · Lembrar-me',
+    allowedRoles: ['adm', 'empresa'],
+    icon: <LogIn size={15} />,
+  },
+  {
+    id: 'login-recuperar',
+    journey: 'login',
+    index: 2,
+    label: 'Recuperar senha',
+    sub: 'Redefinição por e-mail',
+    allowedRoles: ['adm', 'empresa'],
+    icon: <KeyRound size={15} />,
+  },
+  {
+    id: 'login-nova-senha',
+    journey: 'login',
+    index: 3,
+    label: 'Nova senha',
+    sub: 'Criar e confirmar nova senha',
+    allowedRoles: ['adm', 'empresa'],
+    icon: <KeyRound size={15} />,
+  },
+
   // — Jornada: Dashboard ——————————————————————————————————————————————————————
   {
     id: 'visao-geral',
@@ -110,6 +141,17 @@ const SCREENS: ScreenDef[] = [
     icon: <ContactRound size={15} />,
   },
 
+  // — Jornada: Serviços (Admin only) ─────────────────────────────────────────
+  {
+    id: 'servicos',
+    journey: 'servicos',
+    index: 1,
+    label: 'Serviços',
+    sub: 'Categorias · Tipos · Status',
+    allowedRoles: ['adm'],
+    icon: <Tag size={15} />,
+  },
+
   // — Jornada: Pesquisa (Admin + Empresa) ────────────────────────────────────
   {
     id: 'pesquisa',
@@ -135,7 +177,7 @@ const SCREENS: ScreenDef[] = [
     id: 'clientes',
     journey: 'clientes',
     index: 1,
-    label: 'Clientes',
+    label: 'Empresas',
     sub: 'Tabela · Busca · CRM',
     allowedRoles: ['adm'],
     icon: <Building2 size={15} />,
@@ -144,7 +186,7 @@ const SCREENS: ScreenDef[] = [
     id: 'clientes-detalhe',
     journey: 'clientes',
     index: 2,
-    label: 'Detalhe do Cliente',
+    label: 'Detalhe da Empresa',
     sub: 'CRM · Contatos · Configurações',
     allowedRoles: ['adm'],
     icon: <Building2 size={15} />,
@@ -164,6 +206,16 @@ const SCREENS: ScreenDef[] = [
 
 // ─── Indicadores de componentes ativos por jornada / perfil ──────────────────
 function getIndicators(role: UserRole, journey: ActiveJourney, activeTab: ActiveTab, eventsView: EventsView = 'lista', profView: ProfView = 'lista', clientesView: ClientesView = 'lista', pesquisaView: PesquisaView = 'lista') {
+  if (journey === 'login') {
+    return [
+      { label: 'Campo e-mail',           on: true },
+      { label: 'Campo senha',            on: true },
+      { label: 'Mostrar/ocultar senha',  on: true },
+      { label: 'Lembrar-me',             on: true },
+      { label: 'Recuperar senha',        on: true },
+      { label: 'Criar nova senha',       on: true },
+    ];
+  }
   if (journey === 'pesquisa-profissional') {
     return [
       { label: 'Formulário com 7 perguntas', on: true },
@@ -204,6 +256,15 @@ function getIndicators(role: UserRole, journey: ActiveJourney, activeTab: Active
       { label: 'Tabela de clientes',       on: true },
       { label: 'Busca por nome/CNPJ',      on: true },
       { label: 'Ver detalhe da empresa',   on: true },
+    ];
+  }
+  if (journey === 'servicos') {
+    return [
+      { label: 'Aba Categoria de serviço', on: true },
+      { label: 'Aba Tipo de serviço',      on: true },
+      { label: 'Modal Nova categoria',     on: true },
+      { label: 'Modal Novo tipo',          on: true },
+      { label: 'Desativar / Reativar',     on: true },
     ];
   }
   if (journey === 'profissionais' && profView === 'detalhe') {
@@ -257,6 +318,22 @@ function getIndicators(role: UserRole, journey: ActiveJourney, activeTab: Active
 }
 
 // ─── Thumbnail por jornada ────────────────────────────────────────────────────
+function LoginThumb({ active }: { active: boolean }) {
+  void active;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '6px' }}>
+      <div style={{ background: 'rgba(255,255,255,0.85)', borderRadius: 4, padding: '6px 8px', width: '75%', display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div className={styles.thumbRow} style={{ width: '40%', margin: '0 auto 2px' }} />
+        <div className={styles.thumbRow} style={{ width: '70%', margin: '0 auto' }} />
+        <div className={styles.thumbRow} style={{ width: '55%', margin: '0 auto 4px' }} />
+        <div className={styles.thumbRow} style={{ width: '100%', height: 5 }} />
+        <div className={styles.thumbRow} style={{ width: '100%', height: 5 }} />
+        <div className={styles.thumbRow} style={{ width: '100%', height: 8, marginTop: 2 }} />
+      </div>
+    </div>
+  );
+}
+
 function DashboardThumb({ active }: { active: boolean }) {
   return (
     <>
@@ -358,6 +435,7 @@ export function PrototypingShell() {
   const [role,                setRole]                = useState<UserRole>('adm');
   const [activeTab,           setActiveTab]           = useState<ActiveTab>('visao-geral');
   const [activeJourney,       setActiveJourney]       = useState<ActiveJourney>('dashboard');
+  const [loginView,           setLoginView]           = useState<LoginView>('login');
   const [eventsView,          setEventsView]          = useState<EventsView>('lista');
   const [selectedEvent,       setSelectedEvent]       = useState<EventItem | null>(null);
   const [profView,            setProfView]            = useState<ProfView>('lista');
@@ -375,6 +453,7 @@ export function PrototypingShell() {
     eventos:       'eventos',
     usuarios:      'usuarios',
     profissionais: 'profissionais',
+    servicos:      'servicos',
     clientes:      'clientes',
     pesquisa:      'pesquisa',
   };
@@ -450,6 +529,10 @@ export function PrototypingShell() {
     if (!screen.allowedRoles.includes(role)) return;
     setActiveJourney(screen.journey);
     if (screen.tab) setActiveTab(screen.tab);
+    // — Login ——————————————————————————————————————————————————————————————
+    if (screen.id === 'login')            { setActiveJourney('login'); setLoginView('login'); }
+    if (screen.id === 'login-recuperar')  { setActiveJourney('login'); setLoginView('recuperar'); }
+    if (screen.id === 'login-nova-senha') { setActiveJourney('login'); setLoginView('nova-senha'); }
     // Navegação direta pelo painel de telas do protótipo
     if (screen.id === 'eventos-lista')   setEventsView('lista');
     if (screen.id === 'eventos-detalhe') {
@@ -472,6 +555,9 @@ export function PrototypingShell() {
     if (screen.id === 'profissionais') {
       setActiveJourney('profissionais');
       setProfView('lista');
+    }
+    if (screen.id === 'servicos') {
+      setActiveJourney('servicos');
     }
     if (screen.id === 'profissionais-detalhe') {
       setActiveJourney('profissionais');
@@ -507,7 +593,7 @@ export function PrototypingShell() {
       setActiveJourney('clientes');
       // Use Itaú Unibanco as demo if none selected
       if (!selectedCliente) {
-        setSelectedCliente({ id: 'CLI-001', name: 'Itaú Unibanco', cnpj: '60.872.504/0001-23', localizacao: 'São Paulo, SP' });
+        setSelectedCliente({ id: 'CLI-001', name: 'Itaú Unibanco', cnpj: '60.872.504/0001-23', localizacao: 'São Paulo, SP', tipoContrato: 'recorrente' });
       }
       setClientesView('detalhe');
     }
@@ -520,13 +606,15 @@ export function PrototypingShell() {
 
   // Agrupa telas por jornada para exibição na sidebar
   const journeyGroups: { journey: ActiveJourney; label: string; screens: ScreenDef[] }[] = [
+    { journey: 'login',     label: 'Jornada · Login',           screens: SCREENS.filter(s => s.journey === 'login')     },
     { journey: 'dashboard', label: 'Jornada · Dashboard',       screens: SCREENS.filter(s => s.journey === 'dashboard') },
     { journey: 'eventos',   label: 'Jornada · Eventos',         screens: SCREENS.filter(s => s.journey === 'eventos')   },
     ...(role === 'adm' ? [{ journey: 'usuarios' as const, label: 'Jornada · Usuário', screens: SCREENS.filter(s => s.journey === 'usuarios') }] : []),
     ...(role === 'adm' ? [{ journey: 'profissionais' as const, label: 'Jornada · Profissionais', screens: SCREENS.filter(s => s.journey === 'profissionais') }] : []),
+    ...(role === 'adm' ? [{ journey: 'servicos' as const, label: 'Jornada · Serviços', screens: SCREENS.filter(s => s.journey === 'servicos') }] : []),
     { journey: 'pesquisa' as const, label: 'Jornada · Pesquisa', screens: SCREENS.filter(s => s.journey === 'pesquisa') },
     ...(role === 'empresa' ? [{ journey: 'pesquisa-profissional' as const, label: 'Jornada · Pesquisa Pós-Evento', screens: SCREENS.filter(s => s.journey === 'pesquisa-profissional') }] : []),
-    ...(role === 'adm' ? [{ journey: 'clientes' as const, label: 'Jornada · Clientes', screens: SCREENS.filter(s => s.journey === 'clientes') }] : []),
+    ...(role === 'adm' ? [{ journey: 'clientes' as const, label: 'Jornada · Empresas', screens: SCREENS.filter(s => s.journey === 'clientes') }] : []),
   ];
 
   return (
@@ -579,11 +667,15 @@ export function PrototypingShell() {
             <div className={styles.screenList}>
               {group.screens.map(screen => {
                 const isActive = (() => {
+                  if (screen.id === 'login')            return activeJourney === 'login' && loginView === 'login';
+                  if (screen.id === 'login-recuperar')  return activeJourney === 'login' && loginView === 'recuperar';
+                  if (screen.id === 'login-nova-senha') return activeJourney === 'login' && loginView === 'nova-senha';
                   if (screen.journey === 'dashboard') return activeJourney === 'dashboard' && activeTab === screen.tab;
                   if (screen.id === 'eventos-lista')   return activeJourney === 'eventos' && eventsView === 'lista';
                   if (screen.id === 'eventos-detalhe') return activeJourney === 'eventos' && eventsView === 'detalhe';
                   if (screen.id === 'usuarios')               return activeJourney === 'usuarios';
                   if (screen.id === 'profissionais')          return activeJourney === 'profissionais' && profView === 'lista';
+                  if (screen.id === 'servicos')               return activeJourney === 'servicos';
                   if (screen.id === 'profissionais-detalhe')  return activeJourney === 'profissionais' && profView === 'detalhe';
                   if (screen.id === 'pesquisa')               return activeJourney === 'pesquisa' && pesquisaView === 'lista';
                   if (screen.id === 'pesquisa-detalhe')       return activeJourney === 'pesquisa' && pesquisaView === 'detalhe';
@@ -607,13 +699,15 @@ export function PrototypingShell() {
                   >
                     {/* Thumbnail sketch */}
                     <div className={[styles.thumbnail, isActive ? styles.thumbnailActive : ''].join(' ')}>
-                      {screen.id === 'usuarios' || screen.id === 'profissionais' || screen.id === 'clientes' || screen.id === 'pesquisa' || screen.id === 'pesquisa-profissional'
-                        ? <UsersThumb active={isActive} />
-                        : screen.id === 'profissionais-detalhe' || screen.id === 'eventos-detalhe' || screen.id === 'clientes-detalhe' || screen.id === 'pesquisa-detalhe'
-                          ? <EventDetailThumb active={isActive} />
-                          : screen.journey === 'eventos'
-                            ? <EventsThumb active={isActive} />
-                            : <DashboardThumb active={isActive} />
+                      {screen.journey === 'login'
+                        ? <LoginThumb active={isActive} />
+                        : screen.id === 'usuarios' || screen.id === 'profissionais' || screen.id === 'clientes' || screen.id === 'pesquisa' || screen.id === 'pesquisa-profissional' || screen.id === 'servicos'
+                          ? <UsersThumb active={isActive} />
+                          : screen.id === 'profissionais-detalhe' || screen.id === 'eventos-detalhe' || screen.id === 'clientes-detalhe' || screen.id === 'pesquisa-detalhe'
+                            ? <EventDetailThumb active={isActive} />
+                            : screen.journey === 'eventos'
+                              ? <EventsThumb active={isActive} />
+                              : <DashboardThumb active={isActive} />
                       }
                       {/* Number badge */}
                       <div className={[styles.thumbNum, isActive ? styles.thumbNumActive : ''].join(' ')}>
@@ -721,7 +815,13 @@ export function PrototypingShell() {
 
       {/* ── Área principal ─────────────────────────────────────────────────── */}
       <main className={styles.content}>
-        {activeJourney === 'pesquisa-profissional' ? (
+        {activeJourney === 'login' ? (
+          <AdminLoginScreen
+            view={loginView}
+            onViewChange={v => setLoginView(v)}
+            onLoginSuccess={() => setActiveJourney('dashboard')}
+          />
+        ) : activeJourney === 'pesquisa-profissional' ? (
           <ProfessionalSurveyScreen
             viewport="desktop"
             survey={{
@@ -779,6 +879,12 @@ export function PrototypingShell() {
             sidebarOffset={200}
             onNavChange={handleNavChange}
             onViewDetail={handleViewProfDetail}
+          />
+        ) : activeJourney === 'servicos' ? (
+          <ServicosScreen
+            role={role}
+            sidebarOffset={200}
+            onNavChange={handleNavChange}
           />
         ) : activeJourney === 'usuarios' ? (
           <UsersScreen

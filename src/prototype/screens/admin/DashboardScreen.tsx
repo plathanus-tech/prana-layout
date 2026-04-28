@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import {
   CalendarCheck, Building2, ContactRound, DollarSign,
-  MapPin, TrendingUp, Users, Activity, Heart, ChevronDown,
+  MapPin, TrendingUp, Users, Activity, Heart, ChevronDown, Zap,
 } from 'lucide-react';
 import { Sidebar } from '../../../components/Sidebar/Sidebar';
 import styles from './DashboardScreen.module.css';
@@ -44,20 +44,21 @@ interface StatCardProps {
 function StatCard({ label, value, trend, trendDir, icon }: StatCardProps) {
   return (
     <div className={styles.statCard}>
-      <div className={styles.statBody}>
-        <div className={styles.statLabelGroup}>
-          <span className={styles.statLabel}>{label}</span>
-          <span className={styles.statValue}>{value}</span>
-        </div>
-        <div className={styles.statFooter}>
-          <span className={[styles.trendBadge, trendDir === 'up' ? styles.trendUp : styles.trendDown].join(' ')}>
-            <TrendArrow dir={trendDir} />
-            {trend}
-          </span>
-          <span className={styles.trendLabel}>vs mês anterior</span>
-        </div>
+      {/* Linha 1: título + ícone */}
+      <div className={styles.statHeader}>
+        <span className={styles.statLabel}>{label}</span>
+        <div className={styles.statIconBox}>{icon}</div>
       </div>
-      <div className={styles.statIconBox}>{icon}</div>
+      {/* Linha 2: número */}
+      <span className={styles.statValue}>{value}</span>
+      {/* Linhas 3–4: variação + "vs mês anterior" */}
+      <div className={styles.statFooter}>
+        <span className={[styles.trendBadge, trendDir === 'up' ? styles.trendUp : styles.trendDown].join(' ')}>
+          <TrendArrow dir={trendDir} />
+          {trend}
+        </span>
+        <span className={styles.trendLabel}>vs mês anterior</span>
+      </div>
     </div>
   );
 }
@@ -110,15 +111,18 @@ function EventRow({ dateTop, dateBottom, title, company, location, status, divid
 // ─── Horizontal Bar Chart (Visão Geral) ──────────────────────────────────────
 interface BarItem { label: string; pct: number; }
 function HorizontalBarChart({
-  title, items, barHeight = 14, rowGap = 8,
-}: { title: string; items: BarItem[]; barHeight?: number; rowGap?: number }) {
+  title, subtitle, items, barHeight = 14, rowGap = 8, style, centerContent = false,
+}: { title: string; subtitle?: string; items: BarItem[]; barHeight?: number; rowGap?: number; style?: React.CSSProperties; centerContent?: boolean }) {
   const maxPct = items[0].pct;
   const [hovered, setHovered] = useState<{ label: string; pct: number; x: number; y: number } | null>(null);
 
   return (
-    <div className={styles.chartCard}>
-      <span className={styles.chartTitle}>{title}</span>
-      <div className={styles.barChartBody} style={{ gap: rowGap }}>
+    <div className={styles.chartCard} style={style}>
+      <div>
+        <span className={styles.chartTitle}>{title}</span>
+        {subtitle && <span className={styles.chartSubtitle}>{subtitle}</span>}
+      </div>
+      <div className={styles.barChartBody} style={{ gap: rowGap, ...(centerContent ? { flex: 1, justifyContent: 'center' } : {}) }}>
         {items.map(item => (
           <div key={item.label} className={styles.barRow}
             onMouseMove={(e) => setHovered({ label: item.label, pct: item.pct, x: e.clientX, y: e.clientY })}
@@ -203,7 +207,7 @@ function PieChart() {
     { label: 'Não', pct: 16, color: '#CFADAE' },
   ];
   return (
-    <div className={styles.chartCard}>
+    <div className={styles.chartCard} style={{ minHeight: 'unset' }}>
       <span className={styles.chartTitle}>Repetiria a ação</span>
       <div className={styles.pieBody}>
         <PieChartSVG slices={slices} />
@@ -225,14 +229,14 @@ function PieChart() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // ─── Evolution Line Chart ─────────────────────────────────────────────────────
-interface LinePoint { month: string; nps: number; ibe: number; }
+interface LinePoint { month: string; ibe: number; }
 const LINE_DATA: LinePoint[] = [
-  { month: 'Jan', nps: 68, ibe: 71 },
-  { month: 'Fev', nps: 72, ibe: 69 },
-  { month: 'Mar', nps: 70, ibe: 74 },
-  { month: 'Abr', nps: 75, ibe: 77 },
-  { month: 'Mai', nps: 78, ibe: 73 },
-  { month: 'Jun', nps: 82, ibe: 80 },
+  { month: 'Jan', ibe: 71 },
+  { month: 'Fev', ibe: 69 },
+  { month: 'Mar', ibe: 74 },
+  { month: 'Abr', ibe: 77 },
+  { month: 'Mai', ibe: 73 },
+  { month: 'Jun', ibe: 80 },
 ];
 
 function EvolutionLineChart() {
@@ -246,17 +250,15 @@ function EvolutionLineChart() {
   const xOf = (i: number) => padL + (i / (n - 1)) * chartW;
   const yOf = (v: number) => padT + chartH - ((v - yMin) / (yMax - yMin)) * chartH;
 
-  const npsPath = LINE_DATA.map((d, i) => `${i === 0 ? 'M' : 'L'} ${xOf(i).toFixed(1)} ${yOf(d.nps).toFixed(1)}`).join(' ');
   const ibePath = LINE_DATA.map((d, i) => `${i === 0 ? 'M' : 'L'} ${xOf(i).toFixed(1)} ${yOf(d.ibe).toFixed(1)}`).join(' ');
   const gridVals = [60, 70, 80, 90];
 
   return (
     <div className={styles.chartCardWide} style={{ minHeight: 'unset' }}>
       <div className={styles.chartHeaderRow}>
-        <span className={styles.chartTitle}>Evolução</span>
-        <div className={styles.lineLegend}>
-          <div className={styles.lineLegendItem}><span className={styles.lineDot} style={{ background: '#B25557' }} />NPS</div>
-          <div className={styles.lineLegendItem}><span className={styles.lineDot} style={{ background: '#CFADAE' }} />IBE</div>
+        <div>
+          <div className={styles.chartTitle}>Evolução IBE</div>
+          <div className={styles.chartSubtitle}>Últimos 6 meses</div>
         </div>
       </div>
       <div style={{ position: 'relative' }}>
@@ -270,23 +272,15 @@ function EvolutionLineChart() {
           {LINE_DATA.map((d, i) => (
             <text key={d.month} x={xOf(i)} y={H - 8} textAnchor="middle" fontSize="11" fill="#9E8E8F">{d.month}</text>
           ))}
-          <path d={`${npsPath} L ${xOf(n - 1)} ${padT + chartH} L ${xOf(0)} ${padT + chartH} Z`} fill="#B25557" fillOpacity="0.07" />
-          <path d={`${ibePath} L ${xOf(n - 1)} ${padT + chartH} L ${xOf(0)} ${padT + chartH} Z`} fill="#CFADAE" fillOpacity="0.12" />
-          <path d={npsPath} fill="none" stroke="#B25557" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d={ibePath} fill="none" stroke="#CFADAE" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={`${ibePath} L ${xOf(n - 1)} ${padT + chartH} L ${xOf(0)} ${padT + chartH} Z`} fill="#B25557" fillOpacity="0.08" />
+          <path d={ibePath} fill="none" stroke="#B25557" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           {hovered && (
             <line x1={hovered.px} y1={padT} x2={hovered.px} y2={padT + chartH}
               stroke="#B25557" strokeWidth="1" strokeDasharray="4 2" opacity="0.4" />
           )}
           {LINE_DATA.map((d, i) => (
-            <circle key={`n${i}`} cx={xOf(i)} cy={yOf(d.nps)} r={hovered?.month === d.month ? 6 : 4}
+            <circle key={i} cx={xOf(i)} cy={yOf(d.ibe)} r={hovered?.month === d.month ? 6 : 4}
               fill="#B25557" stroke="#fff" strokeWidth="2" style={{ cursor: 'pointer' }}
-              onMouseEnter={() => setHovered({ ...d, px: xOf(i), py: yOf(d.nps) })}
-              onMouseLeave={() => setHovered(null)} />
-          ))}
-          {LINE_DATA.map((d, i) => (
-            <circle key={`e${i}`} cx={xOf(i)} cy={yOf(d.ibe)} r={hovered?.month === d.month ? 6 : 4}
-              fill="#CFADAE" stroke="#fff" strokeWidth="2" style={{ cursor: 'pointer' }}
               onMouseEnter={() => setHovered({ ...d, px: xOf(i), py: yOf(d.ibe) })}
               onMouseLeave={() => setHovered(null)} />
           ))}
@@ -299,7 +293,7 @@ function EvolutionLineChart() {
             transform: 'translate(-50%, -120%)',
             pointerEvents: 'none', whiteSpace: 'nowrap', opacity: 1,
           }}>
-            {hovered.month} · NPS {hovered.nps} · IBE {hovered.ibe}
+            {hovered.month} · IBE {hovered.ibe}
           </div>
         )}
       </div>
@@ -308,23 +302,47 @@ function EvolutionLineChart() {
 }
 
 // ─── Grouped Bar Chart (Participação) ────────────────────────────────────────
-interface PartItem { label: string; convidados: number; presentes: number; }
-const PART_DATA: PartItem[] = [
-  { label: 'SIPAT Itaú',  convidados: 200, presentes: 165 },
-  { label: 'Sem. Saúde',  convidados: 150, presentes: 120 },
-  { label: 'QV Natura',   convidados: 300, presentes: 240 },
-  { label: 'Day Ambev',   convidados: 180, presentes: 160 },
-  { label: 'CIPA Vale',   convidados: 250, presentes: 210 },
+interface PartItem { label: string; vagas: number; participantes: number; }
+
+// Dados por evento (visão padrão empresa / adm sem filtro de evento único)
+const PART_DATA_EVENTOS: PartItem[] = [
+  { label: 'SIPAT Itaú',  vagas: 200, participantes: 165 },
+  { label: 'Sem. Saúde',  vagas: 150, participantes: 120 },
+  { label: 'QV Natura',   vagas: 300, participantes: 240 },
+  { label: 'Day Ambev',   vagas: 180, participantes: 160 },
+  { label: 'CIPA Vale',   vagas: 250, participantes: 210 },
 ];
 
-function ParticipationBarChart() {
+// Dados por dia — usados quando há filtro de evento único (empresa)
+const PART_DATA_POR_DIA: Record<string, PartItem[]> = {
+  'sipat-itau':    [
+    { label: 'Dia 1', vagas: 100, participantes: 82 },
+    { label: 'Dia 2', vagas: 100, participantes: 83 },
+  ],
+  'semana-natura': [
+    { label: 'Dia 1', vagas: 75,  participantes: 60 },
+    { label: 'Dia 2', vagas: 75,  participantes: 60 },
+  ],
+  'dia-ambev': [
+    { label: 'Dia 1', vagas: 90,  participantes: 78 },
+    { label: 'Dia 2', vagas: 90,  participantes: 82 },
+  ],
+};
+
+function ParticipationBarChart({ role = 'adm', filterEvent = '' }: { role?: UserRole; filterEvent?: string }) {
+  // empresa + evento único → por dia; caso contrário → por evento
+  const data: PartItem[] =
+    role === 'empresa' && filterEvent
+      ? (PART_DATA_POR_DIA[filterEvent] ?? PART_DATA_EVENTOS)
+      : PART_DATA_EVENTOS;
+
   const [hovered, setHovered] = useState<(PartItem & { bx: number; by: number }) | null>(null);
   const W = 400, H = 220;
   const padL = 8, padT = 20, padR = 8, padB = 44;
   const chartW = W - padL - padR;
   const chartH = H - padT - padB;
-  const n = PART_DATA.length;
-  const maxVal = Math.max(...PART_DATA.map(d => d.convidados));
+  const n = data.length;
+  const maxVal = Math.max(...data.map(d => d.vagas));
   const groupW = chartW / n;
   const barW = 22, barGap = 5;
   const xCenter = (i: number) => padL + i * groupW + groupW / 2;
@@ -336,24 +354,24 @@ function ParticipationBarChart() {
       <div className={styles.chartHeaderRow}>
         <span className={styles.chartTitle}>Participação</span>
         <div className={styles.lineLegend}>
-          <div className={styles.lineLegendItem}><span className={styles.lineDot} style={{ background: '#CFADAE', borderRadius: 2 }} />Convidados</div>
-          <div className={styles.lineLegendItem}><span className={styles.lineDot} style={{ background: '#B25557', borderRadius: 2 }} />Presentes</div>
+          <div className={styles.lineLegendItem}><span className={styles.lineDot} style={{ background: '#CFADAE', borderRadius: 2 }} />Vagas</div>
+          <div className={styles.lineLegendItem}><span className={styles.lineDot} style={{ background: '#B25557', borderRadius: 2 }} />Participantes</div>
         </div>
       </div>
       <div style={{ position: 'relative' }}>
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
           <line x1={padL} y1={padT + chartH} x2={W - padR} y2={padT + chartH} stroke="#F0EDEC" strokeWidth="1" />
-          {PART_DATA.map((d, i) => {
+          {data.map((d, i) => {
             const cx = xCenter(i);
             return (
               <g key={d.label}>
-                <rect x={cx - barGap / 2 - barW} y={bY(d.convidados)} width={barW} height={bH(d.convidados)}
+                <rect x={cx - barGap / 2 - barW} y={bY(d.vagas)} width={barW} height={bH(d.vagas)}
                   fill="#CFADAE" rx="3" style={{ cursor: 'pointer' }}
-                  onMouseEnter={() => setHovered({ ...d, bx: cx, by: bY(d.convidados) })}
+                  onMouseEnter={() => setHovered({ ...d, bx: cx, by: bY(d.vagas) })}
                   onMouseLeave={() => setHovered(null)} />
-                <rect x={cx + barGap / 2} y={bY(d.presentes)} width={barW} height={bH(d.presentes)}
+                <rect x={cx + barGap / 2} y={bY(d.participantes)} width={barW} height={bH(d.participantes)}
                   fill="#B25557" rx="3" style={{ cursor: 'pointer' }}
-                  onMouseEnter={() => setHovered({ ...d, bx: cx, by: bY(d.presentes) })}
+                  onMouseEnter={() => setHovered({ ...d, bx: cx, by: bY(d.participantes) })}
                   onMouseLeave={() => setHovered(null)} />
                 <text x={cx} y={H - 6} textAnchor="middle" fontSize="9" fill="#9E8E8F">{d.label}</text>
               </g>
@@ -368,7 +386,7 @@ function ParticipationBarChart() {
             transform: 'translate(-50%, -120%)',
             pointerEvents: 'none', whiteSpace: 'nowrap', opacity: 1,
           }}>
-            {hovered.label} · {hovered.presentes} presentes / {hovered.convidados} convidados
+            {hovered.label} · {hovered.participantes} participantes / {hovered.vagas} vagas
           </div>
         )}
       </div>
@@ -582,7 +600,7 @@ const COMMENTS = [
 
 function QualitativeComments() {
   return (
-    <div className={styles.chartCard}>
+    <div className={styles.chartCard} style={{ minHeight: 'unset' }}>
       <span className={styles.chartTitle}>Comentários qualitativos</span>
       <div className={styles.commentsList}>
         {COMMENTS.map((c, i) => (
@@ -598,6 +616,334 @@ function QualitativeComments() {
     </div>
   );
 }
+
+// ─── Ocupação Line Chart (Engajamento) ───────────────────────────────────────
+const OCUPACAO_DATA = [
+  { month: 'Jan', pct: 72 }, { month: 'Fev', pct: 78 },
+  { month: 'Mar', pct: 75 }, { month: 'Abr', pct: 82 },
+  { month: 'Mai', pct: 85 }, { month: 'Jun', pct: 83 },
+];
+
+function OcupacaoLineChart() {
+  const [hovered, setHovered] = useState<{ month: string; pct: number; px: number; py: number } | null>(null);
+  const W = 420, H = 180;
+  const padL = 40, padT = 16, padR = 16, padB = 32;
+  const chartW = W - padL - padR, chartH = H - padT - padB;
+  const yMin = 55, yMax = 100;
+  const n = OCUPACAO_DATA.length;
+  const xOf = (i: number) => padL + (i / (n - 1)) * chartW;
+  const yOf = (v: number) => padT + chartH - ((v - yMin) / (yMax - yMin)) * chartH;
+  const path = OCUPACAO_DATA.map((d, i) =>
+    `${i === 0 ? 'M' : 'L'} ${xOf(i).toFixed(1)} ${yOf(d.pct).toFixed(1)}`
+  ).join(' ');
+
+  return (
+    <div className={styles.chartCard} style={{ minHeight: 'unset' }}>
+      <div>
+        <div className={styles.chartTitle}>Taxa de ocupação</div>
+        <div className={styles.chartSubtitle}>Últimos 6 meses · %</div>
+      </div>
+      <div style={{ position: 'relative' }}>
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
+          {[60, 70, 80, 90, 100].map(v => (
+            <g key={v}>
+              <line x1={padL} y1={yOf(v)} x2={W - padR} y2={yOf(v)} stroke="#F0EDEC" strokeWidth="1" />
+              <text x={padL - 6} y={yOf(v) + 4} textAnchor="end" fontSize="9" fill="#9E8E8F">{v}</text>
+            </g>
+          ))}
+          {OCUPACAO_DATA.map((d, i) => (
+            <text key={d.month} x={xOf(i)} y={H - 4} textAnchor="middle" fontSize="10" fill="#9E8E8F">{d.month}</text>
+          ))}
+          <path d={`${path} L ${xOf(n - 1)} ${padT + chartH} L ${xOf(0)} ${padT + chartH} Z`}
+            fill="#B25557" fillOpacity="0.08" />
+          <path d={path} fill="none" stroke="#B25557" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          {OCUPACAO_DATA.map((d, i) => (
+            <circle key={i} cx={xOf(i)} cy={yOf(d.pct)} r={hovered?.month === d.month ? 5 : 3.5}
+              fill="#B25557" stroke="#fff" strokeWidth="2" style={{ cursor: 'pointer' }}
+              onMouseEnter={() => setHovered({ ...d, px: xOf(i), py: yOf(d.pct) })}
+              onMouseLeave={() => setHovered(null)} />
+          ))}
+        </svg>
+        {hovered && (
+          <div className={tooltipStyles.tip} style={{
+            position: 'absolute',
+            left: `${(hovered.px / W) * 100}%`,
+            top: `${(hovered.py / H) * 100}%`,
+            transform: 'translate(-50%, -120%)',
+            pointerEvents: 'none', whiteSpace: 'nowrap', opacity: 1,
+          }}>
+            {hovered.month} · {hovered.pct}%
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Frequência Média Bar Chart (Engajamento) ─────────────────────────────────
+const FREQUENCIA_DATA = [
+  { month: 'Jan', freq: 1.8 }, { month: 'Fev', freq: 2.1 },
+  { month: 'Mar', freq: 1.9 }, { month: 'Abr', freq: 2.3 },
+  { month: 'Mai', freq: 2.4 }, { month: 'Jun', freq: 2.2 },
+];
+
+function FrequenciaBarChart() {
+  const [hovered, setHovered] = useState<{ month: string; freq: number; bx: number; by: number } | null>(null);
+  const W = 420, H = 180;
+  const padL = 40, padT = 16, padR = 16, padB = 32;
+  const chartW = W - padL - padR, chartH = H - padT - padB;
+  const n = FREQUENCIA_DATA.length;
+  const maxVal = 3;
+  const barW = 32;
+  const groupW = chartW / n;
+  const xCenter = (i: number) => padL + i * groupW + groupW / 2;
+  const bH = (v: number) => (v / maxVal) * chartH;
+  const bY = (v: number) => padT + chartH - bH(v);
+
+  return (
+    <div className={styles.chartCard} style={{ minHeight: 'unset' }}>
+      <div>
+        <div className={styles.chartTitle}>Frequência média</div>
+        <div className={styles.chartSubtitle}>Sessões por colaborador · mês</div>
+      </div>
+      <div style={{ position: 'relative' }}>
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
+          {[1, 2, 3].map(v => (
+            <g key={v}>
+              <line x1={padL} y1={bY(v)} x2={W - padR} y2={bY(v)} stroke="#F0EDEC" strokeWidth="1" />
+              <text x={padL - 4} y={bY(v) + 4} textAnchor="end" fontSize="9" fill="#9E8E8F">{v}x</text>
+            </g>
+          ))}
+          <line x1={padL} y1={padT + chartH} x2={W - padR} y2={padT + chartH} stroke="#F0EDEC" strokeWidth="1" />
+          {FREQUENCIA_DATA.map((d, i) => {
+            const cx = xCenter(i);
+            const isHov = hovered?.month === d.month;
+            return (
+              <g key={d.month}>
+                <rect x={cx - barW / 2} y={bY(d.freq)} width={barW} height={bH(d.freq)}
+                  fill={isHov ? '#9A3A3C' : '#B25557'} rx="4"
+                  style={{ cursor: 'pointer', transition: 'fill 120ms' }}
+                  onMouseEnter={() => setHovered({ ...d, bx: cx, by: bY(d.freq) })}
+                  onMouseLeave={() => setHovered(null)} />
+                <text x={cx} y={H - 4} textAnchor="middle" fontSize="10" fill="#9E8E8F">{d.month}</text>
+              </g>
+            );
+          })}
+        </svg>
+        {hovered && (
+          <div className={tooltipStyles.tip} style={{
+            position: 'absolute',
+            left: `${(hovered.bx / W) * 100}%`,
+            top: `${(hovered.by / H) * 100}%`,
+            transform: 'translate(-50%, -120%)',
+            pointerEvents: 'none', whiteSpace: 'nowrap', opacity: 1,
+          }}>
+            {hovered.month} · {hovered.freq}x / colaborador
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Heatmap Horários (Engajamento) ───────────────────────────────────────────
+const HEATMAP_DAYS  = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'];
+const HEATMAP_HOURS = ['08h', '09h', '10h', '11h', '13h', '14h', '15h', '16h'];
+const HEATMAP_RAW: number[][] = [
+  [40, 60, 80, 70, 50, 65, 75, 45],
+  [55, 75, 90, 85, 60, 70, 80, 55],
+  [50, 70, 85, 80, 55, 75, 85, 60],
+  [45, 65, 80, 75, 50, 70, 78, 50],
+  [30, 50, 65, 60, 35, 55, 65, 40],
+];
+
+function HeatmapHorarios() {
+  const [hovered, setHovered] = useState<{ day: string; hour: string; val: number; x: number; y: number } | null>(null);
+
+  return (
+    <div className={styles.chartCard} style={{ minHeight: 'unset' }}>
+      <span className={styles.chartTitle}>Horários mais utilizados</span>
+      <div className={styles.heatmapWrap}>
+        <div className={styles.heatmapGrid}
+          style={{
+            gridTemplateColumns: `44px repeat(${HEATMAP_HOURS.length}, 1fr)`,
+            gridTemplateRows: `auto repeat(${HEATMAP_DAYS.length}, 1fr)`,
+          }}>
+          <div />
+          {HEATMAP_HOURS.map(h => (
+            <div key={h} className={styles.heatmapHeaderCell}>{h}</div>
+          ))}
+          {HEATMAP_DAYS.map((day, di) => (
+            <>
+              <div key={`lbl-${di}`} className={styles.heatmapDayLabel}>{day}</div>
+              {HEATMAP_HOURS.map((hour, hi) => {
+                const val = HEATMAP_RAW[di][hi];
+                const opacity = (0.15 + (val / 100) * 0.80).toFixed(2);
+                return (
+                  <div key={`${di}-${hi}`}
+                    className={styles.heatmapCell}
+                    style={{ background: `rgba(178,85,87,${opacity})` }}
+                    onMouseMove={(e) => setHovered({ day, hour, val, x: e.clientX, y: e.clientY })}
+                    onMouseLeave={() => setHovered(null)}
+                  />
+                );
+              })}
+            </>
+          ))}
+        </div>
+      </div>
+      {hovered && (
+        <div className={tooltipStyles.tip} style={{
+          position: 'fixed', left: hovered.x, top: hovered.y - 44,
+          transform: 'translateX(-50%)', pointerEvents: 'none',
+          whiteSpace: 'nowrap', zIndex: 9999, opacity: 1,
+        }}>
+          {hovered.day} · {hovered.hour} · {hovered.val}% de ocupação
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── NPS Gauge / Velocímetro (Satisfação) ─────────────────────────────────────
+function NPSGauge() {
+  const nps = 48;
+
+  /*
+   * Abordagem: arcos estroçados independentes — stroke uniforme, sem fill distorcido.
+   *
+   * Cada zona é um <path> com fill="none" e stroke colorido,
+   * desenhado como um arco A real (não stroke-dasharray).
+   * O gap visual entre zonas é obtido insetando levemente os endpoints (±GAP em t).
+   *
+   * t ∈ [0,1]:
+   *   t=0   → ponta esquerda (NPS −100)
+   *   t=0.5 → topo          (NPS   0)
+   *   t=1   → ponta direita  (NPS +100)
+   *
+   * Ponto no arco: x(t) = cx − R·cos(t·π)
+   *                y(t) = cy − R·sin(t·π)
+   *
+   * Geometria final (VW=200, VH=126, cx=100, cy=106, R=80, SW=18):
+   *   topo    = cy − R − SW/2 = 106 − 80 − 9 = 17 px  ✓
+   *   lados   = cx − R − SW/2 = 11 px                  ✓
+   *   labels  y = cy+18 = 124 ≤ VH=126                 ✓
+   *
+   * Paleta harmonizada com o dashboard (tons de terra, muted):
+   *   Detratores  (−100 → 0)  : #9B4F4F  terracota profundo
+   *   Neutros     (   0 → 70) : #C49A6E  bege queimado
+   *   Promotores  (  70 →100) : #7A9270  verde musgo/sálvia
+   */
+  const VW = 200, VH = 126;
+  const cx = 100, cy = 106;
+  const R  = 80;
+  const SW = 18;
+  const GAP = 0.012; // gap angular entre zonas (~3 px de arco)
+
+  // Ponto no arco na posição t ∈ [0,1]
+  const px = (t: number) => +(cx - R * Math.cos(t * Math.PI)).toFixed(2);
+  const py = (t: number) => +(cy - R * Math.sin(t * Math.PI)).toFixed(2);
+
+  // Path de arco estroçado de t1 até t2
+  // sweep=1 → theta cresce → semicírculo SUPERIOR (∩ = velocímetro)
+  // sweep=0 desenharia o semicírculo inferior (∪), que sai do viewBox e parece ponte
+  const seg = (t1: number, t2: number) =>
+    `M ${px(t1)} ${py(t1)} A ${R} ${R} 0 0 1 ${px(t2)} ${py(t2)}`;
+
+  // Limites das zonas NPS
+  const tN  = 0.5;   // NPS = 0   → (  0+100)/200
+  const tP  = 0.85;  // NPS = 70  → ( 70+100)/200
+
+  // Agulha: NPS=48 → t = (48+100)/200 = 0.74, aponta para zona neutra
+  const tNeedle = (nps + 100) / 200;
+  const nLen    = R - SW / 2 - 6;   // termina 6 px aquém da borda interna do arco
+  const nx = +(cx - nLen * Math.cos(tNeedle * Math.PI)).toFixed(2);
+  const ny = +(cy - nLen * Math.sin(tNeedle * Math.PI)).toFixed(2);
+
+  return (
+    <div className={styles.chartCard} style={{ minHeight: 'unset' }}>
+      <span className={styles.chartTitle}>NPS Score</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '100%', maxWidth: 360 }}>
+          <svg viewBox={`0 0 ${VW} ${VH}`} width="100%" style={{ display: 'block' }}>
+
+            {/* Trilha de fundo — arco completo */}
+            <path d={seg(0, 1)}
+              fill="none" stroke="#EDE8E5" strokeWidth={SW} strokeLinecap="butt" />
+
+            {/* Detratores: −100 → 0 */}
+            <path d={seg(0, tN - GAP)}
+              fill="none" stroke="#9B4F4F" strokeWidth={SW} strokeLinecap="butt" />
+
+            {/* Neutros: 0 → 70 */}
+            <path d={seg(tN + GAP, tP - GAP)}
+              fill="none" stroke="#C49A6E" strokeWidth={SW} strokeLinecap="butt" />
+
+            {/* Promotores: 70 → 100 */}
+            <path d={seg(tP + GAP, 1)}
+              fill="none" stroke="#7A9270" strokeWidth={SW} strokeLinecap="butt" />
+
+            {/* Agulha fina */}
+            <line x1={cx} y1={cy} x2={nx} y2={ny}
+              stroke="#3B2C2D" strokeWidth="2" strokeLinecap="round" />
+            {/* Pivô */}
+            <circle cx={cx} cy={cy} r={5}   fill="#3B2C2D" />
+            <circle cx={cx} cy={cy} r={2.5} fill="#F7F4F2" />
+
+            {/* Valor principal */}
+            <text x={cx} y={cy - 18} textAnchor="middle"
+              fontFamily="var(--font-display)" fontSize="22"
+              fontWeight="600" fill="#3B2C2D">{nps}</text>
+
+            {/* Label */}
+            <text x={cx} y={cy - 4} textAnchor="middle"
+              fontFamily="var(--font-body)" fontSize="9"
+              fill="#9E8E8F">NPS Score</text>
+
+            {/* Marcadores de escala nas extremidades */}
+            <text x={px(0)} y={cy + 18} textAnchor="middle"
+              fontFamily="var(--font-body)" fontSize="8"
+              fill="#B8ADAB">−100</text>
+            <text x={px(1)} y={cy + 18} textAnchor="middle"
+              fontFamily="var(--font-body)" fontSize="8"
+              fill="#B8ADAB">+100</text>
+
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Dados estáticos de novos rankings ───────────────────────────────────────
+const AREA_DATA: BarItem[] = [
+  { label: 'Tecnologia', pct: 28 },
+  { label: 'Operações',  pct: 22 },
+  { label: 'RH',         pct: 18 },
+  { label: 'Financeiro', pct: 15 },
+  { label: 'Jurídico',   pct: 10 },
+  { label: 'Marketing',  pct: 7  },
+];
+
+const AVALIACAO_OP: BarItem[] = [
+  { label: 'Organização',           pct: 94 },
+  { label: 'Pontualidade',          pct: 91 },
+  { label: 'Comunicação',           pct: 87 },
+  { label: 'Estrutura',             pct: 82 },
+  { label: 'Diversidade serviços',  pct: 76 },
+];
+
+// Ordenado do maior para o menor (maior valor = maior necessidade de melhoria)
+const OPORTUNIDADES: BarItem[] = [
+  { label: 'Organização',  pct: 34 },
+  { label: 'Execução',     pct: 28 },
+  { label: 'Profissionais',pct: 22 },
+  { label: 'Logística',    pct: 18 },
+  { label: 'Pontualidade', pct: 15 },
+  { label: 'Qualidade',    pct: 12 },
+  { label: 'Atendimento',  pct: 8  },
+  { label: 'Comunicação',  pct: 5  },
+];
 
 // ─── Benchmark Section (empresa only) ────────────────────────────────────────
 // active: true  → cor principal brand (#B25557) — dado do cliente
@@ -684,36 +1030,75 @@ interface ImpactoTabProps { role: UserRole; filterEvent: string; }
 function ImpactoTab({ role, filterEvent }: ImpactoTabProps) {
   return (
     <div className={styles.impactoSection}>
-      {/* KPIs */}
+
+      {/* ── Top KPIs ───────────────────────────────────────────────────────── */}
       <div className={styles.statCardsRow}>
-        <StatCard label="NPS"                       value="82"    trend="+5 pts" trendDir="up" icon={<TrendingUp  size={24} />} />
-        <StatCard label="IBE"                       value="7.8"   trend="+0.4"   trendDir="up" icon={<Activity    size={24} />} />
-        <StatCard label="Taxa de Participação"      value="83%"   trend="+6%"    trendDir="up" icon={<Users       size={24} />} />
-        <StatCard label="Colaboradores Impactados"  value="1.240" trend="+180"   trendDir="up" icon={<Heart       size={24} />} />
+        <StatCard label="NPS"                      value="82"    trend="+5 pts" trendDir="up" icon={<TrendingUp size={24} />} />
+        <StatCard label="IBE"                      value="7.8"   trend="+0.4"   trendDir="up" icon={<Activity   size={24} />} />
+        <StatCard label="Taxa de Participação"     value="83%"   trend="+6%"    trendDir="up" icon={<Users      size={24} />} />
+        <StatCard label="Colaboradores Impactados" value="1.240" trend="+180"   trendDir="up" icon={<Heart      size={24} />} />
       </div>
 
-      {/* Evolução + Participação */}
+      {/* ── Evolução IBE + Participação ────────────────────────────────────── */}
       <div className={styles.impactoRow}>
         <EvolutionLineChart />
-        <ParticipationBarChart />
+        <ParticipationBarChart role={role} filterEvent={filterEvent} />
       </div>
 
-      {/* Distribuição NPS + Radar — lado a lado */}
+      {/* ═══════════════════ SEÇÃO: ENGAJAMENTO ═══════════════════════════════ */}
+      <h2 className={styles.impactoSectionTitle}>Engajamento</h2>
+
       <div className={styles.chartsRow}>
-        <NPSDistribution />
-        <RadarChart />
+        <OcupacaoLineChart />
+        <FrequenciaBarChart />
+      </div>
+      <div className={styles.chartsRow}>
+        <HorizontalBarChart title="Participação por área" items={AREA_DATA} barHeight={20} rowGap={16} style={{ minHeight: 'unset' }} />
+        <HeatmapHorarios />
       </div>
 
-      {/* Notas por serviço */}
-      <ServiceRatings />
+      {/* ═══════════════════ SEÇÃO: SATISFAÇÃO ════════════════════════════════ */}
+      <h2 className={styles.impactoSectionTitle}>Satisfação</h2>
 
-      {/* ── Seções exclusivas do perfil Empresa ─────────────────────────────── */}
+      <div className={styles.statCardsRow}>
+        <StatCard label="Nota média geral" value="8.7" trend="+0.3" trendDir="up" icon={<TrendingUp size={24} />} />
+        <StatCard label="Recomendariam"    value="84%" trend="+4%"  trendDir="up" icon={<Heart      size={24} />} />
+      </div>
+
+      <div className={styles.chartsRow}>
+        <ServiceRatings />
+        <NPSGauge />
+      </div>
+
+      <HorizontalBarChart title="Avaliação operacional" items={AVALIACAO_OP} barHeight={20} rowGap={16} style={{ minHeight: 'unset' }} />
+
+      <div className={styles.chartsRow}>
+        <QualitativeComments />
+        <HorizontalBarChart title="Oportunidades de melhoria" subtitle="Ordenado do que mais precisa de melhoria para o que menos precisa" items={OPORTUNIDADES} barHeight={20} rowGap={16} style={{ minHeight: 'unset' }} centerContent />
+      </div>
+
+      {/* ═══════════════════ SEÇÃO: IMPACTO ═══════════════════════════════════ */}
+      <h2 className={styles.impactoSectionTitle}>Impacto</h2>
+
+      <div className={styles.statCardsRow}>
+        <StatCard label="Melhoria de bem-estar" value="+18%" trend="+3 pp" trendDir="up" icon={<Heart    size={24} />} />
+        <StatCard label="Redução de estresse"   value="+24%" trend="+5 pp" trendDir="up" icon={<Activity size={24} />} />
+        <StatCard label="Melhora do foco"       value="+21%" trend="+4 pp" trendDir="up" icon={<Zap      size={24} />} />
+      </div>
+
+      {/* ═══════════════════ SEÇÃO: EFICIÊNCIA ════════════════════════════════ */}
+      <h2 className={styles.impactoSectionTitle}>Eficiência</h2>
+
+      <div className={styles.statCardsRow}>
+        <StatCard label="Investimento total"    value="R$ 42,8k" trend="+8%"   trendDir="up"   icon={<DollarSign size={24} />} />
+        <StatCard label="Custo por colaborador" value="R$ 34,52" trend="-3%"   trendDir="down" icon={<Users      size={24} />} />
+        <StatCard label="Custo por ação"        value="R$ 18,70" trend="-5%"   trendDir="down" icon={<Activity   size={24} />} />
+        <StatCard label="Índice de retorno"     value="3,2x"     trend="+0,4"  trendDir="up"   icon={<TrendingUp size={24} />} />
+      </div>
+
+      {/* ── Seções exclusivas do perfil Empresa ───────────────────────────── */}
       {role === 'empresa' && (
         <>
-          {/* Comparativos / Benchmark */}
-          <BenchmarkSection filterEvent={filterEvent} />
-
-          {/* Próximos Eventos */}
           <div className={styles.eventsCard}>
             <span className={styles.sectionTitle}>Próximos Eventos</span>
             <div className={styles.eventsList}>
@@ -764,6 +1149,7 @@ interface DashboardScreenProps {
 export function DashboardScreen({ role, activeTab, onTabChange, sidebarOffset = 0, onNavChange }: DashboardScreenProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav, setActiveNav]     = useState('dashboard');
+  const [filterEmpresa, setFilterEmpresa] = useState('');
   // '' = todos os eventos (sem filtro específico)
   const [filterEvent, setFilterEvent] = useState('');
   const showTabs = role === 'adm';
@@ -788,6 +1174,21 @@ export function DashboardScreen({ role, activeTab, onTabChange, sidebarOffset = 
           <div className={styles.pageHeader}>
             <h1 className={styles.pageTitle}>Dashboard</h1>
             <div className={styles.pageFilters}>
+              {role !== 'empresa' && (
+                <div className={styles.filterWrap}>
+                  <select
+                    className={styles.filterSelect}
+                    value={filterEmpresa}
+                    onChange={(e) => setFilterEmpresa(e.target.value)}
+                  >
+                    <option value="">Todas as empresas</option>
+                    <option value="itau">Itaú Unibanco</option>
+                    <option value="natura">Natura</option>
+                    <option value="ambev">Ambev</option>
+                  </select>
+                  <ChevronDown size={14} className={styles.filterChevron} />
+                </div>
+              )}
               <div className={styles.filterWrap}>
                 <select
                   className={styles.filterSelect}
@@ -832,9 +1233,10 @@ export function DashboardScreen({ role, activeTab, onTabChange, sidebarOffset = 
           {activeTab === 'visao-geral' ? (
             <>
               <div className={styles.statCardsRow}>
-                <StatCard label="Total de eventos" value="124"     trend="+12%" trendDir="up"   icon={<CalendarCheck size={24} />} />
+                <StatCard label="Eventos" value="124"     trend="+12%" trendDir="up"   icon={<CalendarCheck size={24} />} />
+                <StatCard label="Eventos ativos"   value="3"       trend="+1"   trendDir="up"   icon={<Zap           size={24} />} />
                 <StatCard label="Clientes ativos"  value="24"      trend="+4%"  trendDir="up"   icon={<Building2     size={24} />} />
-                <StatCard label="Profisionais"     value="123"     trend="-2%"  trendDir="down" icon={<ContactRound  size={24} />} />
+                <StatCard label="Profissionais"    value="123"     trend="-2%"  trendDir="down" icon={<ContactRound  size={24} />} />
                 <StatCard label="Receita total"    value="R$ 234k" trend="+4%"  trendDir="up"   icon={<DollarSign    size={24} />} />
               </div>
               <div className={styles.eventsCard}>
@@ -846,8 +1248,8 @@ export function DashboardScreen({ role, activeTab, onTabChange, sidebarOffset = 
                 </div>
               </div>
               <div className={styles.chartsRow}>
-                <HorizontalBarChart title="Diferenciais"        items={DIFERENCIAIS}     barHeight={20} rowGap={16} />
-                <HorizontalBarChart title="Pontos de melhorias" items={PONTOS_MELHORIAS} barHeight={20} rowGap={16} />
+                <HorizontalBarChart title="Diferenciais"        items={DIFERENCIAIS}     barHeight={20} rowGap={16} style={{ minHeight: 'unset' }} />
+                <HorizontalBarChart title="Pontos de melhorias" items={PONTOS_MELHORIAS} barHeight={20} rowGap={16} style={{ minHeight: 'unset' }} />
                 <PieChart />
               </div>
             </>

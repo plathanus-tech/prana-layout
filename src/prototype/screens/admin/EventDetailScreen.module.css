@@ -592,6 +592,7 @@
 }
 
 .editInputNum  { max-width: 80px;  }
+.editInputNumWide { max-width: 120px; } /* campo numérico largo — ex: Ilimitado */
 .editInputTime { max-width: 106px; }
 .editInputFreq { max-width: 72px;  }
 
@@ -737,13 +738,21 @@
 
 /* ─── Aba Profissionais ───────────────────────────────────────────────────────*/
 
-/* Barra superior da aba — "Adicionar profissional" */
+/* Barra do serviço ativo — "Adicionar profissional" à direita */
 .profTabBar {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  margin-bottom: 4px;
+}
+
+/* Contador confirmados/total dentro do botão do toggle */
+.profServiceCount {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  letter-spacing: 0.02em;
+  opacity: 0.75;
+  margin-left: 2px;
 }
 
 /* Lista de profissionais dentro de uma seção */
@@ -1312,6 +1321,20 @@
   padding-right: 2px;
 }
 
+/* Tag informativa de serviço no modal CriteriaModal */
+.criteriaServiceTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
 /* Grupo de campos com título */
 .modalCriteriaGroup {
   display: flex;
@@ -1794,6 +1817,7 @@
 /* Segmented view toggle */
 .agViewToggle {
   display: flex;
+  width: fit-content;
   border: 1px solid var(--color-gray-200);
   border-radius: 8px;
   overflow: hidden;
@@ -1822,6 +1846,12 @@
 .agViewBtnActive {
   background: var(--color-brand-500);
   color: #fff;
+}
+
+/* Divider 1 px entre abas não selecionadas consecutivas.
+   Não aparece quando uma das abas adjacentes está ativa. */
+.agViewBtn:not(.agViewBtnActive) + .agViewBtn:not(.agViewBtnActive) {
+  border-left: 1px solid var(--color-gray-200);
 }
 
 .agFilters {
@@ -2031,6 +2061,13 @@
   color: var(--color-text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.02em;
+}
+
+.agDayBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .agDayStrip {
@@ -2373,6 +2410,307 @@
   transform: translateX(-50%);
   z-index: 1000;
   max-width: 500px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   TIMELINE GRID — Aba Agendamentos
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Outer scroll container: handles both horizontal and vertical scroll */
+.agGridOuter {
+  overflow: auto;
+  max-height: 520px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 12px;
+  background: var(--color-bg-surface);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-300) transparent;
+}
+.agGridOuter::-webkit-scrollbar { width: 6px; height: 6px; }
+.agGridOuter::-webkit-scrollbar-thumb { background: var(--color-gray-300); border-radius: 4px; }
+
+/* CSS grid — column template set inline (time col + N service cols) */
+.agGridTable {
+  display: grid;
+  min-width: max-content; /* prevents columns from shrinking below minmax min */
+}
+
+/* ── Corner cell (sticky top-left) ─────────────────────────────────────────── */
+.agGridCorner {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 30;
+  background: var(--color-gray-50);
+  border-right: 1px solid var(--color-gray-200);
+  border-bottom: 2px solid var(--color-gray-200);
+  min-height: 52px;
+}
+
+/* ── Column header cells (sticky top) ──────────────────────────────────────── */
+.agGridColHeader {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--color-bg-surface);
+  border-bottom: 2px solid var(--color-gray-200);
+  border-right: 1px solid var(--color-gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  min-height: 52px;
+}
+
+/* Neutral column header — icon + name, no service colour */
+.agGridColName {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.agGridColIcon {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+/* ── Service filter row (visible only when > 5 services) ────────────────────*/
+.agServiceFilter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+}
+
+.agServiceFilterLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.agServiceFilterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+
+.agServiceChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--color-gray-200);
+  background: var(--color-bg-surface);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.agServiceChip:hover {
+  border-color: var(--color-brand-300);
+  background: var(--color-brand-50);
+  color: var(--color-brand-700);
+}
+
+.agServiceChipActive {
+  border-color: var(--color-brand-500);
+  background: var(--color-brand-50);
+  color: var(--color-brand-700);
+  font-weight: var(--font-weight-semibold);
+}
+
+.agServiceChipIcon {
+  display: flex;
+  align-items: center;
+  color: inherit;
+}
+
+.agServiceFilterClear {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-gray-200);
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.agServiceFilterClear:hover {
+  border-color: var(--color-red-300);
+  color: var(--color-status-error-fg);
+}
+
+/* ── Time label cells (sticky left) ────────────────────────────────────────── */
+.agGridTimeCell {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background: var(--color-gray-50);
+  border-right: 1px solid var(--color-gray-200);
+  border-bottom: 1px solid var(--color-gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 12px;
+  min-height: 56px;
+}
+
+.agGridTimeLabelText {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── Generic slot button ────────────────────────────────────────────────────── */
+.agGridCellSlot {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  min-height: 56px;
+  width: 100%;
+  border-top: none;
+  border-left: none;
+  border-right: 1px solid var(--color-gray-100);
+  border-bottom: 1px solid var(--color-gray-100);
+  font-family: var(--font-body);
+  gap: 4px;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  box-sizing: border-box;
+}
+
+/* Empty slot — white bg, + on hover */
+.agGridCellEmpty {
+  background: var(--color-bg-surface);
+}
+.agGridCellEmpty:hover {
+  background: var(--color-brand-50);
+}
+.agGridCellEmptyPlus {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--color-gray-300);
+  transition: color var(--transition-fast);
+}
+.agGridCellEmpty:hover .agGridCellEmptyPlus {
+  color: var(--color-brand-400);
+}
+
+/* Available (has bookings, not full) */
+.agGridCellAvailable {
+  background: #F0FDF4;
+  border-color: var(--color-green-300);
+}
+.agGridCellAvailable:hover { background: #DCFCE7; }
+
+/* Waitlist */
+.agGridCellWaitlist {
+  background: #FFFBEB;
+  border-color: #FDE047;
+}
+.agGridCellWaitlist:hover { background: #FEF9C3; }
+
+/* Full */
+.agGridCellFull {
+  background: #FEF2F2;
+  border-color: var(--color-red-300);
+}
+.agGridCellFull:hover { background: #FEE2E2; }
+
+/* Not applicable (out-of-range for this service's slot interval) */
+.agGridCellNA {
+  background: var(--color-gray-50);
+  border-right: 1px solid var(--color-gray-100);
+  border-bottom: 1px solid var(--color-gray-100);
+  min-height: 56px;
+}
+
+/* Globally-blocked period — lunch / adjustment interval (uniform across all columns) */
+.agGridCellBlocked {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--color-gray-100),
+    var(--color-gray-100) 2px,
+    var(--color-gray-50)  2px,
+    var(--color-gray-50)  8px
+  );
+  border-right:  1px solid var(--color-gray-150, #e5e7eb);
+  border-bottom: 1px solid var(--color-gray-150, #e5e7eb);
+  min-height: 32px;
+  cursor: not-allowed;
+}
+.agGridTimeCellBlocked {
+  background: var(--color-gray-100);
+  opacity: 0.7;
+}
+
+/* Cell content — capacity display */
+.agGridCellCap {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+/* Status / encaixe tags inside cells */
+.agGridCellTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  background: rgba(0, 0, 0, 0.07);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+.agGridCellTagEncaixe {
+  background: #FFF7ED;
+  color: #C2410C;
+}
+
+/* ── Context subtitle in NewAgendamentoModal (when slot pre-filled) ──────────── */
+.modalSubContext {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
@@ -3040,8 +3378,18 @@
   gap: 12px;
 }
 
+.relatorioMetricsRowSecond {
+  margin-top: 12px;
+}
+
+/* Invisible spacer to align 3-card row with 4-card row above */
+.relatorioMetricSpacer {
+  flex: 1 1 140px;
+  visibility: hidden;
+}
+
 .relatorioMetricCard {
-  flex: 1;
+  flex: 1 1 140px;
   background: var(--color-gray-50, #F9FAFB);
   border: 1px solid var(--color-gray-100, #F3F4F6);
   border-radius: 12px;
@@ -3111,4 +3459,198 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+/* ─── Toggle rows (Dados de cadastro + Múltiplos serviços) ───────────────────*/
+.toggleRow {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 20px;
+}
+
+/* Sub-grupo dentro de configGroup (separador + padding interno) */
+.configSubGroup {
+  padding: 16px 0 4px;
+  border-top: 1px solid var(--color-gray-100);
+  margin-top: 4px;
+}
+
+/* "(opcional)" inline ao lado do fieldLabel */
+.fieldOptional {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-tertiary);
+  margin-left: 4px;
+}
+
+/* Stack vertical dentro de toggleRow: label + subtítulo em linhas separadas */
+.toggleLabelStack {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0; /* permite quebra de linha */
+}
+
+/* ── Gestor Avaliação (aba Avaliação > view Gestor) ─────────────────────────── */
+.gestorAvalWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gestorAvalSection {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.gestorAvalSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-gray-100);
+  gap: 12px;
+}
+
+.gestorAvalSectionTitle {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.gestorAvalSectionBadge {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+}
+
+.gestorAvalFieldsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.gestorAvalField {
+  padding: 14px 20px;
+  border-right: 1px solid var(--color-gray-100);
+  border-bottom: 1px solid var(--color-gray-100);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.gestorAvalField:nth-child(even) { border-right: none; }
+.gestorAvalField:last-child       { border-bottom: none; }
+
+.gestorAvalFieldFull {
+  grid-column: 1 / -1;
+  border-right: none;
+}
+
+.gestorAvalFieldLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gestorAvalFieldValue {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.gestorAvalEscala {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.gestorAvalEscalaLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-left: 4px;
+}
+
+.gestorAvalObjRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+.gestorAvalObjRow:last-child { border-bottom: none; }
+
+.gestorAvalObjNum {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.gestorAvalObjText {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.gestorAvalObjBadge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  flex-shrink: 0;
+}
+
+.gestorAvalObjSim          { background: var(--color-status-success-bg); border-color: var(--color-green-300);  color: var(--color-status-success-fg); }
+.gestorAvalObjParcialmente { background: var(--color-status-warning-bg); border-color: #FDE047;                 color: var(--color-status-warning-fg); }
+.gestorAvalObjNao          { background: var(--color-status-error-bg);   border-color: var(--color-red-300);    color: var(--color-status-error-fg);   }
+
+.gestorAvalChipsWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px 20px;
+}
+
+.gestorAvalChip {
+  display: inline-flex;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.gestorAvalChipEmpty {
+  display: block;
+  padding: 12px 20px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
 }
