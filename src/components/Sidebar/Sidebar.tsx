@@ -6,6 +6,7 @@ import {
   ContactRound,
   Building2,
   FileText,
+  Briefcase,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -43,7 +44,7 @@ export type SidebarProps = {
 };
 
 /** Itens visíveis apenas para administradores */
-const ADM_ONLY_IDS = new Set(['usuarios', 'profissionais', 'clientes']);
+const ADM_ONLY_IDS = new Set(['usuarios', 'profissionais', 'clientes', 'servicos', 'pesquisa']);
 
 /* ── Default nav items — mapeados do Figma ──────────────────────────────── */
 
@@ -52,7 +53,8 @@ export const defaultNavItems: NavItemDef[] = [
   { id: 'eventos',       label: 'Eventos',        icon: <CalendarCheck   size={20} />, dot: true },
   { id: 'usuarios',      label: 'Usuários',       icon: <User            size={20} /> },
   { id: 'profissionais', label: 'Profissionais',  icon: <ContactRound    size={20} /> },
-  { id: 'clientes',      label: 'Clientes',       icon: <Building2       size={20} /> },
+  { id: 'servicos',      label: 'Serviços',        icon: <Briefcase       size={20} /> },
+  { id: 'clientes',      label: 'Empresas',       icon: <Building2       size={20} /> },
   { id: 'pesquisa',      label: 'Pesquisa',       icon: <FileText        size={20} /> },
 ];
 

@@ -23,18 +23,18 @@ const DEMO = {
 
 // ─── Summary items por variante ────────────────────────────
 
-interface SummaryItem { name: string; dayTime?: string; waitlisted: boolean; }
+interface SummaryItem { name: string; professional: string; dayTime?: string; waitlisted: boolean; }
 
 const SUMMARY: Record<string, SummaryItem[]> = {
   confirmed: [
-    { name: 'Quick Massage', dayTime: DEMO.confirmed.dayTime, waitlisted: false },
+    { name: 'Quick Massage', professional: 'Juliana Braga', dayTime: DEMO.confirmed.dayTime, waitlisted: false },
   ],
   waitlist: [
-    { name: 'Quick Massage', dayTime: DEMO.waitlist.day, waitlisted: true },
+    { name: 'Quick Massage', professional: 'Juliana Braga', dayTime: DEMO.waitlist.day, waitlisted: true },
   ],
   mixed: [
-    { name: 'Quick Massage', dayTime: DEMO.mixed.confirmedDayTime, waitlisted: false },
-    { name: 'Reflexologia',  dayTime: DEMO.mixed.waitlistDay, waitlisted: true },
+    { name: 'Quick Massage', professional: 'Juliana Braga', dayTime: DEMO.mixed.confirmedDayTime, waitlisted: false },
+    { name: 'Reflexologia',  professional: 'Ana Costa',     dayTime: DEMO.mixed.waitlistDay, waitlisted: true },
   ],
 };
 
@@ -132,12 +132,12 @@ export function SuccessScreen({ viewport = 'desktop', variant = 'confirmed' }: S
                     {item.waitlisted ? (
                       <>
                         <Clock size={14} className={styles.summaryIconWaitlist} />
-                        <span>{item.name} — <em>lista de espera{item.dayTime ? ` · ${item.dayTime}` : ''}</em></span>
+                        <span>{item.name} com {item.professional} — <em>lista de espera{item.dayTime ? ` · ${item.dayTime}` : ''}</em></span>
                       </>
                     ) : (
                       <>
                         <CheckCircle2 size={14} className={styles.summaryIconConfirmed} />
-                        <span>{item.name} — <strong>{item.dayTime}</strong></span>
+                        <span>{item.name} com {item.professional} — <strong>{item.dayTime}</strong></span>
                       </>
                     )}
                   </li>

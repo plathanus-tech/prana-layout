@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin, Calendar, Briefcase, Clock, Banknote, Wallet, Users } from 'lucide-react';
+import { MapPin, Calendar, Briefcase, Clock, Banknote, Wallet, Users, Building2, MailCheck, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '../../components/Button/Button';
 import { Feedback } from '../../components/Feedback/Feedback';
 import { AppHeader } from '../components/AppHeader';
@@ -25,6 +25,7 @@ const EVENT_DAYS: EventDay[] = [
 
 const EVENT = {
   name:            'Programa de Bem-Estar',
+  company:         'Google',
   location:        'Escritório Google · Av. Brigadeiro Faria Lima, 3477 - São Paulo',
   service:         'Quick Massage',
   sessionDuration: 15,
@@ -50,7 +51,7 @@ type SubChoice = 'partial' | 'unavailable' | null;
 
 interface ProfessionalConfirmationScreenProps {
   viewport?:                'mobile' | 'desktop';
-  variant?:                 'normal' | 'full';
+  variant?:                 'normal' | 'full' | 'answered-confirmed' | 'answered-declined' | 'answered-partial';
   showUpdatedValue?:        boolean;
   updatedTravelAllowance?:  string;
   updatedPayment?:          string;
@@ -65,8 +66,9 @@ export function ProfessionalConfirmationScreen({
   updatedPayment          = '',
   onNavigate,
 }: ProfessionalConfirmationScreenProps) {
-  const isDesktop = viewport === 'desktop';
-  const isFull    = variant === 'full';
+  const isDesktop  = viewport === 'desktop';
+  const isFull     = variant === 'full';
+  const isAnswered = variant === 'answered-confirmed' || variant === 'answered-declined' || variant === 'answered-partial';
 
   const [allDays,     setAllDays]     = useState<AllDays>(null);
   const [subChoice,   setSubChoice]   = useState<SubChoice>(null);
@@ -112,6 +114,68 @@ export function ProfessionalConfirmationScreen({
   }
 
   // ── Render ────────────────────────────────────────────
+
+  // ── Renderização: Convite já respondido ──
+  if (isAnswered) {
+    const statusLabel =
+      variant === 'answered-confirmed' ? 'Confirmado' :
+      variant === 'answered-declined'  ? 'Recusado' :
+                                         'Disponibilidade parcial informada';
+
+    const badgeClass =
+      variant === 'answered-confirmed' ? styles.statusBadgeConfirmed :
+      variant === 'answered-declined'  ? styles.statusBadgeDeclined :
+                                         styles.statusBadgePartial;
+
+    const statusIcon =
+      variant === 'answered-confirmed' ? <CheckCircle2 size={11} /> :
+      variant === 'answered-declined'  ? <XCircle      size={11} /> :
+                                         <Clock        size={11} />;
+
+    return (
+      <div className={successStyles.page}>
+        <AppHeader />
+
+        <div className={[successStyles.content, isDesktop ? successStyles.contentDesktop : ''].filter(Boolean).join(' ')}>
+          <div className={[successStyles.card, isDesktop ? successStyles.cardDesktop : ''].filter(Boolean).join(' ')}>
+
+            {/* Ícone */}
+            <div className={[successStyles.iconWrap, successStyles.iconWrapUnavailable].join(' ')}>
+              <MailCheck size={36} strokeWidth={1.5} />
+            </div>
+
+            {/* Título + subtítulo */}
+            <div className={successStyles.body}>
+              <h1 className={successStyles.title}>Convite já respondido</h1>
+              <p className={[successStyles.subtitle, isDesktop ? successStyles.subtitleDesktop : ''].filter(Boolean).join(' ')}>
+                Você já respondeu a este convite e não pode acessá-lo novamente.
+              </p>
+            </div>
+
+            {/* Resumo do evento — nome + badge na mesma linha */}
+            <div className={successStyles.summary}>
+              <div className={styles.summaryNameRow}>
+                <p className={successStyles.summaryEventName}>{EVENT.name}</p>
+                <span className={[styles.statusBadge, badgeClass].join(' ')}>
+                  {statusIcon}
+                  {statusLabel}
+                </span>
+              </div>
+              <p className={successStyles.summaryLabel}>{EVENT.company}</p>
+            </div>
+
+            {/* Ornamento */}
+            <div className={successStyles.ornament} aria-hidden="true">
+              <span className={successStyles.ornamentLine} />
+              <span className={successStyles.ornamentDot} />
+              <span className={successStyles.ornamentLine} />
+            </div>
+
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ── Renderização: Evento Lotado ──
   if (isFull) {
@@ -182,6 +246,16 @@ export function ProfessionalConfirmationScreen({
                 <div className={styles.infoBody}>
                   <span className={styles.infoLabel}>Local</span>
                   <span className={styles.infoValue}>{EVENT.location}</span>
+                </div>
+              </div>
+
+              <div className={styles.infoSep} />
+
+              <div className={styles.infoRow}>
+                <Building2 size={14} className={styles.infoIcon} />
+                <div className={styles.infoBody}>
+                  <span className={styles.infoLabel}>Empresa</span>
+                  <span className={styles.infoValue}>{EVENT.company}</span>
                 </div>
               </div>
 

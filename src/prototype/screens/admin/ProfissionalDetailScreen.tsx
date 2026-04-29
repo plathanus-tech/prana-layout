@@ -4,7 +4,7 @@
 //   adm → visualizar dados completos, histórico de eventos e avaliações
 
 import { useState } from 'react';
-import { ArrowLeft, Star, ChevronDown, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Star, ChevronDown, TrendingUp, Search } from 'lucide-react';
 import { Sidebar } from '../../../components/Sidebar/Sidebar';
 import type { UserRole } from './UsersScreen';
 import type { Profissional } from './ProfissionaisScreen';
@@ -29,10 +29,21 @@ interface EventoRealizado {
   evalData?: EvalData;
 }
 
+interface Endereco {
+  cep:         string;
+  logradouro:  string;
+  numero:      string;
+  complemento: string;
+  bairro:      string;
+  cidade:      string;
+  estado:      string;
+}
+
 interface ProfissionalDetailData {
   telefone:     string;
   sexo:         'Masculino' | 'Feminino';
   tipoCadastro: 'PF' | 'PJ';
+  endereco:     Endereco;
   eventHistory: EventoRealizado[];
 }
 
@@ -40,6 +51,7 @@ interface ProfissionalDetailData {
 const MOCK_DETAIL: Record<string, ProfissionalDetailData> = {
   'PRO-001': {
     telefone: '(11) 98765-4321', sexo: 'Feminino', tipoCadastro: 'PJ',
+    endereco: { cep: '01310-100', logradouro: 'Av. Paulista', numero: '1374', complemento: 'Conj. 82', bairro: 'Bela Vista', cidade: 'São Paulo', estado: 'SP' },
     eventHistory: [
       {
         eventId: 'EVT-001', eventName: 'SIPAT – Itaú Unibanco', company: 'Itaú Unibanco',
@@ -105,6 +117,7 @@ const MOCK_DETAIL: Record<string, ProfissionalDetailData> = {
   },
   'PRO-002': {
     telefone: '(21) 97654-3210', sexo: 'Masculino', tipoCadastro: 'PF',
+    endereco: { cep: '22071-060', logradouro: 'Rua Visconde de Pirajá', numero: '550', complemento: 'Sala 1101', bairro: 'Ipanema', cidade: 'Rio de Janeiro', estado: 'RJ' },
     eventHistory: [
       {
         eventId: 'EVT-001', eventName: 'SIPAT – Itaú Unibanco', company: 'Itaú Unibanco',
@@ -146,6 +159,7 @@ const MOCK_DETAIL: Record<string, ProfissionalDetailData> = {
   },
   'PRO-003': {
     telefone: '(11) 96543-2109', sexo: 'Feminino', tipoCadastro: 'PF',
+    endereco: { cep: '04548-050', logradouro: 'Av. Brigadeiro Faria Lima', numero: '2232', complemento: 'Apto 71', bairro: 'Jardim Paulistano', cidade: 'São Paulo', estado: 'SP' },
     eventHistory: [
       {
         eventId: 'EVT-001', eventName: 'SIPAT – Itaú Unibanco', company: 'Itaú Unibanco',
@@ -199,6 +213,7 @@ const MOCK_DETAIL: Record<string, ProfissionalDetailData> = {
   },
   'PRO-004': {
     telefone: '(41) 95432-1098', sexo: 'Masculino', tipoCadastro: 'PJ',
+    endereco: { cep: '80020-030', logradouro: 'Rua XV de Novembro', numero: '800', complemento: '', bairro: 'Centro', cidade: 'Curitiba', estado: 'PR' },
     eventHistory: [
       {
         eventId: 'EVT-VVC', eventName: 'Vivo – Saúde Corporativa', company: 'Vivo',
@@ -228,6 +243,7 @@ const MOCK_DETAIL: Record<string, ProfissionalDetailData> = {
   },
   'PRO-005': {
     telefone: '(31) 94321-0987', sexo: 'Feminino', tipoCadastro: 'PF',
+    endereco: { cep: '30112-000', logradouro: 'Av. Afonso Pena', numero: '1500', complemento: 'Bloco B, Sala 203', bairro: 'Centro', cidade: 'Belo Horizonte', estado: 'MG' },
     eventHistory: [
       { eventId: 'EVT-BTG', eventName: 'BTG – Saúde no Trabalho', company: 'BTG Pactual', date: '12/04/2026', servico: 'Quick Massage', avaliacao: 4.3 },
       { eventId: 'EVT-NUB', eventName: 'Nubank Day – Bem-Estar',  company: 'Nubank',      date: '02/03/2026', servico: 'Quick Massage', avaliacao: 4.4 },
@@ -235,6 +251,7 @@ const MOCK_DETAIL: Record<string, ProfissionalDetailData> = {
   },
   'PRO-006': {
     telefone: '(11) 93210-9876', sexo: 'Masculino', tipoCadastro: 'PF',
+    endereco: { cep: '01415-001', logradouro: 'Rua Augusta', numero: '2345', complemento: 'Apto 12', bairro: 'Consolação', cidade: 'São Paulo', estado: 'SP' },
     eventHistory: [
       { eventId: 'EVT-XPE', eventName: 'XP Inc – Saúde Corporativa', company: 'XP Inc',  date: '10/04/2026', servico: 'Terapia', avaliacao: 4.0 },
       { eventId: 'EVT-STO', eventName: 'Stone – Bem-Estar',          company: 'Stone',    date: '14/02/2026', servico: 'Terapia', avaliacao: 4.2 },
@@ -242,6 +259,7 @@ const MOCK_DETAIL: Record<string, ProfissionalDetailData> = {
   },
   'PRO-007': {
     telefone: '(48) 92109-8765', sexo: 'Feminino', tipoCadastro: 'PJ',
+    endereco: { cep: '88015-200', logradouro: 'Rua Felipe Schmidt', numero: '320', complemento: 'Sala 5', bairro: 'Centro', cidade: 'Florianópolis', estado: 'SC' },
     eventHistory: [
       { eventId: 'EVT-EMB', eventName: 'Embraer – Saúde no Trabalho', company: 'Embraer', date: '15/04/2026', servico: 'Acupuntura', avaliacao: 4.9 },
       { eventId: 'EVT-TOT', eventName: 'Totvs – Dia Saúde',           company: 'Totvs',   date: '01/04/2026', servico: 'Acupuntura', avaliacao: 4.7 },
@@ -249,12 +267,14 @@ const MOCK_DETAIL: Record<string, ProfissionalDetailData> = {
   },
   'PRO-008': {
     telefone: '(19) 91098-7654', sexo: 'Masculino', tipoCadastro: 'PF',
+    endereco: { cep: '13010-111', logradouro: 'Av. Francisco Glicério', numero: '935', complemento: '', bairro: 'Centro', cidade: 'Campinas', estado: 'SP' },
     eventHistory: [
       { eventId: 'EVT-SBR', eventName: 'Santander – Bem-Estar', company: 'Santander', date: '09/04/2026', servico: 'Quiropraxia', avaliacao: 4.0 },
     ],
   },
   'PRO-009': {
     telefone: '(71) 90987-6543', sexo: 'Feminino', tipoCadastro: 'PF',
+    endereco: { cep: '40020-020', logradouro: 'Av. Sete de Setembro', numero: '2100', complemento: 'Apto 302', bairro: 'Vitória', cidade: 'Salvador', estado: 'BA' },
     eventHistory: [
       { eventId: 'EVT-FIE', eventName: 'Fiesp – Saúde & Bem-Estar', company: 'Fiesp', date: '08/04/2026', servico: 'Fisioterapia', avaliacao: 4.5 },
       { eventId: 'EVT-CNI', eventName: 'CNI – Saúde no Trabalho',    company: 'CNI',   date: '10/03/2026', servico: 'Fisioterapia', avaliacao: 4.4 },
@@ -262,6 +282,7 @@ const MOCK_DETAIL: Record<string, ProfissionalDetailData> = {
   },
   'PRO-010': {
     telefone: '(51) 98876-5432', sexo: 'Masculino', tipoCadastro: 'PJ',
+    endereco: { cep: '90010-280', logradouro: 'Av. Borges de Medeiros', numero: '150', complemento: '', bairro: 'Centro Histórico', cidade: 'Porto Alegre', estado: 'RS' },
     eventHistory: [
       { eventId: 'EVT-GRD', eventName: 'Gerdau – Saúde Corporativa', company: 'Gerdau',     date: '07/04/2026', servico: 'Quick Massage', avaliacao: 4.7 },
       { eventId: 'EVT-AES', eventName: 'AES Brasil – Bem-Estar',     company: 'AES Brasil', date: '14/03/2026', servico: 'Quick Massage', avaliacao: 4.6 },
@@ -270,6 +291,7 @@ const MOCK_DETAIL: Record<string, ProfissionalDetailData> = {
   },
   'PRO-011': {
     telefone: '(11) 97765-4321', sexo: 'Feminino', tipoCadastro: 'PF',
+    endereco: { cep: '05423-020', logradouro: 'Rua Hadock Lobo', numero: '595', complemento: 'Apto 54', bairro: 'Cerqueira César', cidade: 'São Paulo', estado: 'SP' },
     eventHistory: [
       { eventId: 'EVT-RAI', eventName: 'Raízen – Saúde & Bem-Estar', company: 'Raízen', date: '06/04/2026', servico: 'Podologia', avaliacao: 4.3 },
       { eventId: 'EVT-CSN', eventName: 'CSN – Saúde no Trabalho',    company: 'CSN',    date: '15/02/2026', servico: 'Podologia', avaliacao: 4.1 },
@@ -277,6 +299,7 @@ const MOCK_DETAIL: Record<string, ProfissionalDetailData> = {
   },
   'PRO-012': {
     telefone: '(81) 96654-3210', sexo: 'Masculino', tipoCadastro: 'PF',
+    endereco: { cep: '50010-010', logradouro: 'Av. Dantas Barreto', numero: '250', complemento: '', bairro: 'Santo Antônio', cidade: 'Recife', estado: 'PE' },
     eventHistory: [
       { eventId: 'EVT-VAL', eventName: 'Vale – Dia Saúde', company: 'Vale', date: '05/04/2026', servico: 'Terapia', avaliacao: 4.0 },
     ],
@@ -285,6 +308,7 @@ const MOCK_DETAIL: Record<string, ProfissionalDetailData> = {
 
 const DEFAULT_DETAIL: ProfissionalDetailData = {
   telefone: '—', sexo: 'Masculino', tipoCadastro: 'PF',
+  endereco: { cep: '—', logradouro: '—', numero: '—', complemento: '', bairro: '—', cidade: '—', estado: '—' },
   eventHistory: [],
 };
 
@@ -536,6 +560,7 @@ export function ProfissionalDetailScreen({
   const [activeNav,   setActiveNav]   = useState('profissionais');
   const [activeTab,   setActiveTab]   = useState<DetailTab>('dados');
   const [filterEvent, setFilterEvent] = useState('');
+  const [histSearch,  setHistSearch]  = useState('');
 
   const detail    = MOCK_DETAIL[prof.id] ?? DEFAULT_DETAIL;
   const funcLabel = FUNCAO_LABEL[prof.funcao] ?? String(prof.funcao);
@@ -640,6 +665,8 @@ export function ProfissionalDetailScreen({
                 <div className={styles.sectionHeader}>
                   <span className={styles.sectionTitle}>Informações do Profissional</span>
                 </div>
+
+                {/* ── Dados básicos ─────────────────────────────────────── */}
                 <div className={styles.infoGrid}>
                   <div className={styles.infoField}>
                     <span className={styles.infoLabel}>Tipo de cadastro</span>
@@ -657,12 +684,53 @@ export function ProfissionalDetailScreen({
                     <span className={styles.infoLabel}>Eventos realizados</span>
                     <span className={styles.infoValue}>{prof.eventosRealizados}</span>
                   </div>
-                  <div className={[styles.infoField, styles.infoFieldFull].join(' ')}>
+                  {/* Nota média — posicionada próxima de Eventos, com destaque visual */}
+                  <div className={[styles.infoField, styles.infoFieldFull, styles.infoFieldHighlight].join(' ')}>
                     <span className={styles.infoLabel}>Nota média</span>
                     <div className={styles.notaCell}>
-                      <Star size={13} fill="#F59E0B" color="#F59E0B" />
-                      <span className={styles.infoValue}>{prof.nota.toFixed(1)}</span>
+                      <Star size={16} fill="#F59E0B" color="#F59E0B" />
+                      <span className={[styles.infoValue, styles.infoValueLg].join(' ')}>{prof.nota.toFixed(1)}</span>
                     </div>
+                  </div>
+                </div>
+
+                {/* ── Endereço ──────────────────────────────────────────── */}
+                <div className={styles.infoGroupHeader}>
+                  <span className={styles.infoGroupTitle}>Endereço</span>
+                </div>
+
+                <div className={[styles.infoGrid, styles.infoGridAddress].join(' ')}>
+                  {/* CEP — linha única */}
+                  <div className={[styles.infoField, styles.infoFieldFull].join(' ')}>
+                    <span className={styles.infoLabel}>CEP</span>
+                    <span className={styles.infoValue}>{detail.endereco.cep}</span>
+                  </div>
+                  {/* Logradouro + Número */}
+                  <div className={styles.infoField}>
+                    <span className={styles.infoLabel}>Logradouro</span>
+                    <span className={styles.infoValue}>{detail.endereco.logradouro}</span>
+                  </div>
+                  <div className={styles.infoField}>
+                    <span className={styles.infoLabel}>Número</span>
+                    <span className={styles.infoValue}>{detail.endereco.numero}</span>
+                  </div>
+                  {/* Complemento + Bairro */}
+                  <div className={styles.infoField}>
+                    <span className={styles.infoLabel}>Complemento</span>
+                    <span className={styles.infoValue}>{detail.endereco.complemento || '—'}</span>
+                  </div>
+                  <div className={styles.infoField}>
+                    <span className={styles.infoLabel}>Bairro</span>
+                    <span className={styles.infoValue}>{detail.endereco.bairro}</span>
+                  </div>
+                  {/* Cidade + Estado (UF) */}
+                  <div className={styles.infoField}>
+                    <span className={styles.infoLabel}>Cidade</span>
+                    <span className={styles.infoValue}>{detail.endereco.cidade}</span>
+                  </div>
+                  <div className={styles.infoField}>
+                    <span className={styles.infoLabel}>Estado (UF)</span>
+                    <span className={styles.infoValue}>{detail.endereco.estado}</span>
                   </div>
                 </div>
               </div>
@@ -671,6 +739,16 @@ export function ProfissionalDetailScreen({
               <div className={styles.tableSection}>
                 <div className={styles.sectionHeader}>
                   <span className={styles.sectionTitle}>Histórico de Eventos</span>
+                  <div className={styles.searchWrap}>
+                    <Search size={14} className={styles.searchIcon} />
+                    <input
+                      className={styles.searchInput}
+                      type="text"
+                      placeholder="Buscar por empresa ou evento"
+                      value={histSearch}
+                      onChange={e => setHistSearch(e.target.value)}
+                    />
+                  </div>
                 </div>
                 <div className={styles.tableWrap}>
                   <table className={styles.table}>
@@ -690,27 +768,39 @@ export function ProfissionalDetailScreen({
                             Nenhum evento registrado para este profissional.
                           </td>
                         </tr>
-                      ) : (
-                        [...detail.eventHistory]
+                      ) : (() => {
+                        const q = histSearch.toLowerCase().trim();
+                        const filtered = [...detail.eventHistory]
                           .sort((a, b) => {
                             const p = (d: string) => { const [dd, mm, yy] = d.split('/').map(Number); return new Date(yy, mm - 1, dd).getTime(); };
                             return p(b.date) - p(a.date);
                           })
-                          .map(ev => (
-                            <tr key={ev.eventId} className={styles.tr}>
-                              <td className={styles.td}><span className={styles.tdBold}>{ev.eventName}</span></td>
-                              <td className={styles.td}><span className={styles.tdText}>{ev.company}</span></td>
-                              <td className={styles.td}><span className={styles.tdText}>{ev.date}</span></td>
-                              <td className={styles.td}><span className={styles.tdText}>{ev.servico}</span></td>
-                              <td className={styles.td}>
-                                <div className={styles.notaCell}>
-                                  {renderStars(ev.avaliacao)}
-                                  <span className={styles.notaValue}>{ev.avaliacao.toFixed(1)}</span>
-                                </div>
-                              </td>
-                            </tr>
-                          ))
-                      )}
+                          .filter(ev =>
+                            !q ||
+                            ev.eventName.toLowerCase().includes(q) ||
+                            ev.company.toLowerCase().includes(q)
+                          );
+                        return filtered.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className={styles.emptyTable}>
+                              Nenhum evento encontrado para "{histSearch}".
+                            </td>
+                          </tr>
+                        ) : filtered.map(ev => (
+                          <tr key={ev.eventId} className={styles.tr}>
+                            <td className={styles.td}><span className={styles.tdBold}>{ev.eventName}</span></td>
+                            <td className={styles.td}><span className={styles.tdText}>{ev.company}</span></td>
+                            <td className={styles.td}><span className={styles.tdText}>{ev.date}</span></td>
+                            <td className={styles.td}><span className={styles.tdText}>{ev.servico}</span></td>
+                            <td className={styles.td}>
+                              <div className={styles.notaCell}>
+                                {renderStars(ev.avaliacao)}
+                                <span className={styles.notaValue}>{ev.avaliacao.toFixed(1)}</span>
+                              </div>
+                            </td>
+                          </tr>
+                        ));
+                      })()}
                     </tbody>
                   </table>
                 </div>

@@ -7,12 +7,13 @@ import { SuccessScreen, type SuccessVariant } from './screens/SuccessScreen';
 import { OnSiteSelectionScreen } from './screens/OnSiteSelectionScreen';
 import { OnSiteAuthScreen } from './screens/OnSiteAuthScreen';
 import { OnSiteOTPScreen } from './screens/OnSiteOTPScreen';
+import { LinkOTPScreen } from './screens/LinkOTPScreen';
 import { OnSiteSuccessScreen } from './screens/OnSiteSuccessScreen';
 import { ReservationListScreen } from './screens/ReservationListScreen';
 import { ReservationCancelScreen } from './screens/ReservationCancelScreen';
 import { ReservationRescheduleScreen } from './screens/ReservationRescheduleScreen';
 import { ReservationSuccessScreen, type ReservationSuccessVariant } from './screens/ReservationSuccessScreen';
-import { WalkInSelectionScreen } from './screens/WalkInSelectionScreen';
+import { WalkInAuthScreen } from './screens/WalkInAuthScreen';
 import { WalkInSuccessScreen } from './screens/WalkInSuccessScreen';
 import { SurveyFormScreen } from './screens/SurveyFormScreen';
 import { SurveySuccessScreen, type SurveySuccessVariant } from './screens/SurveySuccessScreen';
@@ -21,12 +22,17 @@ import { ProfessionalSuccessScreen, type ProfessionalSuccessVariant } from './sc
 import { ProfessionalReportScreen } from './screens/ProfessionalReportScreen';
 import { ProfessionalReportSuccessScreen } from './screens/ProfessionalReportSuccessScreen';
 import { ProfessionalSurveyScreen, type EventSurvey } from './screens/ProfessionalSurveyScreen';
+import { LinkExpiredScreen } from './screens/LinkExpiredScreen';
+import { EmailSurveyScreen } from './screens/EmailSurveyScreen';
+import { EmailSurveyEmpresaScreen } from './screens/EmailSurveyEmpresaScreen';
+import { ProfessionalAttendanceScreen } from './screens/ProfessionalAttendanceScreen';
 
-type ProfessionalConfirmationVariant = 'normal' | 'full';
+type ProfessionalConfirmationVariant = 'normal' | 'full' | 'answered-confirmed' | 'answered-declined' | 'answered-partial';
 
 type ScreenId =
   | 'auth'
   | 'select-e'
+  | 'link-otp'
   | 'success'
   | 'onsite-select'
   | 'onsite-auth'
@@ -37,9 +43,7 @@ type ScreenId =
   | 'reservation-cancel-success'
   | 'reservation-reschedule'
   | 'reservation-reschedule-success'
-  | 'walkin-select'
   | 'walkin-auth'
-  | 'walkin-otp'
   | 'walkin-success'
   | 'survey-form'
   | 'survey-success'
@@ -49,7 +53,13 @@ type ScreenId =
   | 'professional-report-success'
   | 'professional-survey-form'
   | 'professional-survey-success'
-  | 'professional-survey-blocked';
+  | 'professional-survey-blocked'
+  | 'link-expired'
+  | 'link-expired-pro'
+  | 'email-survey'
+  | 'empresa-email-recorrente'
+  | 'empresa-email-pos-evento'
+  | 'professional-attendance';
 
 type Viewport = 'mobile' | 'desktop';
 
@@ -91,6 +101,7 @@ const ACTORS: Actor[] = [
         id: 'agendamento-link',
         label: 'Agendamento Link Beneficiário',
         screens: [
+          { id: 'link-expired', label: 'Link Expirado', implemented: true },
           { id: 'auth', label: 'Autenticação', implemented: true },
           {
             id: 'select-e',
@@ -103,6 +114,7 @@ const ACTORS: Actor[] = [
               { scenario: 'D', label: 'D - Evento de 1 dia' },
             ],
           },
+          { id: 'link-otp', label: 'Código OTP', implemented: true },
           {
             id: 'success',
             label: 'Sucesso',
@@ -166,9 +178,7 @@ const ACTORS: Actor[] = [
         id: 'encaixe',
         label: 'Encaixe',
         screens: [
-          { id: 'walkin-select',  label: 'Encaixe',           implemented: true },
           { id: 'walkin-auth',    label: 'Dados do Cliente',   implemented: true },
-          { id: 'walkin-otp',     label: 'Código OTP',         implemented: true },
           { id: 'walkin-success', label: 'Sucesso',            implemented: true },
         ],
       },
@@ -176,6 +186,8 @@ const ACTORS: Actor[] = [
         id: 'pesquisa-pos-atendimento',
         label: 'Pesquisa Pós-Atendimento',
         screens: [
+          { id: 'email-survey',     label: 'E-mail convite', implemented: true },
+          { id: 'link-expired-pro', label: 'Link Expirado',  implemented: true },
           {
             id: 'survey-form',
             label: 'Pesquisa',
@@ -207,13 +219,17 @@ const ACTORS: Actor[] = [
         id: 'confirmacao-participacao',
         label: 'Confirmação de Participação',
         screens: [
+          { id: 'link-expired', label: 'Link Expirado', implemented: true },
           {
             id: 'professional-confirmation',
             label: 'Convite',
             implemented: true,
             variants: [
-              { scenario: 'A', label: 'A, Formulário de disponibilidade',  professionalConfirmationVariant: 'normal' },
-              { scenario: 'B', label: 'B, Evento lotado',                   professionalConfirmationVariant: 'full'  },
+              { scenario: 'A', label: 'A, Formulário de disponibilidade',  professionalConfirmationVariant: 'normal'            },
+              { scenario: 'B', label: 'B, Evento lotado',                   professionalConfirmationVariant: 'full'              },
+              { scenario: 'C', label: 'C, Já respondido — Confirmado',      professionalConfirmationVariant: 'answered-confirmed' },
+              { scenario: 'D', label: 'D, Já respondido — Recusado',        professionalConfirmationVariant: 'answered-declined'  },
+              { scenario: 'E', label: 'E, Já respondido — Parcial',         professionalConfirmationVariant: 'answered-partial'   },
             ],
           },
           {
@@ -232,16 +248,16 @@ const ACTORS: Actor[] = [
         id: 'pos-evento',
         label: 'Pós-evento',
         screens: [
-          { id: 'professional-report',         label: 'Relatório',  implemented: true },
-          { id: 'professional-report-success', label: 'Sucesso',    implemented: true },
+          { id: 'link-expired-pro',            label: 'Link Expirado', implemented: true },
+          { id: 'professional-report',         label: 'Relatório',     implemented: true },
+          { id: 'professional-report-success', label: 'Sucesso',       implemented: true },
         ],
       },
       {
-        id: 'pos-evento',
-        label: 'Pós-evento',
+        id: 'gerenciar-atendimentos',
+        label: 'Gerenciar Atendimentos',
         screens: [
-          { id: 'professional-report',         label: 'Relatório',  implemented: true },
-          { id: 'professional-report-success', label: 'Sucesso',    implemented: true },
+          { id: 'professional-attendance', label: 'Meus Atendimentos', implemented: true },
         ],
       },
     ],
@@ -254,6 +270,9 @@ const ACTORS: Actor[] = [
         id: 'pesquisa-pos-evento',
         label: 'Pesquisa Pós-Evento',
         screens: [
+          { id: 'empresa-email-recorrente', label: 'E-mail – Recorrente', implemented: true },
+          { id: 'empresa-email-pos-evento', label: 'E-mail – Pós-evento',  implemented: true },
+          { id: 'link-expired', label: 'Link Expirado', implemented: true },
           {
             id: 'professional-survey-form',
             label: 'Formulário',
@@ -323,6 +342,7 @@ function ScreenThumbnail({
       >
         {id === 'auth'           && <AuthScreen />}
         {id === 'select-e'       && <SelectionScreenE scenario={scenario ?? 'A'} />}
+        {id === 'link-otp'       && <LinkOTPScreen />}
         {id === 'success'        && <SuccessScreen variant={successVariant ?? 'confirmed'} />}
         {id === 'onsite-select'  && <OnSiteSelectionScreen />}
         {id === 'onsite-auth'    && <OnSiteAuthScreen />}
@@ -333,9 +353,7 @@ function ScreenThumbnail({
         {id === 'reservation-cancel-success'   && <ReservationSuccessScreen variant="cancelled" reservationId="massage" />}
         {id === 'reservation-reschedule'       && <ReservationRescheduleScreen reservationId="massage" />}
         {id === 'reservation-reschedule-success' && <ReservationSuccessScreen variant={reservationSuccessVariant ?? 'rescheduled'} reservationId="massage" />}
-        {id === 'walkin-select'  && <WalkInSelectionScreen />}
-        {id === 'walkin-auth'    && <OnSiteAuthScreen />}
-        {id === 'walkin-otp'     && <OnSiteOTPScreen />}
+        {id === 'walkin-auth'    && <WalkInAuthScreen />}
         {id === 'walkin-success' && <WalkInSuccessScreen />}
         {id === 'survey-form'    && <SurveyFormScreen scenario={scenario as 'A' | 'B' | undefined ?? 'A'} />}
         {id === 'survey-success' && <SurveySuccessScreen variant={surveySuccessVariant ?? 'positive'} />}
@@ -344,8 +362,14 @@ function ScreenThumbnail({
         {id === 'professional-report' && <ProfessionalReportScreen />}
         {id === 'professional-report-success' && <ProfessionalReportSuccessScreen />}
         {id === 'professional-survey-form' && <ProfessionalSurveyScreen viewport="desktop" survey={{ id: 'PSQ-PRO-001', eventName: 'Pesquisa Pós-Evento', eventDate: '13/04/2026', location: 'São Paulo, SP' }} forceView="form" respondentName="Ana Silva" />}
-        {id === 'professional-survey-success' && <ProfessionalSurveyScreen viewport="desktop" survey={{ id: 'PSQ-PRO-001', eventName: 'Pesquisa Pós-Evento', eventDate: '13/04/2026', location: 'São Paulo, SP' }} forceView="success" forceSuccessVariant={professionalSurveySuccessVariant} respondentName="Ana Silva" />}
+        {id === 'professional-survey-success' && <ProfessionalSurveyScreen viewport="desktop" survey={{ id: 'PSQ-PRO-001', eventName: 'Pesquisa Pós-Evento', eventDate: '13/04/2026', location: 'São Paulo, SP' }} forceView="success" forceSuccessVariant={surveySuccessVariant ?? 'positive'} respondentName="Ana Silva" />}
         {id === 'professional-survey-blocked' && <ProfessionalSurveyScreen viewport="desktop" survey={{ id: 'PSQ-PRO-001', eventName: 'Pesquisa Pós-Evento', eventDate: '13/04/2026', location: 'São Paulo, SP' }} forceView="blocked" respondentName="João Silva" />}
+        {id === 'link-expired'     && <LinkExpiredScreen />}
+        {id === 'link-expired-pro' && <LinkExpiredScreen hideAction />}
+        {id === 'email-survey'               && <EmailSurveyScreen />}
+        {id === 'empresa-email-recorrente'   && <EmailSurveyEmpresaScreen variant="recorrente" />}
+        {id === 'empresa-email-pos-evento'   && <EmailSurveyEmpresaScreen variant="pos-evento" />}
+        {id === 'professional-attendance' && <ProfessionalAttendanceScreen />}
       </div>
     </div>
   );
@@ -667,7 +691,8 @@ export function PrototypeApp() {
         <main className={styles.main}>
           <div className={[styles.frame, viewport === 'mobile' ? styles.frameMobile : styles.frameDesktop].join(' ')}>
             {activeScreen === 'auth'     && <AuthScreen viewport={viewport} onNavigate={(screen) => setActiveScreen(screen as ScreenId)} />}
-            {activeScreen === 'select-e' && <SelectionScreenE viewport={viewport} scenario={activeScenario} onNavigate={(_, successVariant) => { setActiveScreen('success'); setActiveSuccess(successVariant); }} />}
+            {activeScreen === 'select-e' && <SelectionScreenE viewport={viewport} scenario={activeScenario} onNavigate={(_, successVariant) => { setActiveScreen('link-otp'); setActiveSuccess(successVariant); }} />}
+            {activeScreen === 'link-otp' && <LinkOTPScreen viewport={viewport} onNavigate={() => setActiveScreen('success')} />}
             {activeScreen === 'success'  && <SuccessScreen viewport={viewport} variant={activeSuccess} />}
 
             {activeScreen === 'onsite-select'  && <OnSiteSelectionScreen viewport={viewport} onNavigate={(_, variant) => { setOnsiteVariant(variant); setActiveScreen('onsite-auth'); }} />}
@@ -716,20 +741,8 @@ export function PrototypeApp() {
                 newDayTime={rescheduledDayTime}
               />
             )}
-            {activeScreen === 'walkin-select' && (
-              <WalkInSelectionScreen
-                viewport={viewport}
-                onNavigate={() => setActiveScreen('walkin-auth')}
-              />
-            )}
             {activeScreen === 'walkin-auth' && (
-              <OnSiteAuthScreen
-                viewport={viewport}
-                onNavigate={() => setActiveScreen('walkin-otp')}
-              />
-            )}
-            {activeScreen === 'walkin-otp' && (
-              <OnSiteOTPScreen
+              <WalkInAuthScreen
                 viewport={viewport}
                 onNavigate={() => setActiveScreen('walkin-success')}
               />
@@ -791,7 +804,25 @@ export function PrototypeApp() {
                 respondentName="João Silva"
               />
             )}
-            {!(['auth', 'select-e', 'success', 'onsite-select', 'onsite-auth', 'onsite-otp', 'onsite-success', 'reservation-list', 'reservation-cancel', 'reservation-cancel-success', 'reservation-reschedule', 'reservation-reschedule-success', 'walkin-select', 'walkin-auth', 'walkin-otp', 'walkin-success', 'survey-form', 'survey-success', 'professional-confirmation', 'professional-success', 'professional-report', 'professional-report-success', 'professional-survey-form', 'professional-survey-success', 'professional-survey-blocked'] as const).includes(activeScreen) && (
+            {activeScreen === 'link-expired' && (
+              <LinkExpiredScreen viewport={viewport} />
+            )}
+            {activeScreen === 'link-expired-pro' && (
+              <LinkExpiredScreen viewport={viewport} hideAction />
+            )}
+            {activeScreen === 'email-survey' && (
+              <EmailSurveyScreen viewport={viewport} />
+            )}
+            {activeScreen === 'empresa-email-recorrente' && (
+              <EmailSurveyEmpresaScreen variant="recorrente" viewport={viewport} />
+            )}
+            {activeScreen === 'empresa-email-pos-evento' && (
+              <EmailSurveyEmpresaScreen variant="pos-evento" viewport={viewport} />
+            )}
+            {activeScreen === 'professional-attendance' && (
+              <ProfessionalAttendanceScreen viewport={viewport} />
+            )}
+            {!(['auth', 'select-e', 'link-otp', 'success', 'onsite-select', 'onsite-auth', 'onsite-otp', 'onsite-success', 'reservation-list', 'reservation-cancel', 'reservation-cancel-success', 'reservation-reschedule', 'reservation-reschedule-success', 'walkin-auth', 'walkin-success', 'survey-form', 'survey-success', 'professional-confirmation', 'professional-success', 'professional-report', 'professional-report-success', 'professional-survey-form', 'professional-survey-success', 'professional-survey-blocked', 'link-expired', 'link-expired-pro', 'email-survey', 'empresa-email-recorrente', 'empresa-email-pos-evento', 'professional-attendance'] as const).includes(activeScreen) && (
               <AuthScreen viewport={viewport} onNavigate={(screen) => setActiveScreen(screen as ScreenId)} />
             )}
           </div>

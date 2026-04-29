@@ -318,27 +318,27 @@
 }
 
 .optionRadio {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   border: var(--border-width-medium) solid var(--color-border-muted);
+  background: var(--color-bg-surface);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: border-color var(--transition-fast), background var(--transition-fast);
+  transition: border-color var(--transition-fast);
 }
 
 .optionRadioActive {
-  border-color: var(--color-brand-500);
-  background: var(--color-brand-500);
+  border-color: var(--color-action-primary);
 }
 
 .optionRadioDot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: white;
+  background: var(--color-action-primary);
 }
 
 .optionInfo {
@@ -486,27 +486,27 @@
 }
 
 .declineRadio {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   border: var(--border-width-medium) solid var(--color-border-muted);
+  background: var(--color-bg-surface);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: border-color var(--transition-fast), background var(--transition-fast);
+  transition: border-color var(--transition-fast);
 }
 
 .declineRadioActive {
-  border-color: var(--color-text-secondary);
-  background: var(--color-text-secondary);
+  border-color: var(--color-action-primary);
 }
 
 .declineRadioDot {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: white;
+  background: var(--color-action-primary);
 }
 
 /* ─── Ajuda de Custo — allowance list ──────────────────── */
@@ -553,4 +553,42 @@
 
 .buttonWrapper > button {
   width: 100%;
+}
+
+/* ─── Linha nome + badge dentro do summary card ─────────── */
+.summaryNameRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+/* Badge de status */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: var(--font-size-xs);             /* Body/XXS — 10px */
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.statusBadgeConfirmed {
+  background: var(--color-status-success-bg, #D1FAE5);
+  color: var(--color-status-success-fg, #065F46);
+}
+
+.statusBadgeDeclined {
+  background: var(--color-status-error-bg, #FEE2E2);
+  color: var(--color-status-error-fg, #991B1B);
+}
+
+.statusBadgePartial {
+  background: var(--color-status-info-bg);
+  color: var(--color-status-info-fg);
 }

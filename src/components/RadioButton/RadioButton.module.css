@@ -26,11 +26,12 @@
 .input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 
 .circle {
-  width: 18px; height: 18px;
+  position: relative;
+  width: 18px;
+  height: 18px;
   border: var(--border-width-medium) solid var(--color-border-muted);
   border-radius: 50%;
   background: var(--color-bg-surface);
-  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   transition: border-color var(--transition-fast);
 }
@@ -41,11 +42,18 @@
 }
 
 .dot {
-  width: 8px; height: 8px; border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   background: var(--color-action-primary);
-  transform: scale(0);
-  transition: transform var(--transition-fast);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  pointer-events: none;
 }
-.checked .dot { transform: scale(1); }
+.checked .dot { opacity: 1; }
 
 .optionLabel { font-family: var(--font-body); font-size: var(--font-size-base); color: var(--color-text-primary); }

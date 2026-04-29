@@ -165,7 +165,7 @@ export function ProfessionalSurveyFormScreen({
         >
           <span className={styles.heroTag}>Pesquisa de satisfação</span>
           <h1 className={styles.heroTitle}>{eventName || survey.eventName}</h1>
-          <p className={styles.heroSub}>Compartilhe sua experiência, leva menos de 5 minutos.</p>
+          <p className={styles.heroSub}>Sua opinião é importante para nós.</p>
         </div>
       </div>
 
@@ -306,15 +306,19 @@ export function ProfessionalSurveyFormScreen({
       </div>
 
       {/* CTA */}
-      <div className={[styles.ctaWrap, isDesktop ? styles.ctaWrapDesktop : ''].filter(Boolean).join(' ')}>
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={handleSubmit}
-          disabled={!allAnswered}
-        >
-          Enviar pesquisa
-        </Button>
+      <div className={styles.ctaBar}>
+        <div className={[styles.ctaInner, isDesktop ? styles.ctaInnerDesktop : ''].filter(Boolean).join(' ')}>
+          <div className={styles.buttonWrapper}>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={handleSubmit}
+              disabled={!allAnswered}
+            >
+              Enviar pesquisa
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

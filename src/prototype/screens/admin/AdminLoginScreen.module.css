@@ -1,0 +1,166 @@
+/* ─── Layout base — idêntico ao AuthScreen ───────────────────────────────────
+   Fundo #F5F3EE, card centralizado, elemento decorativo ao fundo.
+   ─────────────────────────────────────────────────────────────────────────── */
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl) var(--spacing-md);
+  background: #F5F3EE;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Elemento decorativo — mesma posição do AuthScreen (Figma: x:1015 y:467, 621×621) */
+.page::after {
+  content: '';
+  position: absolute;
+  left: calc(1015 / 1440 * 100%);
+  top: calc(467 / 900 * 100%);
+  width: calc(621 / 1440 * 100%);
+  aspect-ratio: 1;
+  background: url('/logos/logo-decorativa.svg') no-repeat center;
+  background-size: 100%;
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Card ────────────────────────────────────────────────────────────────── */
+.card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 521px;
+  background: var(--color-bg-default);   /* #FAFAFA */
+  border-radius: var(--radius-lg);       /* 24px */
+  padding: var(--spacing-2xl) var(--spacing-xl); /* 48px 32px */
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);               /* 16px entre logo, header e form */
+  box-shadow: var(--shadow-lg);
+}
+
+/* ─── Header ──────────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);               /* 4px entre título e subtítulo */
+  text-align: center;
+}
+
+.logo {
+  height: 68px;
+  width: auto;
+  align-self: center;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-2xl);      /* 24px */
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);     /* 16px */
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+/* ─── Form ────────────────────────────────────────────────────────────────── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);               /* 24px entre inputs-group e actionsGroup */
+}
+
+.inputsGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);               /* 16px entre inputs */
+}
+
+/* ─── Grupo de ações (botão + link) ──────────────────────────────────────── */
+.actionsGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ─── Lembrar-me ─────────────────────────────────────────────────────────── */
+.rememberLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-brand-500);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ─── Botão link (Recuperar senha / Voltar / Entrar) — text-style: button-s */
+.linkBtn {
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: var(--font-size-md);     /* button-s → 14px */
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.5px;             /* button-s → letter-spacing padrão */
+  color: var(--color-brand-500);
+  cursor: pointer;
+  padding: 4px 0;
+  text-align: center;
+  width: 100%;
+  transition: color var(--transition-fast);
+}
+
+.linkBtn:hover:not(:disabled) { color: var(--color-brand-700); }
+.linkBtn:disabled { opacity: 0.5; cursor: default; }
+
+/* ─── Botão eye (mostrar/ocultar senha) ──────────────────────────────────── */
+.eyeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  line-height: 1;
+  /* Garante clicabilidade mesmo dentro do span iconRight (pointer-events: none) */
+  pointer-events: auto;
+  transition: color var(--transition-fast);
+}
+
+.eyeBtn:hover { color: var(--color-text-secondary); }
+
+/* ─── Spinner de loading ─────────────────────────────────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 0.8s linear infinite;
+  display: flex;
+  align-items: center;
+}

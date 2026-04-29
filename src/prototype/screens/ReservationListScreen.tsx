@@ -1,10 +1,23 @@
 import { useState } from 'react';
 import { Clock, CheckCircle2, Calendar, Sparkles, Footprints, CalendarX, RefreshCcw, X } from 'lucide-react';
 import { Button } from '../../components/Button/Button';
+import { Dropdown } from '../../components/Dropdown/Dropdown';
 import { Feedback } from '../../components/Feedback/Feedback';
 import { AppHeader } from '../components/AppHeader';
 import type { ScenarioId } from './SelectionScreenE';
 import styles from './ReservationListScreen.module.css';
+
+// ─── Motivos de cancelamento ────────────────────────────
+
+const CANCEL_REASONS = [
+  { value: 'horario',    label: 'Não posso mais neste horário' },
+  { value: 'trabalho',   label: 'Compromisso de trabalho'      },
+  { value: 'imprevisto', label: 'Imprevisto pessoal'           },
+  { value: 'saude',      label: 'Motivo de saúde'              },
+  { value: 'interesse',  label: 'Não tenho mais interesse'     },
+  { value: 'outro-svc',  label: 'Prefiro outro serviço'        },
+  { value: 'outros',     label: 'Outros'                       },
+];
 
 // ─── Demo data ──────────────────────────────────────────
 
@@ -50,22 +63,36 @@ export function ReservationListScreen({
   const reservations = RESERVATIONS[scenario];
 
   // ── Cancel state ──────────────────────────────────────
-  const [cancelTarget, setCancelTarget]   = useState<string | null>(null);
-  const [cancelledIds, setCancelledIds]   = useState<Set<string>>(new Set());
+  const [cancelTarget, setCancelTarget]     = useState<string | null>(null);
+  const [cancelledIds, setCancelledIds]     = useState<Set<string>>(new Set());
   const [cancelFeedback, setCancelFeedback] = useState<string | null>(null);
+  const [cancelMotivo, setCancelMotivo]     = useState('');
+  const [motivoError, setMotivoError]       = useState<string | null>(null);
 
   const targetRes = reservations.find(r => r.id === cancelTarget);
 
   function openCancelModal(id: string) {
     setCancelTarget(id);
     setCancelFeedback(null);
+    setCancelMotivo('');
+    setMotivoError(null);
+  }
+
+  function closeCancelModal() {
+    setCancelTarget(null);
+    setCancelMotivo('');
+    setMotivoError(null);
   }
 
   function confirmCancel() {
     if (!cancelTarget) return;
+    if (!cancelMotivo) {
+      setMotivoError('Selecione o motivo do cancelamento');
+      return;
+    }
     const id = cancelTarget;
     setCancelledIds(prev => new Set([...prev, id]));
-    setCancelTarget(null);
+    closeCancelModal();
     setCancelFeedback(id);
   }
 
@@ -187,12 +214,12 @@ export function ReservationListScreen({
 
       {/* Modal de confirmação de cancelamento */}
       {cancelTarget && targetRes && (
-        <div className={styles.modalOverlay} onClick={() => setCancelTarget(null)}>
+        <div className={styles.modalOverlay} onClick={closeCancelModal}>
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
 
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>Cancelar agendamento?</h2>
-              <button className={styles.modalClose} onClick={() => setCancelTarget(null)} aria-label="Fechar">
+              <button className={styles.modalClose} onClick={closeCancelModal} aria-label="Fechar">
                 <X size={18} />
               </button>
             </div>
@@ -215,6 +242,16 @@ export function ReservationListScreen({
                   </span>
                 </div>
               </div>
+
+              {/* Motivo do cancelamento */}
+              <Dropdown
+                label="Motivo do cancelamento"
+                options={CANCEL_REASONS}
+                value={cancelMotivo}
+                onChange={(val) => { setCancelMotivo(val); setMotivoError(null); }}
+                placeholder="Selecione o motivo..."
+                error={motivoError ?? undefined}
+              />
             </div>
 
             <div className={styles.modalFooter}>
@@ -230,7 +267,7 @@ export function ReservationListScreen({
                 variant="secondary"
                 size="md"
                 style={{ flex: 1 }}
-                onClick={() => setCancelTarget(null)}
+                onClick={closeCancelModal}
               >
                 Manter reserva
               </Button>
