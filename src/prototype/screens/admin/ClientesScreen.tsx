@@ -11,24 +11,25 @@ import styles from './ClientesScreen.module.css';
 
 // ─── Types e Interfaces ───────────────────────────────────────────────────────
 export interface Cliente {
-  id:          string;
-  name:        string;
-  cnpj:        string;
-  localizacao: string;
+  id:             string;
+  name:           string;
+  cnpj:           string;
+  localizacao:    string;
+  tipoContrato:   'recorrente' | 'esporadico';
 }
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 const MOCK_CLIENTES: Cliente[] = [
-  { id: 'CLI-001', name: 'Itaú Unibanco',   cnpj: '60.872.504/0001-23', localizacao: 'São Paulo, SP'     },
-  { id: 'CLI-002', name: 'Ambev',            cnpj: '07.526.557/0001-00', localizacao: 'São Paulo, SP'     },
-  { id: 'CLI-003', name: 'Bradesco',          cnpj: '60.746.948/0001-12', localizacao: 'Osasco, SP'        },
-  { id: 'CLI-004', name: 'Natura',            cnpj: '71.673.990/0001-77', localizacao: 'São Paulo, SP'     },
-  { id: 'CLI-005', name: 'Vale',              cnpj: '33.592.510/0001-54', localizacao: 'Rio de Janeiro, RJ'},
-  { id: 'CLI-006', name: 'Magazine Luiza',    cnpj: '47.960.950/0001-21', localizacao: 'Franca, SP'        },
-  { id: 'CLI-007', name: 'iFood',             cnpj: '14.380.200/0001-21', localizacao: 'Osasco, SP'        },
-  { id: 'CLI-008', name: 'Renner',            cnpj: '92.754.738/0001-62', localizacao: 'Porto Alegre, RS'  },
-  { id: 'CLI-009', name: 'Petrobras',         cnpj: '33.000.167/0001-01', localizacao: 'Rio de Janeiro, RJ'},
-  { id: 'CLI-010', name: 'Vivo',              cnpj: '02.558.157/0001-62', localizacao: 'São Paulo, SP'     },
+  { id: 'CLI-001', name: 'Itaú Unibanco',   cnpj: '60.872.504/0001-23', localizacao: 'São Paulo, SP',      tipoContrato: 'recorrente'  },
+  { id: 'CLI-002', name: 'Ambev',            cnpj: '07.526.557/0001-00', localizacao: 'São Paulo, SP',      tipoContrato: 'recorrente'  },
+  { id: 'CLI-003', name: 'Bradesco',          cnpj: '60.746.948/0001-12', localizacao: 'Osasco, SP',         tipoContrato: 'recorrente'  },
+  { id: 'CLI-004', name: 'Natura',            cnpj: '71.673.990/0001-77', localizacao: 'São Paulo, SP',      tipoContrato: 'esporadico'  },
+  { id: 'CLI-005', name: 'Vale',              cnpj: '33.592.510/0001-54', localizacao: 'Rio de Janeiro, RJ', tipoContrato: 'recorrente'  },
+  { id: 'CLI-006', name: 'Magazine Luiza',    cnpj: '47.960.950/0001-21', localizacao: 'Franca, SP',         tipoContrato: 'esporadico'  },
+  { id: 'CLI-007', name: 'iFood',             cnpj: '14.380.200/0001-21', localizacao: 'Osasco, SP',         tipoContrato: 'recorrente'  },
+  { id: 'CLI-008', name: 'Renner',            cnpj: '92.754.738/0001-62', localizacao: 'Porto Alegre, RS',   tipoContrato: 'esporadico'  },
+  { id: 'CLI-009', name: 'Petrobras',         cnpj: '33.000.167/0001-01', localizacao: 'Rio de Janeiro, RJ', tipoContrato: 'recorrente'  },
+  { id: 'CLI-010', name: 'Vivo',              cnpj: '02.558.157/0001-62', localizacao: 'São Paulo, SP',      tipoContrato: 'recorrente'  },
 ];
 
 // ─── Paginação ────────────────────────────────────────────────────────────────
@@ -91,7 +92,7 @@ export function ClientesScreen({ role, sidebarOffset = 0, onNavChange, onViewDet
 
           {/* ── Page Header ──────────────────────────────────────────────────── */}
           <div className={styles.pageHeader}>
-            <h1 className={styles.pageTitle}>Clientes</h1>
+            <h1 className={styles.pageTitle}>Empresas</h1>
           </div>
 
           {/* ── Table Section ─────────────────────────────────────────────────── */}
@@ -121,13 +122,14 @@ export function ClientesScreen({ role, sidebarOffset = 0, onNavChange, onViewDet
                     <th className={styles.th}>Nome</th>
                     <th className={styles.th}>CNPJ</th>
                     <th className={styles.th}>Localização</th>
+                    <th className={styles.th}>Tipo de contrato</th>
                     <th className={styles.th}>Ação</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pageItems.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className={styles.emptyCell}>
+                      <td colSpan={5} className={styles.emptyCell}>
                         Nenhum cliente encontrado para os filtros selecionados.
                       </td>
                     </tr>
@@ -139,7 +141,6 @@ export function ClientesScreen({ role, sidebarOffset = 0, onNavChange, onViewDet
                         <td className={styles.td}>
                           <div className={styles.userInfo}>
                             <span className={styles.userName}>{c.name}</span>
-                            <span className={styles.userId}>{c.id}</span>
                           </div>
                         </td>
 
@@ -151,6 +152,26 @@ export function ClientesScreen({ role, sidebarOffset = 0, onNavChange, onViewDet
                         {/* Localização */}
                         <td className={styles.td}>
                           <span className={styles.cellText}>{c.localizacao}</span>
+                        </td>
+
+                        {/* Tipo de contrato */}
+                        <td className={styles.td}>
+                          <span
+                            className={styles.cellText}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              padding: '3px 10px',
+                              borderRadius: '6px',
+                              fontSize: 'var(--font-size-xs)',
+                              fontWeight: 'var(--font-weight-medium)',
+                              ...(c.tipoContrato === 'recorrente'
+                                ? { background: 'var(--color-brand-50)', border: '1px solid var(--color-brand-300)', color: 'var(--color-brand-600)' }
+                                : { background: 'var(--color-gray-100)', border: '1px solid var(--color-gray-300)', color: 'var(--color-text-secondary)' }),
+                            }}
+                          >
+                            {c.tipoContrato === 'recorrente' ? 'Recorrente' : 'Esporádico'}
+                          </span>
                         </td>
 
                         {/* Ação */}

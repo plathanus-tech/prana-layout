@@ -120,6 +120,7 @@
 .filterSelect {
   -webkit-appearance: none;
   appearance: none;
+  width: 100%;
   height: 36px;
   padding: 0 32px 0 12px;
   background: var(--color-bg-surface);
@@ -130,7 +131,6 @@
   color: var(--color-text-secondary);
   cursor: pointer;
   outline: none;
-  min-width: 160px;
   transition: border-color var(--transition-fast);
 }
 
@@ -1142,6 +1142,530 @@
   font-style: italic;
   padding: 4px 0;
   margin: 0;
+}
+
+/* ─── Toolbar right ──────────────────────────────────────────────────────────*/
+.toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.toolbarBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  background: var(--color-brand-500);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast);
+  flex-shrink: 0;
+}
+.toolbarBtn:hover { background: var(--color-brand-600); }
+
+/* ─── Filters button ─────────────────────────────────────────────────────────*/
+.filtersBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 14px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+.filtersBtn:hover {
+  border-color: var(--color-gray-300);
+  color: var(--color-text-primary);
+}
+.filtersBtnOpen {
+  border-color: var(--color-brand-400);
+  color: var(--color-brand-600);
+  background: var(--color-bg-brand);
+}
+.filtersBtnActive {
+  border-color: var(--color-brand-400);
+  color: var(--color-brand-600);
+  background: var(--color-bg-brand);
+}
+
+.filtersChevron {
+  color: var(--color-text-tertiary);
+  transition: transform var(--transition-fast);
+  flex-shrink: 0;
+}
+.filtersChevronOpen { transform: rotate(180deg); }
+
+.filterCountBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: var(--color-brand-500);
+  border-radius: 9px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  color: #fff;
+  line-height: 1;
+}
+
+/* ─── Filter backdrop + panel ────────────────────────────────────────────────*/
+.filterBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+}
+.filtersPanel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 200;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+  padding: 16px;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.filterLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+/* Limpar filtros — padrão UsersScreen (link texto + border-top) */
+.filtersClear {
+  height: 32px;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-brand-500);
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  transition: color var(--transition-fast);
+  border-top: 1px solid var(--color-gray-100);
+  padding-top: 10px;
+}
+.filtersClear:hover { color: var(--color-brand-700); }
+
+/* ─── Filter panel header (seta dentro do popover) ───────────────────────────*/
+.filterPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-gray-100);
+  margin-bottom: 4px;
+}
+.filterPanelTitle {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.filterPanelCloseBtn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.filterPanelCloseBtn:hover {
+  background: var(--color-gray-100);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Action button toggle — icon + texto (padrão ServicosScreen) ────────────*/
+/* Ghost neutro — Desativar */
+.actionBtnDeactivate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  background: transparent;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.actionBtnDeactivate:hover {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
+  color: var(--color-text-primary);
+}
+
+/* Ghost brand — Reativar */
+.actionBtnReactivate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  background: transparent;
+  border: 1px solid var(--color-brand-300);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-brand-600);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.actionBtnReactivate:hover {
+  background: var(--color-brand-50);
+  border-color: var(--color-brand-400);
+  color: var(--color-brand-700);
+}
+
+/* ─── Cell name (title + subtitle) ──────────────────────────────────────────*/
+.cellName {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.cellNameMain {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 360px;
+}
+.cellNameSub {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ─── Pilar badge ────────────────────────────────────────────────────────────*/
+.pilarBadge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+/* ─── Modal hint ─────────────────────────────────────────────────────────────*/
+.modalHint {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ─── Pilar read-only field ──────────────────────────────────────────────────*/
+.pilarReadOnlyField {
+  height: 36px;
+  padding: 0 10px;
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+  user-select: none;
+}
+
+/* ─── Modal search ───────────────────────────────────────────────────────────*/
+.modalSearchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.modalSearchIcon {
+  position: absolute;
+  left: 10px;
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+}
+.modalSearchInput {
+  height: 34px;
+  padding: 0 10px 0 32px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast);
+}
+.modalSearchInput::placeholder { color: var(--color-text-tertiary); }
+.modalSearchInput:hover         { border-color: var(--color-gray-300); }
+.modalSearchInput:focus         { border-color: var(--color-brand-400); }
+
+/* Quando o popover está aberto: remove borda inferior para fundir com o popover */
+.modalSearchInputOpen {
+  border-bottom-color: transparent !important;
+  border-radius: 8px 8px 0 0 !important;
+}
+
+/* ─── Search popover wrapper (Novo Modelo) ───────────────────────────────────*/
+.qSearchPopoverWrap {
+  position: relative;
+}
+.qSearchBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+.qSearchPopover {
+  position: absolute;
+  top: 100%;       /* colado à base do input */
+  left: 0;
+  right: 0;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-top: none; /* funde visualmente com o input */
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-300) transparent;
+}
+.qSearchPopover::-webkit-scrollbar { width: 6px; }
+.qSearchPopover::-webkit-scrollbar-thumb { background: var(--color-gray-300); border-radius: 3px; }
+
+/* ─── Question select list (Novo Modelo modal) ───────────────────────────────*/
+.qSelectList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-300) transparent;
+  padding-right: 2px;
+}
+.qSelectList::-webkit-scrollbar { width: 6px; }
+.qSelectList::-webkit-scrollbar-thumb { background: var(--color-gray-300); border-radius: 3px; }
+
+.qSelectItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+.qSelectItem:hover { background: var(--color-gray-50); }
+.qSelectItemChecked {
+  background: var(--color-bg-brand);
+  border-color: var(--color-brand-300);
+}
+.qSelectItemChecked:hover { background: var(--color-bg-brand); }
+
+.qSelectCheckbox {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--color-gray-300);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  background: var(--color-bg-surface);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+.qSelectCheckboxChecked {
+  background: var(--color-brand-500);
+  border-color: var(--color-brand-500);
+  color: #fff;
+}
+
+.qSelectInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.qSelectTitle {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qSelectMeta {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.qSelectEmpty {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* ─── Selected section (below search, above results list) ────────────────────*/
+.qSelectedSection {
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.qSelectedHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 12px;
+  background: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+.qSelectedTitle {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+.qSelectedCount {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  background: var(--color-gray-200);
+  border-radius: 10px;
+  padding: 1px 7px;
+}
+.qSelectedList {
+  display: flex;
+  flex-direction: column;
+  max-height: 130px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-300) transparent;
+}
+.qSelectedList::-webkit-scrollbar { width: 4px; }
+.qSelectedList::-webkit-scrollbar-thumb { background: var(--color-gray-300); border-radius: 2px; }
+
+.qSelectedItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+.qSelectedItem:last-child { border-bottom: none; }
+.qSelectedItemTitle {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qSelectedEmpty {
+  padding: 12px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+.qRemoveBtn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+.qRemoveBtn:hover {
+  background: var(--color-status-error-bg);
+  border-color: var(--color-red-300);
+  color: var(--color-status-error-fg);
 }
 
 /* ─── Toast de sucesso ───────────────────────────────────────────────────────*/

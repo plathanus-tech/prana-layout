@@ -226,11 +226,22 @@
   transition: border-color var(--transition-fast), background var(--transition-fast);
 }
 
+.radio {
+  width: 18px;
+  height: 18px;
+  background: var(--color-bg-surface);
+  transition: border-color var(--transition-fast);
+}
+
 .checkbox {
   border-radius: var(--radius-xs);
 }
 
-.selectorSelected .radio,
+.selectorSelected .radio {
+  border-color: var(--color-action-primary);
+  background: var(--color-bg-surface);
+}
+
 .selectorSelected .checkbox {
   border-color: var(--color-brand-500);
   background: var(--color-brand-500);
@@ -240,7 +251,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: white;
+  background: var(--color-action-primary);
 }
 
 .checkmark {
@@ -309,47 +320,92 @@
   align-items: center;
   gap: 2px;
   padding: var(--spacing-sm);
-  min-width: 52px;
+  width: 68px;             /* largura fixa padronizada */
   border-radius: var(--radius-sm);
   border: var(--border-width-thin) solid var(--color-border-subtle);
   background: var(--color-bg-surface);
+  box-shadow: var(--shadow-xs);
   cursor: pointer;
-  transition: border-color var(--transition-fast), background var(--transition-fast);
+  transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .dayBtn:hover {
-  border-color: var(--color-border-default);
-  background: var(--color-bg-subtle);
+  border-color: var(--color-brand-300);
+  background: var(--color-brand-50);
 }
 
 .dayBtnActive {
-  background: var(--color-brand-500);
+  background: var(--color-brand-50);
   border-color: var(--color-brand-500);
+  border-width: 2px;
+  box-shadow: none;
 }
 
 .dayName {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-xs);             /* Body/XXS — 10px */
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-regular);
   text-transform: uppercase;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
 }
 
 .dayNum {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-lg);             /* Subtitle/L — 18px */
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
-  line-height: 1;
+  line-height: 1.1;
+  letter-spacing: 0em;
 }
 
 .dayMonth {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-xs);             /* Body/XXS — 10px */
   color: var(--color-text-tertiary);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
 }
 
 .dayBtnActive .dayName,
 .dayBtnActive .dayNum,
 .dayBtnActive .dayMonth {
-  color: white;
+  color: var(--color-brand-700);
+}
+
+.dayBtnExhausted {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border-subtle);
+  box-shadow: none;
+}
+
+.dayBtnExhausted .dayName,
+.dayBtnExhausted .dayNum,
+.dayBtnExhausted .dayMonth {
+  color: var(--color-text-disabled);
+}
+
+.dayExhaustedTag {
+  font-size: var(--font-size-xs);             /* Body/XXS — 10px */
+  font-weight: var(--font-weight-regular);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text-disabled);
+  line-height: 1.4;
+  margin-top: 1px;
+}
+
+.dayBtnWaitlisted {
+  background: var(--color-brand-50);
+  border-color: var(--color-brand-300);
+  border-width: 2px;
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.dayBtnWaitlisted .dayName,
+.dayBtnWaitlisted .dayNum,
+.dayBtnWaitlisted .dayMonth,
+.dayBtnWaitlisted .dayExhaustedTag {
+  color: var(--color-brand-600);
 }
 
 /* Time grid */
@@ -409,4 +465,47 @@
   max-width: 600px;
   margin: 0 auto;
   width: 100%;
+}
+
+/* ─── Shift groups ────────────────────────────────────── */
+.shiftGroups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.shiftGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.shiftLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+/* ─── Timer de reserva ────────────────────────────────── */
+.timerBanner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-brand-50);
+  border: var(--border-width-thin) solid var(--color-brand-200);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-brand-700);
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+.timerBanner svg {
+  flex-shrink: 0;
+  color: var(--color-brand-500);
 }

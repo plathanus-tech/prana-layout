@@ -346,7 +346,7 @@ function EventsTable({ role, onViewDetail }: EventsTableProps) {
             <tr className={styles.headerRow}>
               <th className={styles.th}>Evento</th>
               <th className={styles.th}>Data</th>
-              {role === 'adm' && <th className={styles.th}>Cliente</th>}
+              {role === 'adm' && <th className={styles.th}>Empresa</th>}
               <th className={styles.th}>Profissionais</th>
               <th className={styles.th}>Status</th>
               <th className={styles.th}>Ações</th>
@@ -367,7 +367,6 @@ function EventsTable({ role, onViewDetail }: EventsTableProps) {
                   <td className={styles.td}>
                     <div className={styles.eventInfo}>
                       <span className={styles.eventName}>{ev.name}</span>
-                      <span className={styles.eventId}>{ev.id}</span>
                     </div>
                   </td>
 

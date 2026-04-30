@@ -1,19 +1,19 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock } from 'lucide-react';
 import { Input } from '../../components/Input/Input';
 import { Button } from '../../components/Button/Button';
 import { Feedback } from '../../components/Feedback/Feedback';
-import { Dropdown } from '../../components/Dropdown/Dropdown';
+import { RadioButton } from '../../components/RadioButton/RadioButton';
 import styles from './AuthScreen.module.css';
 
-const EMPRESAS = [
-  { label: 'Espaço Prana', value: 'prana' },
-  { label: 'Empresa Demonstração', value: 'demo' },
-  { label: 'Outra empresa', value: 'other' },
+const EMPRESA_TERCEIRIZADA_OPTIONS = [
+  { label: 'Sim', value: 'sim' },
+  { label: 'Não', value: 'nao' },
 ];
 
 interface FormFields {
-  empresa: string;
+  empresaTerceirizada: string;
+  nomeEmpresa: string;
   nome: string;
   email: string;
   telefone: string;
@@ -21,7 +21,8 @@ interface FormFields {
 }
 
 interface FormErrors {
-  empresa?: string;
+  empresaTerceirizada?: string;
+  nomeEmpresa?: string;
   nome?: string;
   email?: string;
   telefone?: string;
@@ -48,7 +49,8 @@ interface AuthScreenProps {
 
 export function AuthScreen({ viewport = 'desktop', onNavigate }: AuthScreenProps) {
   const [fields, setFields] = useState<FormFields>({
-    empresa: '',
+    empresaTerceirizada: '',
+    nomeEmpresa: '',
     nome: '',
     email: '',
     telefone: '',
@@ -76,7 +78,8 @@ export function AuthScreen({ viewport = 'desktop', onNavigate }: AuthScreenProps
   function validate(): FormErrors {
     const errs: FormErrors = {};
 
-    if (!fields.empresa) errs.empresa = 'Campo obrigatório';
+    if (!fields.empresaTerceirizada) errs.empresaTerceirizada = 'Campo obrigatório';
+    if (fields.empresaTerceirizada === 'sim' && !fields.nomeEmpresa.trim()) errs.nomeEmpresa = 'Campo obrigatório';
     if (!fields.nome.trim()) errs.nome = 'Campo obrigatório';
     if (!fields.email.trim()) {
       errs.email = 'Campo obrigatório';
@@ -135,18 +138,31 @@ export function AuthScreen({ viewport = 'desktop', onNavigate }: AuthScreenProps
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           {/* Inputs group — gap:16px entre campos */}
           <div className={styles.inputsGroup}>
-            <Dropdown
-              label="Empresa"
-              options={EMPRESAS}
-              value={fields.empresa}
+            <RadioButton
+              label="Empresa terceirizada"
+              name="empresaTerceirizada"
+              options={EMPRESA_TERCEIRIZADA_OPTIONS}
+              value={fields.empresaTerceirizada}
               onChange={val => {
-                setFields(prev => ({ ...prev, empresa: val }));
-                if (errors.empresa) setErrors(prev => ({ ...prev, empresa: undefined }));
+                setFields(prev => ({ ...prev, empresaTerceirizada: val, nomeEmpresa: '' }));
+                if (errors.empresaTerceirizada) setErrors(prev => ({ ...prev, empresaTerceirizada: undefined }));
               }}
-              placeholder="Selecione sua empresa"
+              orientation="horizontal"
               disabled={loading}
             />
-            {errors.empresa && <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-error)', marginTop: -8 }}>{errors.empresa}</span>}
+            {errors.empresaTerceirizada && <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-error)', marginTop: -8 }}>{errors.empresaTerceirizada}</span>}
+            {fields.empresaTerceirizada === 'sim' && (
+              <Input
+                label="Nome da empresa"
+                name="nomeEmpresa"
+                type="text"
+                placeholder="Ex: Empresa ABC"
+                value={fields.nomeEmpresa}
+                onChange={handleChange}
+                error={errors.nomeEmpresa}
+                disabled={loading}
+              />
+            )}
             <Input
               label="Nome completo"
               name="nome"
@@ -182,7 +198,7 @@ export function AuthScreen({ viewport = 'desktop', onNavigate }: AuthScreenProps
               inputMode="numeric"
             />
             <Input
-              label="Código da empresa"
+              label="Código do evento"
               name="codigoEmpresa"
               type="text"
               placeholder="Ex: PRANA123"
@@ -203,7 +219,7 @@ export function AuthScreen({ viewport = 'desktop', onNavigate }: AuthScreenProps
               type="submit"
               variant="primary"
               size="lg"
-              
+
               disabled={loading}
               iconLeft={
                 loading
@@ -213,6 +229,10 @@ export function AuthScreen({ viewport = 'desktop', onNavigate }: AuthScreenProps
             >
               {loading ? 'Validando...' : 'Continuar'}
             </Button>
+            <div className={styles.privacyNote}>
+              <Lock size={12} />
+              <span>Seus dados são tratados com segurança e utilizados exclusivamente para agendamento e notificações sobre o evento, conforme a LGPD.</span>
+            </div>
           </div>
         </form>
       </div>

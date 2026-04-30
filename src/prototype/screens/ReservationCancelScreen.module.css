@@ -136,6 +136,12 @@
   letter-spacing: 0.02em;
 }
 
+/* ─── Reason field ────────────────────────────────────── */
+.reasonField {
+  width: 100%;
+  text-align: left;
+}
+
 /* ─── Actions ─────────────────────────────────────────── */
 .actions {
   display: flex;

@@ -216,7 +216,6 @@ export function ProfissionaisScreen({ role, sidebarOffset = 0, onNavChange, onVi
                         <td className={styles.td}>
                           <div className={styles.userInfo}>
                             <span className={styles.userName}>{prof.name}</span>
-                            <span className={styles.userId}>{prof.id}</span>
                           </div>
                         </td>
 

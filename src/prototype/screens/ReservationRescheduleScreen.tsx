@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Calendar, Sparkles, Footprints } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Calendar, Sparkles, Footprints, Clock } from 'lucide-react';
 import { Button } from '../../components/Button/Button';
 import { Feedback } from '../../components/Feedback/Feedback';
 import { AppHeader } from '../components/AppHeader';
@@ -50,11 +50,17 @@ function formatDayLabel(dayKey: string) {
   return d ? `${d.dayName} ${d.dayNum} de ${d.month}` : dayKey;
 }
 
+function formatTimer(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 const DEMO: Record<string, ReservationInfo> = {
   massage: {
-    name:            'Quick Massage',
-    Icon:            Sparkles,
-    dayTime:         'seg, 13 de abr · 09:00',
+    name:             'Quick Massage',
+    Icon:             Sparkles,
+    dayTime:          'seg, 13 de abr · 09:00',
     exhaustedDayKeys: [DAYS[1].key, DAYS[3].key],
   },
   reflexology: {
@@ -80,33 +86,71 @@ export function ReservationRescheduleScreen({
   const isDesktop = viewport === 'desktop';
   const res       = DEMO[reservationId] ?? DEMO.massage;
 
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  // ── Estado de seleção ────────────────────────────────
+  const [selectedDay,  setSelectedDay]  = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isWaitlisted, setIsWaitlisted] = useState(false);
 
+  // ── Timer (5 min) ────────────────────────────────────
+  const [timerValue, setTimerValue] = useState<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, []);
+
+  function startTimer() {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setTimerValue(300);
+    let remaining = 300;
+    timerRef.current = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        clearInterval(timerRef.current!);
+        timerRef.current = null;
+        setTimerValue(null);
+        setSelectedDay(null);
+        setSelectedTime(null);
+        setIsWaitlisted(false);
+      } else {
+        setTimerValue(remaining);
+      }
+    }, 1000);
+  }
+
+  function clearTimerState() {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = null;
+    setTimerValue(null);
+  }
+
+  // ── Handlers ─────────────────────────────────────────
   function handleDaySelect(dayKey: string) {
     const exhausted = (res.exhaustedDayKeys ?? []).includes(dayKey);
     setSelectedDay(dayKey);
     setSelectedTime(null);
     setIsWaitlisted(exhausted);
+    clearTimerState();
   }
 
   function handleTimeSelect(time: string) {
     setSelectedTime(time);
+    startTimer();
   }
 
-  const canProceed =
-    selectedDay !== null && (isWaitlisted || selectedTime !== null);
+  // ── Validação ─────────────────────────────────────────
+  const canProceed = selectedDay !== null && (isWaitlisted || selectedTime !== null);
 
   function ctaLabel() {
-    if (!selectedDay) return 'Escolha um dia';
-    if (isWaitlisted) return 'Entrar na lista de espera';
-    if (!selectedTime) return 'Escolha um horário';
+    if (!selectedDay)    return 'Escolha um dia';
+    if (isWaitlisted)    return 'Entrar na lista de espera';
+    if (!selectedTime)   return 'Escolha um horário';
     return 'Confirmar reagendamento';
   }
 
   function handleConfirm() {
     if (!canProceed) return;
+    clearTimerState();
     if (isWaitlisted) {
       onNavigate?.('rescheduled-waitlist', selectedDay ? formatDayLabel(selectedDay) : undefined);
     } else {
@@ -115,6 +159,7 @@ export function ReservationRescheduleScreen({
     }
   }
 
+  // ── Render ────────────────────────────────────────────
   return (
     <div className={styles.page}>
       <AppHeader />
@@ -129,84 +174,103 @@ export function ReservationRescheduleScreen({
 
       <div className={[styles.content, isDesktop ? styles.contentDesktop : ''].filter(Boolean).join(' ')}>
 
-        {/* Horário atual */}
-        <div className={styles.currentBooking}>
-          <div className={styles.currentBookingIcon}>
-            <res.Icon size={16} />
+        {/* ─── Card unificado: horário atual + novo horário ─── */}
+        <div className={styles.scheduleCard}>
+
+          {/* Horário atual */}
+          <div className={styles.currentBooking}>
+            <div className={styles.currentBookingIcon}>
+              <res.Icon size={16} />
+            </div>
+            <div className={styles.currentBookingInfo}>
+              <span className={styles.currentBookingLabel}>Horário atual</span>
+              <span className={styles.currentBookingName}>{res.name}</span>
+              <span className={styles.currentBookingMeta}>
+                <Calendar size={11} />
+                {res.dayTime}
+              </span>
+            </div>
           </div>
-          <div className={styles.currentBookingInfo}>
-            <span className={styles.currentBookingLabel}>Horário atual</span>
-            <span className={styles.currentBookingName}>{res.name}</span>
-            <span className={styles.currentBookingMeta}>
-              <Calendar size={11} />
-              {res.dayTime}
-            </span>
+
+          <div className={styles.cardDivider} />
+
+          {/* Seleção de novo horário */}
+          <div className={styles.cardBody}>
+
+            {/* Escolha de dia */}
+            <div className={styles.pickerSection}>
+              <h4 className={styles.pickerLabel}>Escolha o novo dia</h4>
+              <div className={styles.dayStrip}>
+                {DAYS.map(day => {
+                  const isExhausted   = (res.exhaustedDayKeys ?? []).includes(day.key);
+                  const isActive      = selectedDay === day.key;
+                  const isWaitlisting = isActive && isWaitlisted;
+
+                  return (
+                    <button
+                      key={day.key}
+                      className={[
+                        styles.dayBtn,
+                        isExhausted && !isActive  ? styles.dayBtnExhausted   : '',
+                        isActive && !isWaitlisting ? styles.dayBtnActive      : '',
+                        isWaitlisting              ? styles.dayBtnWaitlisted  : '',
+                      ].filter(Boolean).join(' ')}
+                      onClick={() => handleDaySelect(day.key)}
+                    >
+                      <span className={styles.dayName}>{day.dayName}</span>
+                      <span className={styles.dayNum}>{day.dayNum}</span>
+                      <span className={styles.dayMonth}>{day.month}</span>
+                      {isExhausted && (
+                        <span className={styles.dayExhaustedTag}>Esgotado</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Horários ou feedback de lista de espera */}
+            {selectedDay && (
+              isWaitlisted ? (
+                <Feedback
+                  type="warning"
+                  title="Lista de espera"
+                  message={`Você será notificado caso abra uma vaga para ${formatDayLabel(selectedDay)}.`}
+                />
+              ) : (
+                <div className={styles.pickerSection}>
+                  <h4 className={styles.pickerLabel}>Escolha o novo horário</h4>
+                  <div className={styles.timeGrid}>
+                    {generateSlots(reservationId, selectedDay).map(slot => (
+                      <button
+                        key={slot.time}
+                        className={[
+                          styles.timeBtn,
+                          !slot.available            ? styles.timeBtnUnavailable : '',
+                          selectedTime === slot.time ? styles.timeBtnActive      : '',
+                        ].filter(Boolean).join(' ')}
+                        disabled={!slot.available}
+                        onClick={() => slot.available && handleTimeSelect(slot.time)}
+                      >
+                        {slot.time}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )
+            )}
+
+            {/* Cronômetro — aparece ao selecionar um horário */}
+            {timerValue !== null && (
+              <div className={styles.timerBanner}>
+                <Clock size={14} />
+                <span>Você tem {formatTimer(timerValue)} para confirmar seu novo horário</span>
+              </div>
+            )}
+
           </div>
         </div>
 
-        {/* Seleção de novo dia */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Escolha o novo dia</h2>
-
-          <div className={styles.dayStrip}>
-            {DAYS.map(day => {
-              const isExhausted  = (res.exhaustedDayKeys ?? []).includes(day.key);
-              const isActive     = selectedDay === day.key;
-              const isWaitlisting = isActive && isWaitlisted;
-
-              return (
-                <button
-                  key={day.key}
-                  className={[
-                    styles.dayBtn,
-                    isExhausted && !isActive ? styles.dayBtnExhausted  : '',
-                    isActive && !isWaitlisting ? styles.dayBtnActive   : '',
-                    isWaitlisting             ? styles.dayBtnWaitlisted : '',
-                  ].filter(Boolean).join(' ')}
-                  onClick={() => handleDaySelect(day.key)}
-                >
-                  <span className={styles.dayName}>{day.dayName}</span>
-                  <span className={styles.dayNum}>{day.dayNum}</span>
-                  <span className={styles.dayMonth}>{day.month}</span>
-                  {isExhausted && (
-                    <span className={styles.dayExhaustedTag}>Esgotado</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Horários ou feedback de lista de espera */}
-        {selectedDay && (
-          isWaitlisted ? (
-            <Feedback
-              type="info"
-              title="Na lista de espera"
-              message={`Você será notificado caso abra uma vaga para ${formatDayLabel(selectedDay)}.`}
-            />
-          ) : (
-            <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>Escolha o novo horário</h2>
-              <div className={styles.timeGrid}>
-                {generateSlots(reservationId, selectedDay).map(slot => (
-                  <button
-                    key={slot.time}
-                    className={[
-                      styles.timeBtn,
-                      !slot.available             ? styles.timeBtnUnavailable : '',
-                      selectedTime === slot.time  ? styles.timeBtnActive      : '',
-                    ].filter(Boolean).join(' ')}
-                    disabled={!slot.available}
-                    onClick={() => slot.available && handleTimeSelect(slot.time)}
-                  >
-                    {slot.time}
-                  </button>
-                ))}
-              </div>
-            </section>
-          )
-        )}
       </div>
 
       {/* CTA fixo */}
@@ -215,7 +279,6 @@ export function ReservationRescheduleScreen({
           <Button
             variant="primary"
             size="lg"
-            
             disabled={!canProceed}
             onClick={handleConfirm}
           >

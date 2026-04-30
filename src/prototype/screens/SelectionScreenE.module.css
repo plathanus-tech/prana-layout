@@ -285,6 +285,10 @@
   margin-top: 2px;
 }
 
+.cardCompleteWaitlist {
+  color: var(--color-status-info-fg);
+}
+
 /* Selector */
 .selector { flex-shrink: 0; }
 
@@ -299,9 +303,20 @@
   transition: border-color var(--transition-fast), background var(--transition-fast);
 }
 
+.radio {
+  width: 18px;
+  height: 18px;
+  background: var(--color-bg-surface);
+  transition: border-color var(--transition-fast);
+}
+
 .checkbox { border-radius: var(--radius-xs); }
 
-.selectorSelected .radio,
+.selectorSelected .radio {
+  border-color: var(--color-action-primary);
+  background: var(--color-bg-surface);
+}
+
 .selectorSelected .checkbox {
   border-color: var(--color-brand-500);
   background: var(--color-brand-500);
@@ -310,7 +325,7 @@
 .radioDot {
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: white;
+  background: var(--color-action-primary);
 }
 
 .checkmark {
@@ -360,8 +375,8 @@
 
 /* Ícone de serviço em estado de lista de espera */
 .cardIconWaitlist {
-  background: var(--color-status-warning-bg, #FEF3C7);
-  color: var(--color-status-warning, #92400E);
+  background: var(--color-status-info-bg);
+  color: var(--color-status-info-fg);
 }
 
 /* ─── Day strip — cards quadrados ─────────────────── */
@@ -381,7 +396,7 @@
   align-items: center;
   gap: 2px;
   padding: var(--spacing-sm);
-  min-width: 52px;
+  width: 68px;
   border-radius: var(--radius-sm);
   border: var(--border-width-thin) solid var(--color-border-subtle);
   background: var(--color-bg-surface);
@@ -462,7 +477,7 @@
 /* Esgotado selecionado = na lista de espera */
 .dayBtnWaitlisted {
   background: var(--color-brand-50);
-  border-color: var(--color-brand-300);
+  border-color: var(--color-brand-500);
   border-width: 2px;
   border-style: dashed;
   box-shadow: none;
@@ -472,7 +487,7 @@
 .dayBtnWaitlisted .dayNum,
 .dayBtnWaitlisted .dayMonth,
 .dayBtnWaitlisted .dayExhaustedTag {
-  color: var(--color-brand-600);
+  color: var(--color-brand-700);
 }
 
 /* ─── Time grid ───────────────────────────────────── */
@@ -539,4 +554,58 @@
   margin: 0;
   padding-left: 120px;
   padding-right: 120px;
+}
+
+/* ─── Shift groups ────────────────────────────────────── */
+.shiftGroups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.shiftGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.shiftLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+/* ─── Timer de reserva ────────────────────────────────── */
+
+/**
+ * timerBannerPersistent — posicionamento fora da área colapsável
+ * O card tem padding: 8px 16px, por isso não é necessário padding extra.
+ * O margin vertical garante respiro visual em relação ao header e ao cardBody.
+ */
+.timerBannerPersistent {
+  margin-top: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+}
+
+.timerBanner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-brand-50);
+  border: var(--border-width-thin) solid var(--color-brand-200);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-brand-700);
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+.timerBanner svg {
+  flex-shrink: 0;
+  color: var(--color-brand-500);
 }

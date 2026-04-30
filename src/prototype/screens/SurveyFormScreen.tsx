@@ -9,7 +9,7 @@ import styles from './SurveyFormScreen.module.css';
 // ─── Tipos ──────────────────────────────────────────────
 
 interface SurveyOption   { label: string; value: string; }
-interface SurveyQuestion { id: string; text: string; options: SurveyOption[]; }
+interface SurveyQuestion { id: string; text: string; subtitle?: string; options: SurveyOption[]; }
 interface ServiceBlock   { id: string; name: string; questions: SurveyQuestion[]; }
 interface SurveyData     { eventName: string; services: ServiceBlock[]; eventQuestions: SurveyQuestion[]; }
 
@@ -32,15 +32,15 @@ const SURVEYS: Record<'A' | 'B', SurveyData> = {
         id: 'massage',
         name: 'Quick Massage',
         questions: [
-          { id: 'ma-q1', text: 'Como você avalia o atendimento do profissional?', options: RATING_OPTIONS },
-          { id: 'ma-q2', text: 'O ambiente estava confortável e acolhedor?',      options: RATING_OPTIONS },
-          { id: 'ma-q3', text: 'O serviço atendeu às suas expectativas?',          options: RATING_OPTIONS },
+          { id: 'ma-q1', text: 'Como você avalia o atendimento do profissional?', subtitle: 'Considere a cordialidade, atenção e profissionalismo durante o atendimento.', options: RATING_OPTIONS },
+          { id: 'ma-q2', text: 'O ambiente estava confortável e acolhedor?',      subtitle: 'Pense no conforto, temperatura e estrutura do espaço.',                     options: RATING_OPTIONS },
+          { id: 'ma-q3', text: 'O serviço atendeu às suas expectativas?',          subtitle: 'Compare com o que você esperava antes do atendimento.',                     options: RATING_OPTIONS },
         ],
       },
     ],
     eventQuestions: [
-      { id: 'ev-q1', text: 'Como você avalia a organização geral do evento?', options: RATING_OPTIONS },
-      { id: 'ev-q2', text: 'Você recomendaria este programa para um colega?',  options: RATING_OPTIONS },
+      { id: 'ev-q1', text: 'Como você avalia a organização geral do evento?', subtitle: 'Considere pontualidade, comunicação e logística.', options: RATING_OPTIONS },
+      { id: 'ev-q2', text: 'Você recomendaria este programa para um colega?',  subtitle: 'Pense na experiência como um todo.',             options: RATING_OPTIONS },
     ],
   },
 
@@ -52,24 +52,24 @@ const SURVEYS: Record<'A' | 'B', SurveyData> = {
         id: 'massage',
         name: 'Quick Massage',
         questions: [
-          { id: 'ma-q1', text: 'Como você avalia o atendimento do profissional?', options: RATING_OPTIONS },
-          { id: 'ma-q2', text: 'O ambiente estava confortável e acolhedor?',      options: RATING_OPTIONS },
-          { id: 'ma-q3', text: 'O serviço atendeu às suas expectativas?',          options: RATING_OPTIONS },
+          { id: 'ma-q1', text: 'Como você avalia o atendimento do profissional?', subtitle: 'Considere a cordialidade, atenção e profissionalismo durante o atendimento.', options: RATING_OPTIONS },
+          { id: 'ma-q2', text: 'O ambiente estava confortável e acolhedor?',      subtitle: 'Pense no conforto, temperatura e estrutura do espaço.',                     options: RATING_OPTIONS },
+          { id: 'ma-q3', text: 'O serviço atendeu às suas expectativas?',          subtitle: 'Compare com o que você esperava antes do atendimento.',                     options: RATING_OPTIONS },
         ],
       },
       {
         id: 'reflexology',
         name: 'Reflexologia',
         questions: [
-          { id: 're-q1', text: 'Como você avalia o atendimento do profissional?', options: RATING_OPTIONS },
-          { id: 're-q2', text: 'O serviço trouxe relaxamento e bem-estar?',        options: RATING_OPTIONS },
-          { id: 're-q3', text: 'O serviço atendeu às suas expectativas?',          options: RATING_OPTIONS },
+          { id: 're-q1', text: 'Como você avalia o atendimento do profissional?', subtitle: 'Considere a cordialidade, atenção e profissionalismo durante o atendimento.', options: RATING_OPTIONS },
+          { id: 're-q2', text: 'O serviço trouxe relaxamento e bem-estar?',        subtitle: 'Considere como você se sentiu durante e após a sessão.',                    options: RATING_OPTIONS },
+          { id: 're-q3', text: 'O serviço atendeu às suas expectativas?',          subtitle: 'Compare com o que você esperava antes do atendimento.',                     options: RATING_OPTIONS },
         ],
       },
     ],
     eventQuestions: [
-      { id: 'ev-q1', text: 'Como você avalia a organização geral do evento?', options: RATING_OPTIONS },
-      { id: 'ev-q2', text: 'Você recomendaria este programa para um colega?',  options: RATING_OPTIONS },
+      { id: 'ev-q1', text: 'Como você avalia a organização geral do evento?', subtitle: 'Considere pontualidade, comunicação e logística.', options: RATING_OPTIONS },
+      { id: 'ev-q2', text: 'Você recomendaria este programa para um colega?',  subtitle: 'Pense na experiência como um todo.',             options: RATING_OPTIONS },
     ],
   },
 };
@@ -117,14 +117,23 @@ export function SurveyFormScreen({
   // ── Render ────────────────────────────────────────────
   return (
     <div className={styles.page}>
-      <AppHeader />
+      <div className={styles.stickyHeader}>
+        <AppHeader />
+        {/* Barra de progresso — colada ao header, uma única unidade sticky */}
+        <div className={styles.progressBar}>
+          <div
+            className={styles.progressFill}
+            style={{ width: `${Math.min(100, Math.round((answered / total) * 100))}%` }}
+          />
+        </div>
+      </div>
 
       {/* Hero */}
       <div className={styles.hero}>
         <div className={[styles.heroInner, isDesktop ? styles.heroInnerDesktop : ''].filter(Boolean).join(' ')}>
           <span className={styles.heroTag}>Pesquisa de satisfação</span>
           <h1 className={styles.heroTitle}>{survey.eventName}</h1>
-          <p className={styles.heroSub}>Compartilhe sua experiência, leva menos de 2 minutos.</p>
+          <p className={styles.heroSub}>Sua opinião é importante para nós.</p>
         </div>
       </div>
 
@@ -155,9 +164,12 @@ export function SurveyFormScreen({
             <div className={styles.questionList}>
               {svc.questions.map(q => (
                 <div key={q.id} className={styles.questionCard}>
+                  <div className={styles.questionTextBlock}>
+                    <p className={styles.questionText}>{q.text}</p>
+                    {q.subtitle && <p className={styles.questionSubtitle}>{q.subtitle}</p>}
+                  </div>
                   <RadioButton
                     name={q.id}
-                    label={q.text}
                     options={q.options}
                     value={answers[q.id] ?? ''}
                     onChange={val => setAnswer(q.id, val)}
@@ -174,9 +186,12 @@ export function SurveyFormScreen({
           <div className={styles.questionList}>
             {survey.eventQuestions.map(q => (
               <div key={q.id} className={styles.questionCard}>
+                <div className={styles.questionTextBlock}>
+                  <p className={styles.questionText}>{q.text}</p>
+                  {q.subtitle && <p className={styles.questionSubtitle}>{q.subtitle}</p>}
+                </div>
                 <RadioButton
                   name={q.id}
-                  label={q.text}
                   options={q.options}
                   value={answers[q.id] ?? ''}
                   onChange={val => setAnswer(q.id, val)}

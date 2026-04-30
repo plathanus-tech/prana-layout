@@ -1,0 +1,132 @@
+<svg viewBox="0 0 375 812" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="375" height="812" fill="#FAFAFA"/>
+
+  <!-- ═══ HEADER (0-60px) ═══ -->
+  <rect width="375" height="60" fill="#B25557"/>
+  <text x="187.5" y="35" font-family="Roboto" font-size="20" font-weight="700" fill="white" text-anchor="middle">Prana</text>
+
+  <!-- ═══ EVENT BANNER (60-220px) ═══ -->
+  <rect x="0" y="60" width="375" height="160" fill="white" stroke="#D4B5B8" stroke-width="2"/>
+
+  <!-- Event Tag -->
+  <text x="24" y="85" font-family="Roboto" font-size="10" font-weight="600" fill="#B25557" letter-spacing="1.2">EVENTO</text>
+
+  <!-- Event Title -->
+  <text x="24" y="115" font-family="Raleway" font-size="28" font-weight="600" fill="#1A1A1A">Semana do</text>
+  <text x="24" y="145" font-family="Raleway" font-size="28" font-weight="600" fill="#1A1A1A">Bem-Estar</text>
+
+  <!-- Event Meta -->
+  <text x="24" y="170" font-family="Roboto" font-size="12" font-weight="400" fill="#666666">📅 10 a 14 de abril de 2026</text>
+  <text x="24" y="190" font-family="Roboto" font-size="12" font-weight="400" fill="#666666">📍 Sala de Treinamentos - Bloco A</text>
+
+  <!-- ═══ SECTION TITLE (220-235px) ═══ -->
+  <text x="24" y="235" font-family="Roboto" font-size="10" font-weight="600" fill="#999999" letter-spacing="1.2">ESCOLHA O SERVIÇO</text>
+
+  <!-- ═══ SERVICE CARD 1: QUICK MASSAGE ═══ -->
+  <g id="card-1">
+    <!-- Card divider -->
+    <line x1="0" y1="250" x2="375" y2="250" stroke="#E2E0DF" stroke-width="1"/>
+
+    <!-- Card button area -->
+    <rect x="0" y="250" width="375" height="80" fill="transparent"/>
+
+    <!-- Icon circle -->
+    <circle cx="36" cy="290" r="18" fill="#F5F5F5"/>
+    <text x="36" y="295" font-size="16" text-anchor="middle" dominant-baseline="middle">✨</text>
+
+    <!-- Service info -->
+    <text x="66" y="280" font-family="Roboto" font-size="16" font-weight="600" fill="#1A1A1A">Quick Massage</text>
+    <text x="66" y="297" font-family="Roboto" font-size="12" font-weight="400" fill="#666666">⏱ 15 min · Massagem nas costas</text>
+
+    <!-- Radio button -->
+    <circle cx="347" cy="290" r="10" fill="none" stroke="#CCC" stroke-width="2"/>
+  </g>
+
+  <!-- ═══ SERVICE CARD 2: MANICURE ═══ -->
+  <g id="card-2">
+    <!-- Card divider -->
+    <line x1="0" y1="330" x2="375" y2="330" stroke="#E2E0DF" stroke-width="1"/>
+
+    <!-- Card button area -->
+    <rect x="0" y="330" width="375" height="80" fill="transparent"/>
+
+    <!-- Icon circle -->
+    <circle cx="36" cy="370" r="18" fill="#F5F5F5"/>
+    <text x="36" y="375" font-size="16" text-anchor="middle" dominant-baseline="middle">✂️</text>
+
+    <!-- Service info -->
+    <text x="66" y="360" font-family="Roboto" font-size="16" font-weight="600" fill="#1A1A1A">Manicure</text>
+    <text x="66" y="377" font-family="Roboto" font-size="12" font-weight="400" fill="#666666">⏱ 30 min · Cuidado para as unhas</text>
+
+    <!-- Radio button -->
+    <circle cx="347" cy="370" r="10" fill="none" stroke="#CCC" stroke-width="2"/>
+  </g>
+
+  <!-- ═══ SERVICE CARD 3: REFLEXOLOGIA (WAITLIST) ═══ -->
+  <g id="card-3">
+    <!-- Card divider -->
+    <line x1="0" y1="410" x2="375" y2="410" stroke="#E2E0DF" stroke-width="1"/>
+
+    <!-- Card button area - disabled opacity -->
+    <rect x="0" y="410" width="375" height="80" fill="transparent" opacity="0.4"/>
+
+    <!-- Icon circle -->
+    <circle cx="36" cy="450" r="18" fill="#F5F5F5"/>
+    <text x="36" y="455" font-size="16" text-anchor="middle" dominant-baseline="middle">🦶</text>
+
+    <!-- Service info -->
+    <text x="66" y="440" font-family="Roboto" font-size="16" font-weight="600" fill="#1A1A1A">Reflexologia Podal</text>
+    <text x="66" y="457" font-family="Roboto" font-size="12" font-weight="400" fill="#666666">⏱ 20 min · Pontos de pressão</text>
+
+    <!-- Radio button -->
+    <circle cx="347" cy="450" r="10" fill="none" stroke="#CCC" stroke-width="2"/>
+  </g>
+
+  <!-- ═══ SERVICE CARD 4: MEDITAÇÃO ═══ -->
+  <g id="card-4">
+    <!-- Card divider -->
+    <line x1="0" y1="490" x2="375" y2="490" stroke="#E2E0DF" stroke-width="1"/>
+
+    <!-- Card button area -->
+    <rect x="0" y="490" width="375" height="80" fill="transparent"/>
+
+    <!-- Icon circle -->
+    <circle cx="36" cy="530" r="18" fill="#F5F5F5"/>
+    <text x="36" y="535" font-size="16" text-anchor="middle" dominant-baseline="middle">🌬️</text>
+
+    <!-- Service info -->
+    <text x="66" y="520" font-family="Roboto" font-size="16" font-weight="600" fill="#1A1A1A">Meditação Guiada</text>
+    <text x="66" y="537" font-family="Roboto" font-size="12" font-weight="400" fill="#666666">⏱ 20 min · Relaxamento pleno</text>
+
+    <!-- Radio button -->
+    <circle cx="347" cy="530" r="10" fill="none" stroke="#CCC" stroke-width="2"/>
+  </g>
+
+  <!-- ═══ BOTTOM DIVIDER ═══ -->
+  <line x1="0" y1="570" x2="375" y2="570" stroke="#E2E0DF" stroke-width="1"/>
+
+  <!-- ═══ CTA BAR (750-812px) ═══ -->
+  <g id="cta-bar">
+    <!-- Background -->
+    <rect x="0" y="730" width="375" height="82" fill="#FAFAFA"/>
+
+    <!-- Button -->
+    <rect x="24" y="750" width="327" height="48" rx="8" fill="#B25557"/>
+    <text x="187.5" y="783" font-family="Roboto" font-size="16" font-weight="600" fill="white" text-anchor="middle">Agendar serviço</text>
+  </g>
+
+  <!-- ═══ ANNOTATIONS ═══ -->
+  <defs>
+    <style>
+      @font-face {
+        font-family: 'Roboto';
+        src: url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700');
+      }
+      @font-face {
+        font-family: 'Raleway';
+        src: url('https://fonts.googleapis.com/css2?family=Raleway:wght@600');
+      }
+    </style>
+  </defs>
+</svg>

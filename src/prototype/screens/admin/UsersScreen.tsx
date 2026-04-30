@@ -4,7 +4,7 @@
 //   admin → visualizar, buscar, filtrar, adicionar, ativar/desativar usuários
 
 import { useState, useImperativeHandle, forwardRef, useRef } from 'react';
-import { Search, ChevronDown, Plus, Ban, RotateCcw } from 'lucide-react';
+import { Search, ChevronDown, Plus, Ban, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import { Sidebar } from '../../../components/Sidebar/Sidebar';
 import { Dialog } from '../../../components/Dialog/Dialog';
 import { Input } from '../../../components/Input/Input';
@@ -223,7 +223,19 @@ const UsersTable = forwardRef<{ openAddModal: () => void }, UsersTableProps>(fun
   const [users, setUsers] = useState<User[]>(MOCK_USERS);
   const [search, setSearch] = useState('');
   const [filterProfile, setFilterProfile] = useState<UserProfile | ''>('');
+  const [filterEmpresa, setFilterEmpresa] = useState('');
+  const [filterStatus, setFilterStatus] = useState<UserStatus | ''>('');
+  const [filterOpen, setFilterOpen] = useState(false);
   const [page, setPage] = useState(1);
+
+  const activeCount = [filterProfile, filterEmpresa, filterStatus].filter(Boolean).length;
+
+  function clearFilters() {
+    setFilterProfile('');
+    setFilterEmpresa('');
+    setFilterStatus('');
+    setPage(1);
+  }
 
   // Modal: Adicionar usuário
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -255,6 +267,8 @@ const UsersTable = forwardRef<{ openAddModal: () => void }, UsersTableProps>(fun
   // ─── Filtragem ─────────────────────────────────────────────────────────────
   const filtered = users.filter(user => {
     if (filterProfile && user.profile !== filterProfile) return false;
+    if (filterStatus && user.status !== filterStatus) return false;
+    if (filterEmpresa && user.company !== filterEmpresa) return false;
     if (search.trim()) {
       const searchLower = search.toLowerCase();
       const matchesName = user.name.toLowerCase().includes(searchLower);
@@ -436,23 +450,90 @@ const UsersTable = forwardRef<{ openAddModal: () => void }, UsersTableProps>(fun
               />
             </div>
 
-            {/* Filtro de perfil */}
+            {/* Botão Filtros — consolida perfil, empresa e status */}
             <div className={styles.filterBtnWrap}>
-              <div className={styles.filterWrap}>
-                <select
-                  className={styles.filterSelect}
-                  value={filterProfile}
-                  onChange={e => {
-                    setFilterProfile((e.target.value as string) === '' ? '' : (e.target.value as UserProfile));
-                    setPage(1);
-                  }}
-                >
-                  <option value="">Todos os perfis</option>
-                  <option value="administrador">Administrador</option>
-                  <option value="empresa">Empresa</option>
-                </select>
-                <ChevronDown size={13} className={styles.filterChevron} />
-              </div>
+              <button
+                className={[
+                  styles.filtersBtn,
+                  filterOpen      ? styles.filtersBtnOpen   : '',
+                  activeCount > 0 ? styles.filtersBtnActive : '',
+                ].filter(Boolean).join(' ')}
+                onClick={() => setFilterOpen(o => !o)}
+              >
+                <SlidersHorizontal size={14} />
+                {activeCount > 0 ? `Filtros · ${activeCount}` : 'Filtros'}
+                <ChevronDown
+                  size={12}
+                  className={[styles.filtersChevron, filterOpen ? styles.filtersChevronOpen : ''].filter(Boolean).join(' ')}
+                />
+              </button>
+
+              {filterOpen && (
+                <>
+                  <div className={styles.filterBackdrop} onClick={() => setFilterOpen(false)} />
+                  <div className={styles.filtersPanel}>
+
+                    {/* Perfil */}
+                    <div className={styles.filterField}>
+                      <label className={styles.filterLabel}>Perfil</label>
+                      <div className={styles.filterWrap}>
+                        <select
+                          className={styles.filterSelect}
+                          value={filterProfile}
+                          onChange={e => { setFilterProfile(e.target.value as UserProfile | ''); setPage(1); }}
+                        >
+                          <option value="">Todos os perfis</option>
+                          <option value="administrador">Administrador</option>
+                          <option value="empresa">Empresa</option>
+                        </select>
+                        <ChevronDown size={13} className={styles.filterChevron} />
+                      </div>
+                    </div>
+
+                    {/* Empresa */}
+                    <div className={styles.filterField}>
+                      <label className={styles.filterLabel}>Empresa</label>
+                      <div className={styles.filterWrap}>
+                        <select
+                          className={styles.filterSelect}
+                          value={filterEmpresa}
+                          onChange={e => { setFilterEmpresa(e.target.value); setPage(1); }}
+                        >
+                          <option value="">Todas as empresas</option>
+                          {COMPANIES.map(c => (
+                            <option key={c.value} value={c.label}>{c.label}</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={13} className={styles.filterChevron} />
+                      </div>
+                    </div>
+
+                    {/* Status */}
+                    <div className={styles.filterField}>
+                      <label className={styles.filterLabel}>Status</label>
+                      <div className={styles.filterWrap}>
+                        <select
+                          className={styles.filterSelect}
+                          value={filterStatus}
+                          onChange={e => { setFilterStatus(e.target.value as UserStatus | ''); setPage(1); }}
+                        >
+                          <option value="">Todos os status</option>
+                          <option value="ativo">Ativo</option>
+                          <option value="inativo">Inativo</option>
+                        </select>
+                        <ChevronDown size={13} className={styles.filterChevron} />
+                      </div>
+                    </div>
+
+                    {activeCount > 0 && (
+                      <button className={styles.filtersClear} onClick={clearFilters}>
+                        Limpar filtros
+                      </button>
+                    )}
+
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -464,6 +545,7 @@ const UsersTable = forwardRef<{ openAddModal: () => void }, UsersTableProps>(fun
               <tr className={styles.headerRow}>
                 <th className={styles.th}>Nome</th>
                 <th className={styles.th}>E-mail</th>
+                <th className={styles.th}>Empresa</th>
                 <th className={styles.th}>Perfil</th>
                 <th className={styles.th}>Status</th>
                 <th className={styles.th}>Ações</th>
@@ -472,7 +554,7 @@ const UsersTable = forwardRef<{ openAddModal: () => void }, UsersTableProps>(fun
             <tbody>
               {pageItems.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className={styles.emptyCell}>
+                  <td colSpan={6} className={styles.emptyCell}>
                     Nenhum usuário encontrado para os filtros selecionados.
                   </td>
                 </tr>
@@ -483,13 +565,17 @@ const UsersTable = forwardRef<{ openAddModal: () => void }, UsersTableProps>(fun
                     <td className={styles.td}>
                       <div className={styles.userInfo}>
                         <span className={styles.userName}>{user.name}</span>
-                        <span className={styles.userId}>{user.id}</span>
                       </div>
                     </td>
 
                     {/* E-mail */}
                     <td className={styles.td}>
                       <span className={styles.cellText}>{user.email}</span>
+                    </td>
+
+                    {/* Empresa */}
+                    <td className={styles.td}>
+                      <span className={styles.cellText}>{user.company ?? '—'}</span>
                     </td>
 
                     {/* Perfil */}
@@ -638,7 +724,7 @@ const UsersTable = forwardRef<{ openAddModal: () => void }, UsersTableProps>(fun
 
             {addUserData.profile === 'empresa' && (
               <Dropdown
-                label="Cliente"
+                label="Empresa"
                 options={COMPANIES}
                 value={addUserData.company}
                 onChange={handleAddUserCompanyChange}
@@ -685,10 +771,14 @@ interface UsersScreenProps {
   onNavChange?: (item: string) => void;
 }
 
-export function UsersScreen({ role, sidebarOffset = 0, onNavChange }: UsersScreenProps) {
+export const UsersScreen = forwardRef<{ openAddModal: () => void }, UsersScreenProps>(function UsersScreen({ role, sidebarOffset = 0, onNavChange }, ref) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav, setActiveNav] = useState('usuarios');
   const usersTableRef = useRef<{ openAddModal: () => void }>(null);
+
+  useImperativeHandle(ref, () => ({
+    openAddModal: () => usersTableRef.current?.openAddModal(),
+  }));
 
   return (
     <div
@@ -731,4 +821,4 @@ export function UsersScreen({ role, sidebarOffset = 0, onNavChange }: UsersScree
       </div>
     </div>
   );
-}
+});

@@ -148,6 +148,105 @@
   position: relative;
 }
 
+.filtersBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 14px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.filtersBtn:hover {
+  border-color: var(--color-gray-300);
+  color: var(--color-text-primary);
+}
+
+.filtersBtnOpen {
+  border-color: var(--color-brand-400);
+  color: var(--color-brand-600);
+  background: var(--color-bg-brand);
+}
+
+.filtersBtnActive {
+  border-color: var(--color-brand-400);
+  color: var(--color-brand-600);
+  background: var(--color-bg-brand);
+}
+
+.filtersChevron {
+  color: var(--color-text-tertiary);
+  transition: transform var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.filtersChevronOpen {
+  transform: rotate(180deg);
+}
+
+.filterBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+}
+
+.filtersPanel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 200;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+  padding: 16px;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filterLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.filtersClear {
+  height: 32px;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-brand-500);
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  transition: color var(--transition-fast);
+  border-top: 1px solid var(--color-gray-100);
+  padding-top: 10px;
+}
+
+.filtersClear:hover { color: var(--color-brand-700); }
+
 /* Wrapper compartilhado (select + chevron) */
 .filterWrap {
   position: relative;
@@ -170,7 +269,6 @@
   cursor: pointer;
   outline: none;
   transition: border-color var(--transition-fast);
-  min-width: 160px;
 }
 
 .filterSelect:hover {

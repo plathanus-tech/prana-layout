@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Clock, MapPin, Calendar, CheckCircle2, Sparkles, Scissors, Activity, Wind } from 'lucide-react';
 import { Button } from '../../components/Button/Button';
 import { Feedback } from '../../components/Feedback/Feedback';
@@ -53,6 +53,33 @@ function generateSlots(serviceId: string, dayKey: string) {
 }
 
 const DAYS = generateDays();
+
+// ─── Slot utilities ─────────────────────────────────────
+
+type Slot = { time: string; available: boolean };
+type ShiftGroup = { label: string; slots: Slot[] };
+
+function groupSlotsByShift(slots: Slot[]): ShiftGroup[] {
+  const groups: ShiftGroup[] = [
+    { label: 'Manhã', slots: [] },
+    { label: 'Tarde', slots: [] },
+    { label: 'Noite', slots: [] },
+  ];
+  for (const slot of slots) {
+    const hour = parseInt(slot.time.split(':')[0]);
+    if (hour < 12) groups[0].slots.push(slot);
+    else if (hour < 18) groups[1].slots.push(slot);
+    else groups[2].slots.push(slot);
+  }
+  return groups.filter(g => g.slots.length > 0);
+}
+
+function formatTimer(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 type ScheduleChoice = { dayKey: string | null; time: string | null };
 
 interface SelectionScreenCProps { viewport?: 'mobile' | 'desktop'; }
@@ -62,18 +89,62 @@ export function SelectionScreenC({ viewport = 'desktop' }: SelectionScreenCProps
   const event = multiMode ? EVENTS.multi : EVENTS.single;
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [schedules, setSchedules]     = useState<Record<string, ScheduleChoice>>({});
+  const [timers, setTimers]           = useState<Record<string, number | null>>({});
+  const timerRefs = useRef<Record<string, ReturnType<typeof setInterval>>>({});
+
+  useEffect(() => {
+    const refs = timerRefs.current;
+    return () => { Object.values(refs).forEach(id => clearInterval(id)); };
+  }, []);
+
+  function startTimer(serviceId: string) {
+    if (timerRefs.current[serviceId]) clearInterval(timerRefs.current[serviceId]);
+    setTimers(prev => ({ ...prev, [serviceId]: 300 }));
+    let remaining = 300;
+    timerRefs.current[serviceId] = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        clearInterval(timerRefs.current[serviceId]);
+        delete timerRefs.current[serviceId];
+        setTimers(prev => ({ ...prev, [serviceId]: null }));
+        setSchedules(prev => {
+          const existing = prev[serviceId];
+          if (!existing) return prev;
+          return { ...prev, [serviceId]: { ...existing, time: null } };
+        });
+      } else {
+        setTimers(prev => ({ ...prev, [serviceId]: remaining }));
+      }
+    }, 1000);
+  }
+
+  function clearTimer(serviceId: string) {
+    if (timerRefs.current[serviceId]) {
+      clearInterval(timerRefs.current[serviceId]);
+      delete timerRefs.current[serviceId];
+    }
+    setTimers(prev => ({ ...prev, [serviceId]: null }));
+  }
 
   function toggleService(id: string) {
+    const wasSelected = selectedIds.has(id);
     setSelectedIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) { next.delete(id); } else { if (!multiMode) next.clear(); if (next.size < event.maxServices) next.add(id); }
       return next;
     });
-    setSchedules(prev => { if (selectedIds.has(id)) { const { [id]: _, ...rest } = prev; return rest; } return prev; });
+    setSchedules(prev => { if (wasSelected) { const { [id]: _, ...rest } = prev; return rest; } return prev; });
+    if (wasSelected) clearTimer(id);
   }
 
-  function setDay(serviceId: string, dayKey: string) { setSchedules(prev => ({ ...prev, [serviceId]: { dayKey, time: null } })); }
-  function setTime(serviceId: string, time: string)  { setSchedules(prev => ({ ...prev, [serviceId]: { ...(prev[serviceId] ?? { dayKey: null }), time } })); }
+  function setDay(serviceId: string, dayKey: string) {
+    setSchedules(prev => ({ ...prev, [serviceId]: { dayKey, time: null } }));
+    clearTimer(serviceId);
+  }
+  function setTime(serviceId: string, time: string) {
+    setSchedules(prev => ({ ...prev, [serviceId]: { ...(prev[serviceId] ?? { dayKey: null }), time } }));
+    startTimer(serviceId);
+  }
 
   const selectedCount = selectedIds.size;
   const canBook = selectedCount > 0 && [...selectedIds].every(id => {
@@ -84,6 +155,7 @@ export function SelectionScreenC({ viewport = 'desktop' }: SelectionScreenCProps
   });
 
   function handleMultiToggle(e: React.ChangeEvent<HTMLInputElement>) {
+    Object.keys(timerRefs.current).forEach(id => clearTimer(id));
     setMultiMode(e.target.checked); setSelectedIds(new Set()); setSchedules({});
   }
 
@@ -163,15 +235,28 @@ export function SelectionScreenC({ viewport = 'desktop' }: SelectionScreenCProps
                           {sch?.dayKey && (
                             <div className={styles.pickerSection}>
                               <h4 className={styles.pickerLabel}>Horário disponível</h4>
-                              <div className={styles.timeGrid}>
-                                {generateSlots(service.id, sch.dayKey).map(slot => (
-                                  <button key={slot.time} className={[styles.timeBtn, !slot.available ? styles.timeBtnUnavailable : '', sch.time === slot.time ? styles.timeBtnActive : ''].filter(Boolean).join(' ')} disabled={!slot.available} onClick={() => slot.available && setTime(service.id, slot.time)}>
-                                    {slot.time}
-                                  </button>
+                              <div className={styles.shiftGroups}>
+                                {groupSlotsByShift(generateSlots(service.id, sch.dayKey)).map(shift => (
+                                  <div key={shift.label} className={styles.shiftGroup}>
+                                    <span className={styles.shiftLabel}>{shift.label}</span>
+                                    <div className={styles.timeGrid}>
+                                      {shift.slots.map(slot => (
+                                        <button key={slot.time} className={[styles.timeBtn, !slot.available ? styles.timeBtnUnavailable : '', sch.time === slot.time ? styles.timeBtnActive : ''].filter(Boolean).join(' ')} disabled={!slot.available} onClick={() => slot.available && setTime(service.id, slot.time)}>
+                                          {slot.time}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
                                 ))}
                               </div>
                             </div>
                           )}
+                        </div>
+                      )}
+                      {timers[service.id] != null && (
+                        <div className={styles.timerBanner}>
+                          <Clock size={14} />
+                          <span>Você tem {formatTimer(timers[service.id]!)} para agendar</span>
                         </div>
                       )}
                     </div>

@@ -5,7 +5,7 @@
 //   empresa → apenas aba Beneficiário
 
 import { useState } from 'react';
-import { ArrowLeft, Users, Briefcase, Star } from 'lucide-react';
+import { ArrowLeft, Users, Star } from 'lucide-react';
 import { Sidebar } from '../../../components/Sidebar/Sidebar';
 import type { UserRole } from './UsersScreen';
 import type { Pesquisa } from './PesquisaScreen';
@@ -13,7 +13,7 @@ import styles from './PesquisaDetailScreen.module.css';
 import tooltipStyles from '../../../components/Tooltip/Tooltip.module.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type DetailTab  = 'beneficiario' | 'gestor';
+type DetailTab  = 'beneficiario';
 type AreaKey    = 'Bem-estar' | 'Relaxamento' | 'Foco' | 'Clima' | 'Engajamento';
 type PesquisaStatus = 'concluida' | 'enviada' | 'aguardando';
 
@@ -413,22 +413,14 @@ export function PesquisaDetailScreen({
             </div>
           </div>
 
-          {/* ── Tabs (admin only) ─────────────────────────────────────────── */}
+          {/* ── Tabs (admin only — apenas Beneficiário; Gestor centralizado no Detalhe do Evento) ── */}
           {showTabs && (
             <div className={styles.tabs}>
               <button
-                className={[styles.tab, activeTab === 'beneficiario' ? styles.tabActive : ''].filter(Boolean).join(' ')}
-                onClick={() => setActiveTab('beneficiario')}
+                className={[styles.tab, styles.tabActive].join(' ')}
               >
                 <Users size={14} />
                 Beneficiário
-              </button>
-              <button
-                className={[styles.tab, activeTab === 'gestor' ? styles.tabActive : ''].filter(Boolean).join(' ')}
-                onClick={() => setActiveTab('gestor')}
-              >
-                <Briefcase size={14} />
-                Gestor
               </button>
             </div>
           )}
@@ -653,127 +645,6 @@ export function PesquisaDetailScreen({
             </>
           )}
 
-          {/* ══════════════════════════════════════════════════════════════════
-              ABA: Gestor (admin only)
-          ═══════════════════════════════════════════════════════════════════ */}
-          {role === 'adm' && activeTab === 'gestor' && (
-            <>
-              {!detail.gestor ? (
-                <div className={styles.section}>
-                  <p className={styles.radarEmpty}>
-                    Nenhuma resposta do gestor registrada para esta pesquisa.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {/* ── Informações gerais ──────────────────────────────── */}
-                  <div className={styles.section}>
-                    <div className={styles.sectionHeader}>
-                      <span className={styles.sectionTitle}>Informações gerais</span>
-                    </div>
-                    <div className={styles.gestorFieldsGrid}>
-
-                      <div className={styles.gestorField}>
-                        <span className={styles.gestorFieldLabel}>Participantes</span>
-                        <span className={styles.gestorFieldValue}>{detail.gestor.info.participantes} pessoas</span>
-                      </div>
-
-                      <div className={styles.gestorField}>
-                        <span className={styles.gestorFieldLabel}>Localização</span>
-                        <span className={styles.gestorFieldValue}>{detail.gestor.info.localizacao}</span>
-                      </div>
-
-                      <div className={styles.gestorField}>
-                        <span className={styles.gestorFieldLabel}>Período</span>
-                        <span className={styles.gestorFieldValue}>{detail.gestor.info.periodo}</span>
-                      </div>
-
-                      <div className={styles.gestorField}>
-                        <span className={styles.gestorFieldLabel}>Avaliação geral</span>
-                        <div className={styles.escalaWrap}>
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <Star
-                              key={i}
-                              size={16}
-                              fill={i < detail.gestor!.escala ? '#F59E0B' : 'none'}
-                              stroke={i < detail.gestor!.escala ? '#F59E0B' : 'var(--color-gray-300)'}
-                            />
-                          ))}
-                          <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-tertiary)', marginLeft: 4 }}>
-                            {detail.gestor.escala} / 5
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className={[styles.gestorField, styles.gestorFieldFull].join(' ')}>
-                        <span className={styles.gestorFieldLabel}>Serviços avaliados</span>
-                        <span className={styles.gestorFieldValue}>{detail.gestor.info.servicos.join(' · ')}</span>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  {/* ── Perguntas objetivas ──────────────────────────────── */}
-                  <div className={styles.section}>
-                    <div className={styles.sectionHeader}>
-                      <span className={styles.sectionTitle}>Perguntas objetivas</span>
-                      <span className={styles.sectionBadge}>{detail.gestor.objetivas.length} perguntas</span>
-                    </div>
-                    {detail.gestor.objetivas.map((obj, i) => (
-                      <div key={i} className={styles.objetivaRow}>
-                        <span className={styles.objetivaNum}>{String(i + 1).padStart(2, '0')}</span>
-                        <span className={styles.objetivaText}>{obj.pergunta}</span>
-                        <span
-                          className={[
-                            styles.objetivaBadge,
-                            obj.resposta === 'sim'          ? styles.objetivaSim          :
-                            obj.resposta === 'parcialmente' ? styles.objetivaParcialmente  :
-                            styles.objetivaNao,
-                          ].join(' ')}
-                        >
-                          {obj.resposta === 'sim' ? 'Sim' : obj.resposta === 'parcialmente' ? 'Parcialmente' : 'Não'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* ── Diferenciais ──────────────────────────────────────── */}
-                  <div className={styles.section}>
-                    <div className={styles.sectionHeader}>
-                      <span className={styles.sectionTitle}>Diferenciais destacados</span>
-                      <span className={styles.sectionBadge}>{detail.gestor.diferenciais.length}</span>
-                    </div>
-                    {detail.gestor.diferenciais.length > 0 ? (
-                      <div className={styles.chipsWrap}>
-                        {detail.gestor.diferenciais.map((d, i) => (
-                          <span key={i} className={styles.chip}>{d}</span>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className={styles.chipEmpty}>Nenhum diferencial informado.</span>
-                    )}
-                  </div>
-
-                  {/* ── Sugestões de melhoria ──────────────────────────────── */}
-                  <div className={styles.section}>
-                    <div className={styles.sectionHeader}>
-                      <span className={styles.sectionTitle}>Sugestões de melhoria</span>
-                      <span className={styles.sectionBadge}>{detail.gestor.melhorias.length}</span>
-                    </div>
-                    {detail.gestor.melhorias.length > 0 ? (
-                      <div className={styles.chipsWrap}>
-                        {detail.gestor.melhorias.map((m, i) => (
-                          <span key={i} className={styles.chip}>{m}</span>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className={styles.chipEmpty}>Nenhuma sugestão informada.</span>
-                    )}
-                  </div>
-                </>
-              )}
-            </>
-          )}
 
         </div>
       </div>

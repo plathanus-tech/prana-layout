@@ -9,9 +9,12 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   success?: string;
   iconLeft?: ReactNode;
   iconRight?: ReactNode;
+  /** Oculta o ícone CircleX dentro da mensagem de erro. Útil quando o indicador
+   *  visual de erro é fornecido por outro elemento (ex: Feedback block). */
+  hideErrorIcon?: boolean;
 }
 
-export function Input({ label, helperText, error, success, iconLeft, iconRight, className, id, ...props }: InputProps) {
+export function Input({ label, helperText, error, success, iconLeft, iconRight, hideErrorIcon = false, className, id, ...props }: InputProps) {
   const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-');
   const wrapClass = [
     styles.inputWrap,
@@ -29,7 +32,7 @@ export function Input({ label, helperText, error, success, iconLeft, iconRight, 
       </div>
       {error && (
         <span className={styles.errorText}>
-          <CircleX size={14} className={styles.msgIcon} />
+          {!hideErrorIcon && <CircleX size={14} className={styles.msgIcon} />}
           {error}
         </span>
       )}

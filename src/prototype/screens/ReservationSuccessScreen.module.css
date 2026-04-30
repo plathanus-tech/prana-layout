@@ -58,11 +58,11 @@
 }
 
 .iconWrapWaitlist {
-  background: var(--color-bg-subtle);
-  color: var(--color-text-tertiary);
+  background: var(--color-status-info-bg);
+  color: var(--color-status-info-fg);
   box-shadow:
     0 0 0 12px var(--color-bg-default),
-    0 0 0 13px var(--color-border-subtle);
+    0 0 0 13px var(--color-status-info-bg);
 }
 
 /* ─── Text ────────────────────────────────────────────── */
@@ -148,7 +148,7 @@
 }
 
 .summaryIconWaitlist {
-  color: var(--color-text-tertiary);
+  color: var(--color-status-info-fg);
   flex-shrink: 0;
   margin-top: 1px;
 }

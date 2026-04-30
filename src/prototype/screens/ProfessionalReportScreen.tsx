@@ -79,8 +79,12 @@ export function ProfessionalReportScreen({
     },
   ]);
 
-  // ── Validação ────────────────────────────────────────
+  // ── Validação e progresso ────────────────────────────
   const canSubmit = experience && intercurrence && generalMessage;
+
+  const TOTAL_FIELDS    = 3; // experience, intercurrence, generalMessage
+  const answeredFields  = [experience, intercurrence, generalMessage].filter(Boolean).length;
+  const progressPct     = Math.round((answeredFields / TOTAL_FIELDS) * 100);
 
   function handleSubmit() {
     if (!canSubmit) return;
@@ -115,14 +119,20 @@ export function ProfessionalReportScreen({
   // ── Render ────────────────────────────────────────────
   return (
     <div className={styles.page}>
-      <AppHeader />
+      <div className={styles.stickyHeader}>
+        <AppHeader />
+        {/* Barra de progresso — colada ao header, uma única unidade sticky */}
+        <div className={styles.progressBar}>
+          <div className={styles.progressFill} style={{ width: `${progressPct}%` }} />
+        </div>
+      </div>
 
       {/* Hero */}
       <div className={styles.hero}>
         <div className={[styles.heroInner, isDesktop ? styles.heroInnerDesktop : ''].filter(Boolean).join(' ')}>
           <span className={styles.heroTag}>Relatório de evento</span>
           <h1 className={styles.heroTitle}>{EVENT.name}</h1>
-          <p className={styles.heroSub}>Compartilhe sua experiência, leva menos de 5 minutos.</p>
+          <p className={styles.heroSub}>Sua opinião é importante para nós.</p>
         </div>
       </div>
 
@@ -133,9 +143,12 @@ export function ProfessionalReportScreen({
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Sua experiência</h2>
           <div className={styles.questionCard}>
+            <div className={styles.questionTextBlock}>
+              <p className={styles.questionText}>Como você avalia sua experiência no evento?</p>
+              <p className={styles.questionSubtitle}>Considere organização, suporte oferecido e condições de trabalho.</p>
+            </div>
             <RadioButton
               name="experience"
-              label="Como você avalia sua experiência no evento?"
               options={EXPERIENCE_OPTIONS}
               value={experience}
               onChange={setExperience}
@@ -147,9 +160,12 @@ export function ProfessionalReportScreen({
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Ocorrências</h2>
           <div className={styles.questionCard}>
+            <div className={styles.questionTextBlock}>
+              <p className={styles.questionText}>Houve alguma intercorrência durante o evento?</p>
+              <p className={styles.questionSubtitle}>Relate qualquer situação que tenha impactado o andamento do atendimento.</p>
+            </div>
             <RadioButton
               name="intercurrence"
-              label="Houve alguma intercorrência durante o evento?"
               options={INTERCURRENCE_OPTIONS}
               value={intercurrence}
               onChange={setIntercurrence}

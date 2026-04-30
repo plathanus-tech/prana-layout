@@ -1,7 +1,21 @@
+import { useState } from 'react';
 import { CalendarX, Calendar, Sparkles, Footprints } from 'lucide-react';
 import { Button } from '../../components/Button/Button';
+import { Dropdown } from '../../components/Dropdown/Dropdown';
 import { AppHeader } from '../components/AppHeader';
 import styles from './ReservationCancelScreen.module.css';
+
+// ─── Motivos de cancelamento ────────────────────────────
+
+const CANCEL_REASONS = [
+  { value: 'horario',    label: 'Não posso mais neste horário' },
+  { value: 'trabalho',   label: 'Compromisso de trabalho'      },
+  { value: 'imprevisto', label: 'Imprevisto pessoal'           },
+  { value: 'saude',      label: 'Motivo de saúde'              },
+  { value: 'interesse',  label: 'Não tenho mais interesse'     },
+  { value: 'outro-svc',  label: 'Prefiro outro serviço'        },
+  { value: 'outros',     label: 'Outros'                       },
+];
 
 // ─── Demo data ──────────────────────────────────────────
 
@@ -45,6 +59,17 @@ export function ReservationCancelScreen({
   const isDesktop = viewport === 'desktop';
   const res       = DEMO[reservationId] ?? DEMO.massage;
 
+  const [motivo, setMotivo]           = useState('');
+  const [motivoError, setMotivoError] = useState<string | null>(null);
+
+  function handleConfirm() {
+    if (!motivo) {
+      setMotivoError('Selecione o motivo do cancelamento');
+      return;
+    }
+    onConfirm?.();
+  }
+
   return (
     <div className={styles.page}>
       <AppHeader />
@@ -84,13 +109,25 @@ export function ReservationCancelScreen({
             </div>
           </div>
 
+          {/* Motivo do cancelamento */}
+          <div className={styles.reasonField}>
+            <Dropdown
+              label="Motivo do cancelamento"
+              options={CANCEL_REASONS}
+              value={motivo}
+              onChange={(val) => { setMotivo(val); setMotivoError(null); }}
+              placeholder="Selecione o motivo..."
+              error={motivoError ?? undefined}
+            />
+          </div>
+
           {/* Ações */}
           <div className={styles.actions}>
             <Button
               variant="destructive"
               size="md"
-              
-              onClick={onConfirm}
+
+              onClick={handleConfirm}
             >
               Confirmar cancelamento
             </Button>
