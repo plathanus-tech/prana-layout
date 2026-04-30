@@ -1,7 +1,7 @@
 // Ambiente de prototipagem — wrapper de validação de UI
 // Não faz parte do sistema final; serve para navegar entre telas e testar perfis.
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { LayoutDashboard, TrendingUp, Layers, Eye, EyeOff, List, FileText, Users, ContactRound, Building2, LogIn, KeyRound, Tag } from 'lucide-react';
 import { DashboardScreen, type UserRole, type ActiveTab } from './screens/admin/DashboardScreen';
 import { EventsScreen, type EventItem } from './screens/admin/EventsScreen';
@@ -44,7 +44,7 @@ const SCREENS: ScreenDef[] = [
     id: 'login',
     journey: 'login',
     index: 1,
-    label: 'Login',
+    label: 'ADM-00 Login/Autenticação',
     sub: 'E-mail · Senha · Lembrar-me',
     allowedRoles: ['adm', 'empresa'],
     icon: <LogIn size={15} />,
@@ -95,7 +95,7 @@ const SCREENS: ScreenDef[] = [
     id: 'eventos-lista',
     journey: 'eventos',
     index: 1,
-    label: 'Lista de Eventos',
+    label: 'ADM-07 Gestão de Eventos — Listagem',
     sub: 'Tabela · Filtros · QR Codes',
     allowedRoles: ['adm', 'empresa'],
     icon: <List size={15} />,
@@ -104,7 +104,7 @@ const SCREENS: ScreenDef[] = [
     id: 'eventos-detalhe',
     journey: 'eventos',
     index: 2,
-    label: 'Detalhe do Evento',
+    label: 'ADM-08 Detalhe do Evento',
     sub: 'CRM · Config · Tabs',
     allowedRoles: ['adm', 'empresa'],
     icon: <FileText size={15} />,
@@ -115,8 +115,17 @@ const SCREENS: ScreenDef[] = [
     id: 'usuarios',
     journey: 'usuarios',
     index: 1,
-    label: 'Gerenciamento de Usuários',
+    label: 'ADM-02 Gestão de usuário — Listagem',
     sub: 'Tabela · Filtros · Formulário',
+    allowedRoles: ['adm'],
+    icon: <Users size={15} />,
+  },
+  {
+    id: 'usuarios-add-modal',
+    journey: 'usuarios',
+    index: 2,
+    label: 'ADM-03 Editar / Criar Usuário',
+    sub: 'Modal · Formulário · Validação',
     allowedRoles: ['adm'],
     icon: <Users size={15} />,
   },
@@ -126,7 +135,7 @@ const SCREENS: ScreenDef[] = [
     id: 'profissionais',
     journey: 'profissionais',
     index: 1,
-    label: 'Profissionais',
+    label: 'ADM-04 Gestão de Profissionais — Listagem',
     sub: 'Tabela · Filtros · Sincronização',
     allowedRoles: ['adm'],
     icon: <ContactRound size={15} />,
@@ -135,7 +144,7 @@ const SCREENS: ScreenDef[] = [
     id: 'profissionais-detalhe',
     journey: 'profissionais',
     index: 2,
-    label: 'Detalhe do Profissional',
+    label: 'ADM-06 Perfil dos Profissionais',
     sub: 'Dados · Avaliações · Histórico',
     allowedRoles: ['adm'],
     icon: <ContactRound size={15} />,
@@ -430,6 +439,42 @@ function UsersThumb({ active }: { active: boolean }) {
   );
 }
 
+function UsersModalThumb({ active }: { active: boolean }) {
+  return (
+    <>
+      <div className={styles.thumbTopbar} />
+      <div className={styles.thumbContent}>
+        <div className={styles.thumbSidebar} />
+        <div className={styles.thumbBody} style={{ position: 'relative', filter: 'blur(0.3px)' }}>
+          {/* Fundo da listagem */}
+          <div className={styles.thumbRow} style={{ width: '50%' }} />
+          <div className={styles.thumbFilterRow}>
+            <div className={styles.thumbFilter} style={{ flex: 1 }} />
+            <div className={styles.thumbFilter} />
+          </div>
+          <div className={styles.thumbTableRow} style={{ opacity: 0.3 }} />
+          <div className={styles.thumbTableRow} style={{ opacity: 0.2 }} />
+          {/* Overlay escuro (simula backdrop) */}
+          <div style={{ position: 'absolute', inset: -4, background: 'rgba(0,0,0,0.18)', borderRadius: 2 }} />
+          {/* Modal card flutuando */}
+          <div style={{
+            position: 'absolute', top: '18%', left: '10%', right: '10%',
+            background: 'rgba(255,255,255,0.97)', borderRadius: 3,
+            padding: '4px 5px', display: 'flex', flexDirection: 'column', gap: 3,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+          }}>
+            <div className={styles.thumbRow} style={{ width: '60%', marginBottom: 1 }} />
+            <div className={styles.thumbRow} style={{ width: '100%', height: 4 }} />
+            <div className={styles.thumbRow} style={{ width: '100%', height: 4 }} />
+            <div className={styles.thumbRow} style={{ width: '100%', height: 4 }} />
+            <div className={styles.thumbRow} style={{ width: '50%', height: 6, marginTop: 2 }} />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ─── PrototypingShell ─────────────────────────────────────────────────────────
 export function PrototypingShell() {
   const [role,                setRole]                = useState<UserRole>('adm');
@@ -446,6 +491,7 @@ export function PrototypingShell() {
   const [selectedPesquisa,    setSelectedPesquisa]    = useState<Pesquisa | null>(null);
   const [professionalSurveyVariation, setProfessionalSurveyVariation] = useState<'form' | 'success-positive' | 'success-neutral' | 'blocked'>('form');
   const [professionalSurveySuccessVariant, setProfessionalSurveySuccessVariant] = useState<'positive' | 'neutral'>('positive');
+  const usersScreenRef = useRef<{ openAddModal: () => void }>(null);
 
   // Mapeamento: item do sidebar do app → jornada
   const NAV_JOURNEY: Partial<Record<string, ActiveJourney>> = {
@@ -552,6 +598,13 @@ export function PrototypingShell() {
     if (screen.id === 'usuarios') {
       setActiveJourney('usuarios');
     }
+    if (screen.id === 'usuarios-add-modal') {
+      setActiveJourney('usuarios');
+      // Aguarda o próximo frame para garantir que UsersScreen já está montado
+      requestAnimationFrame(() => {
+        usersScreenRef.current?.openAddModal();
+      });
+    }
     if (screen.id === 'profissionais') {
       setActiveJourney('profissionais');
       setProfView('lista');
@@ -607,7 +660,7 @@ export function PrototypingShell() {
   // Agrupa telas por jornada para exibição na sidebar
   const journeyGroups: { journey: ActiveJourney; label: string; screens: ScreenDef[] }[] = [
     { journey: 'login',     label: 'Jornada · Login',           screens: SCREENS.filter(s => s.journey === 'login')     },
-    { journey: 'dashboard', label: 'Jornada · Dashboard',       screens: SCREENS.filter(s => s.journey === 'dashboard') },
+    { journey: 'dashboard', label: 'ADM-01 Dashboard — Indicadores de negócio (Admin)', screens: SCREENS.filter(s => s.journey === 'dashboard') },
     { journey: 'eventos',   label: 'Jornada · Eventos',         screens: SCREENS.filter(s => s.journey === 'eventos')   },
     ...(role === 'adm' ? [{ journey: 'usuarios' as const, label: 'Jornada · Usuário', screens: SCREENS.filter(s => s.journey === 'usuarios') }] : []),
     ...(role === 'adm' ? [{ journey: 'profissionais' as const, label: 'Jornada · Profissionais', screens: SCREENS.filter(s => s.journey === 'profissionais') }] : []),
@@ -674,6 +727,7 @@ export function PrototypingShell() {
                   if (screen.id === 'eventos-lista')   return activeJourney === 'eventos' && eventsView === 'lista';
                   if (screen.id === 'eventos-detalhe') return activeJourney === 'eventos' && eventsView === 'detalhe';
                   if (screen.id === 'usuarios')               return activeJourney === 'usuarios';
+                  if (screen.id === 'usuarios-add-modal')     return false; // modal não tem estado ativo próprio
                   if (screen.id === 'profissionais')          return activeJourney === 'profissionais' && profView === 'lista';
                   if (screen.id === 'servicos')               return activeJourney === 'servicos';
                   if (screen.id === 'profissionais-detalhe')  return activeJourney === 'profissionais' && profView === 'detalhe';
@@ -701,13 +755,15 @@ export function PrototypingShell() {
                     <div className={[styles.thumbnail, isActive ? styles.thumbnailActive : ''].join(' ')}>
                       {screen.journey === 'login'
                         ? <LoginThumb active={isActive} />
-                        : screen.id === 'usuarios' || screen.id === 'profissionais' || screen.id === 'clientes' || screen.id === 'pesquisa' || screen.id === 'pesquisa-profissional' || screen.id === 'servicos'
-                          ? <UsersThumb active={isActive} />
-                          : screen.id === 'profissionais-detalhe' || screen.id === 'eventos-detalhe' || screen.id === 'clientes-detalhe' || screen.id === 'pesquisa-detalhe'
-                            ? <EventDetailThumb active={isActive} />
-                            : screen.journey === 'eventos'
-                              ? <EventsThumb active={isActive} />
-                              : <DashboardThumb active={isActive} />
+                        : screen.id === 'usuarios-add-modal'
+                          ? <UsersModalThumb active={isActive} />
+                          : screen.id === 'usuarios' || screen.id === 'profissionais' || screen.id === 'clientes' || screen.id === 'pesquisa' || screen.id === 'pesquisa-profissional' || screen.id === 'servicos'
+                            ? <UsersThumb active={isActive} />
+                            : screen.id === 'profissionais-detalhe' || screen.id === 'eventos-detalhe' || screen.id === 'clientes-detalhe' || screen.id === 'pesquisa-detalhe'
+                              ? <EventDetailThumb active={isActive} />
+                              : screen.journey === 'eventos'
+                                ? <EventsThumb active={isActive} />
+                                : <DashboardThumb active={isActive} />
                       }
                       {/* Number badge */}
                       <div className={[styles.thumbNum, isActive ? styles.thumbNumActive : ''].join(' ')}>
@@ -888,6 +944,7 @@ export function PrototypingShell() {
           />
         ) : activeJourney === 'usuarios' ? (
           <UsersScreen
+            ref={usersScreenRef}
             role={role}
             sidebarOffset={200}
             onNavChange={handleNavChange}

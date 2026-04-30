@@ -99,13 +99,13 @@ const ACTORS: Actor[] = [
     journeys: [
       {
         id: 'agendamento-link',
-        label: 'Agendamento Link Beneficiário',
+        label: 'Jornada - Agendamento',
         screens: [
           { id: 'link-expired', label: 'Link Expirado', implemented: true },
-          { id: 'auth', label: 'Autenticação', implemented: true },
+          { id: 'auth', label: 'BEN-02 Formulário de Inscrição no Serviço', implemented: true },
           {
             id: 'select-e',
-            label: 'Seleção de Serviço',
+            label: 'BEN-01 Agenda Pública — Seleção de Serviço e Horário',
             implemented: true,
             variants: [
               { scenario: 'A', label: 'A - Padrão' },
@@ -117,7 +117,7 @@ const ACTORS: Actor[] = [
           { id: 'link-otp', label: 'Código OTP', implemented: true },
           {
             id: 'success',
-            label: 'Sucesso',
+            label: 'BEN-03 Confirmação de Inscrição',
             implemented: true,
             variants: [
               { scenario: 'A' as ScenarioId, label: 'A, Agendamento confirmado', successVariant: 'confirmed' as SuccessVariant },

@@ -724,7 +724,7 @@ const UsersTable = forwardRef<{ openAddModal: () => void }, UsersTableProps>(fun
 
             {addUserData.profile === 'empresa' && (
               <Dropdown
-                label="Cliente"
+                label="Empresa"
                 options={COMPANIES}
                 value={addUserData.company}
                 onChange={handleAddUserCompanyChange}
@@ -771,10 +771,14 @@ interface UsersScreenProps {
   onNavChange?: (item: string) => void;
 }
 
-export function UsersScreen({ role, sidebarOffset = 0, onNavChange }: UsersScreenProps) {
+export const UsersScreen = forwardRef<{ openAddModal: () => void }, UsersScreenProps>(function UsersScreen({ role, sidebarOffset = 0, onNavChange }, ref) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav, setActiveNav] = useState('usuarios');
   const usersTableRef = useRef<{ openAddModal: () => void }>(null);
+
+  useImperativeHandle(ref, () => ({
+    openAddModal: () => usersTableRef.current?.openAddModal(),
+  }));
 
   return (
     <div
@@ -817,4 +821,4 @@ export function UsersScreen({ role, sidebarOffset = 0, onNavChange }: UsersScree
       </div>
     </div>
   );
-}
+});
