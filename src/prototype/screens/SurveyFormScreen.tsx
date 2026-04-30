@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { RadioButton } from '../../components/RadioButton/RadioButton';
 import { Button } from '../../components/Button/Button';
-import { Input } from '../../components/Input/Input';
 import { AppHeader } from '../components/AppHeader';
 import type { SurveySuccessVariant } from './SurveySuccessScreen';
 import styles from './SurveyFormScreen.module.css';
@@ -91,7 +90,6 @@ export function SurveyFormScreen({
   const survey    = SURVEYS[scenario];
 
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [personalRole, setPersonalRole] = useState('');
 
   function setAnswer(id: string, value: string) {
     setAnswers(prev => ({ ...prev, [id]: value }));
@@ -102,9 +100,9 @@ export function SurveyFormScreen({
     ...survey.services.flatMap(s => s.questions),
     ...survey.eventQuestions,
   ];
-  const total     = allQuestions.length + 1; // +1 para o campo de cargo
-  const answered  = allQuestions.filter(q => answers[q.id]).length + (personalRole ? 1 : 0);
-  const canSubmit = answered === total && personalRole !== '';
+  const total     = allQuestions.length;
+  const answered  = allQuestions.filter(q => answers[q.id]).length;
+  const canSubmit = answered === total;
 
   function handleSubmit() {
     if (!canSubmit) return;
@@ -139,23 +137,6 @@ export function SurveyFormScreen({
 
       {/* Formulário */}
       <div className={[styles.content, isDesktop ? styles.contentDesktop : ''].filter(Boolean).join(' ')}>
-
-        {/* Informações Pessoais */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Informações Pessoais</h2>
-          <div className={styles.questionList}>
-            <div className={styles.questionCard}>
-              <Input
-                label="Qual seu cargo/função?"
-                type="text"
-                value={personalRole}
-                onChange={(e) => setPersonalRole(e.target.value)}
-                placeholder="ex. Gerente, Desenvolvedor, Analista..."
-                maxLength={100}
-              />
-            </div>
-          </div>
-        </section>
 
         {/* Blocos por serviço */}
         {survey.services.map(svc => (
