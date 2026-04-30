@@ -108,35 +108,29 @@
 .tabs {
   display: flex;
   flex-direction: row;
-  align-items: center;
-  gap: 2px;
-  border-bottom: 2px solid var(--color-gray-200);
+  align-items: flex-end;
+  border-bottom: 1px solid var(--color-border-subtle);
   margin-bottom: 4px;
 }
 
 .tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 40px;
-  padding: 0 14px;
+  padding: 0 12px;
+  height: 44px;
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
+  border-bottom: 4px solid transparent;
+  margin-bottom: -1px;
   font-family: var(--font-body);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-tertiary);
   cursor: pointer;
-  white-space: nowrap;
   transition: color var(--transition-fast), border-color var(--transition-fast);
-  border-radius: 6px 6px 0 0;
 }
-.tab:hover { color: var(--color-text-secondary); }
+.tab:hover { color: var(--color-text-primary); }
 .tabActive {
-  color: var(--color-brand-600) !important;
-  border-bottom-color: var(--color-brand-500) !important;
+  color: var(--color-brand-500);
+  border-bottom-color: var(--color-brand-500);
   font-weight: var(--font-weight-semibold);
 }
 

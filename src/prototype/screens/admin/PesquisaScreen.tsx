@@ -1232,21 +1232,18 @@ export function PesquisaScreen({ role, sidebarOffset = 0, onNavChange }: Pesquis
               className={[styles.tab, activeTab === 'subcategorias' ? styles.tabActive : ''].filter(Boolean).join(' ')}
               onClick={() => setActiveTab('subcategorias')}
             >
-              <Tag size={14} />
               Subcategoria de pesquisas
             </button>
             <button
               className={[styles.tab, activeTab === 'perguntas' ? styles.tabActive : ''].filter(Boolean).join(' ')}
               onClick={() => setActiveTab('perguntas')}
             >
-              <ClipboardList size={14} />
               Perguntas
             </button>
             <button
               className={[styles.tab, activeTab === 'modelo' ? styles.tabActive : ''].filter(Boolean).join(' ')}
               onClick={() => setActiveTab('modelo')}
             >
-              <LayoutTemplate size={14} />
               Modelo
             </button>
           </div>

@@ -171,16 +171,6 @@ const SCREENS: ScreenDef[] = [
     allowedRoles: ['adm', 'empresa'],
     icon: <FileText size={15} />,
   },
-  {
-    id: 'pesquisa-detalhe',
-    journey: 'pesquisa',
-    index: 2,
-    label: 'Detalhe da Pesquisa',
-    sub: 'KPIs · Radar · Gestor',
-    allowedRoles: ['adm', 'empresa'],
-    icon: <FileText size={15} />,
-  },
-
   // — Jornada: Clientes (Admin only) ──────────────────────────────────────────
   {
     id: 'clientes',
@@ -628,16 +618,6 @@ export function PrototypingShell() {
       setActiveJourney('pesquisa');
       setPesquisaView('lista');
     }
-    if (screen.id === 'pesquisa-detalhe') {
-      setActiveJourney('pesquisa');
-      if (!selectedPesquisa) {
-        setSelectedPesquisa({
-          id: 'PSQ-002', eventoNome: 'Ginástica Laboral - Bradesco',
-          empresa: 'Bradesco', dataEvento: '11/03/2026', ibe: 8.7, status: 'concluida',
-        });
-      }
-      setPesquisaView('detalhe');
-    }
     if (screen.id === 'clientes') {
       setActiveJourney('clientes');
       setClientesView('lista');
@@ -732,7 +712,6 @@ export function PrototypingShell() {
                   if (screen.id === 'servicos')               return activeJourney === 'servicos';
                   if (screen.id === 'profissionais-detalhe')  return activeJourney === 'profissionais' && profView === 'detalhe';
                   if (screen.id === 'pesquisa')               return activeJourney === 'pesquisa' && pesquisaView === 'lista';
-                  if (screen.id === 'pesquisa-detalhe')       return activeJourney === 'pesquisa' && pesquisaView === 'detalhe';
                   if (screen.id === 'clientes')               return activeJourney === 'clientes' && clientesView === 'lista';
                   if (screen.id === 'clientes-detalhe')       return activeJourney === 'clientes' && clientesView === 'detalhe';
                   if (screen.id === 'pesquisa-profissional')  return activeJourney === 'pesquisa-profissional';
