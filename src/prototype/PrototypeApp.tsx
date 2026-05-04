@@ -190,7 +190,7 @@ const ACTORS: Actor[] = [
           { id: 'link-expired-pro', label: 'Link Expirado',  implemented: true },
           {
             id: 'survey-form',
-            label: 'Pesquisa',
+            label: 'BEN-07 Responder Pesquisa de Satisfação',
             implemented: true,
             variants: [
               { scenario: 'A', label: 'A, Serviço único' },
@@ -222,7 +222,7 @@ const ACTORS: Actor[] = [
           { id: 'link-expired', label: 'Link Expirado', implemented: true },
           {
             id: 'professional-confirmation',
-            label: 'Convite',
+            label: 'PRO-01 Aceite/Recusa de Vaga',
             implemented: true,
             variants: [
               { scenario: 'A', label: 'A, Formulário de disponibilidade',  professionalConfirmationVariant: 'normal'            },
@@ -249,7 +249,7 @@ const ACTORS: Actor[] = [
         label: 'Pós-evento',
         screens: [
           { id: 'link-expired-pro',            label: 'Link Expirado', implemented: true },
-          { id: 'professional-report',         label: 'Relatório',     implemented: true },
+          { id: 'professional-report',         label: 'PRO-02 Relatório Final', implemented: true },
           { id: 'professional-report-success', label: 'Sucesso',       implemented: true },
         ],
       },
