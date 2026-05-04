@@ -12,11 +12,11 @@ import type { Profissional } from './screens/admin/ProfissionaisScreen';
 import { ProfissionalDetailScreen } from './screens/admin/ProfissionalDetailScreen';
 import { ClientesScreen, type Cliente } from './screens/admin/ClientesScreen';
 import { ClienteDetailScreen } from './screens/admin/ClienteDetailScreen';
-import { PesquisaScreen, type Pesquisa } from './screens/admin/PesquisaScreen';
+import { PesquisaScreen, type Pesquisa, type PesquisaTabType } from './screens/admin/PesquisaScreen';
 import { PesquisaDetailScreen } from './screens/admin/PesquisaDetailScreen';
 import { ProfessionalSurveyScreen, type EventSurvey } from './screens/ProfessionalSurveyScreen';
 import { AdminLoginScreen, type LoginView } from './screens/admin/AdminLoginScreen';
-import { ServicosScreen } from './screens/admin/ServicosScreen';
+import { ServicosScreen, type ServicosTab } from './screens/admin/ServicosScreen';
 import styles from './PrototypingShell.module.css';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -152,22 +152,49 @@ const SCREENS: ScreenDef[] = [
 
   // — Jornada: Serviços (Admin only) ─────────────────────────────────────────
   {
-    id: 'servicos',
+    id: 'servicos-categorias',
     journey: 'servicos',
     index: 1,
-    label: 'Serviços',
-    sub: 'Categorias · Tipos · Status',
+    label: 'ADM-11 Cadastro de Categoria de Serviço',
+    sub: 'Aba: Categoria de serviço',
+    allowedRoles: ['adm'],
+    icon: <Tag size={15} />,
+  },
+  {
+    id: 'servicos-tipos',
+    journey: 'servicos',
+    index: 2,
+    label: 'ADM-12 Cadastro de Tipo de Serviço',
+    sub: 'Aba: Tipo de serviço',
     allowedRoles: ['adm'],
     icon: <Tag size={15} />,
   },
 
   // — Jornada: Pesquisa (Admin + Empresa) ────────────────────────────────────
   {
-    id: 'pesquisa',
+    id: 'pesquisa-subcategorias',
     journey: 'pesquisa',
     index: 1,
-    label: 'Pesquisa',
-    sub: 'Listagem · IBE · Modelos',
+    label: 'ADM-13',
+    sub: 'Aba: Subcategoria de pesquisa',
+    allowedRoles: ['adm', 'empresa'],
+    icon: <FileText size={15} />,
+  },
+  {
+    id: 'pesquisa-perguntas',
+    journey: 'pesquisa',
+    index: 2,
+    label: 'ADM-14 Gerenciar Banco de Perguntas',
+    sub: 'Aba: Perguntas',
+    allowedRoles: ['adm', 'empresa'],
+    icon: <FileText size={15} />,
+  },
+  {
+    id: 'pesquisa-modelo',
+    journey: 'pesquisa',
+    index: 3,
+    label: 'ADM-15',
+    sub: 'Aba: Modelo',
     allowedRoles: ['adm', 'empresa'],
     icon: <FileText size={15} />,
   },
@@ -482,6 +509,8 @@ export function PrototypingShell() {
   const [professionalSurveyVariation, setProfessionalSurveyVariation] = useState<'form' | 'success-positive' | 'success-neutral' | 'blocked'>('form');
   const [professionalSurveySuccessVariant, setProfessionalSurveySuccessVariant] = useState<'positive' | 'neutral'>('positive');
   const usersScreenRef = useRef<{ openAddModal: () => void }>(null);
+  const [servicosInitialTab, setServicosInitialTab] = useState<ServicosTab>('categorias');
+  const [pesquisaInitialTab, setPesquisaInitialTab] = useState<PesquisaTabType>('subcategorias');
 
   // Mapeamento: item do sidebar do app → jornada
   const NAV_JOURNEY: Partial<Record<string, ActiveJourney>> = {
@@ -504,8 +533,8 @@ export function PrototypingShell() {
       if (journey === 'profissionais')  setProfView('lista');
       // Ao navegar para 'clientes' → sempre volta para lista
       if (journey === 'clientes')       setClientesView('lista');
-      // Ao navegar para 'pesquisa' → sempre volta para lista
-      if (journey === 'pesquisa')       setPesquisaView('lista');
+      // Ao navegar para 'pesquisa' → sempre volta para lista e primeira aba
+      if (journey === 'pesquisa')       { setPesquisaView('lista'); setPesquisaInitialTab('subcategorias'); }
     }
   }
 
@@ -599,8 +628,13 @@ export function PrototypingShell() {
       setActiveJourney('profissionais');
       setProfView('lista');
     }
-    if (screen.id === 'servicos') {
+    if (screen.id === 'servicos-categorias') {
       setActiveJourney('servicos');
+      setServicosInitialTab('categorias');
+    }
+    if (screen.id === 'servicos-tipos') {
+      setActiveJourney('servicos');
+      setServicosInitialTab('tipos');
     }
     if (screen.id === 'profissionais-detalhe') {
       setActiveJourney('profissionais');
@@ -614,9 +648,20 @@ export function PrototypingShell() {
       }
       setProfView('detalhe');
     }
-    if (screen.id === 'pesquisa') {
+    if (screen.id === 'pesquisa-subcategorias') {
       setActiveJourney('pesquisa');
       setPesquisaView('lista');
+      setPesquisaInitialTab('subcategorias');
+    }
+    if (screen.id === 'pesquisa-perguntas') {
+      setActiveJourney('pesquisa');
+      setPesquisaView('lista');
+      setPesquisaInitialTab('perguntas');
+    }
+    if (screen.id === 'pesquisa-modelo') {
+      setActiveJourney('pesquisa');
+      setPesquisaView('lista');
+      setPesquisaInitialTab('modelo');
     }
     if (screen.id === 'clientes') {
       setActiveJourney('clientes');
@@ -709,9 +754,12 @@ export function PrototypingShell() {
                   if (screen.id === 'usuarios')               return activeJourney === 'usuarios';
                   if (screen.id === 'usuarios-add-modal')     return false; // modal não tem estado ativo próprio
                   if (screen.id === 'profissionais')          return activeJourney === 'profissionais' && profView === 'lista';
-                  if (screen.id === 'servicos')               return activeJourney === 'servicos';
+                  if (screen.id === 'servicos-categorias')    return activeJourney === 'servicos';
+                  if (screen.id === 'servicos-tipos')         return activeJourney === 'servicos';
                   if (screen.id === 'profissionais-detalhe')  return activeJourney === 'profissionais' && profView === 'detalhe';
-                  if (screen.id === 'pesquisa')               return activeJourney === 'pesquisa' && pesquisaView === 'lista';
+                  if (screen.id === 'pesquisa-subcategorias') return activeJourney === 'pesquisa' && pesquisaView === 'lista';
+                  if (screen.id === 'pesquisa-perguntas')     return activeJourney === 'pesquisa' && pesquisaView === 'lista';
+                  if (screen.id === 'pesquisa-modelo')        return activeJourney === 'pesquisa' && pesquisaView === 'lista';
                   if (screen.id === 'clientes')               return activeJourney === 'clientes' && clientesView === 'lista';
                   if (screen.id === 'clientes-detalhe')       return activeJourney === 'clientes' && clientesView === 'detalhe';
                   if (screen.id === 'pesquisa-profissional')  return activeJourney === 'pesquisa-profissional';
@@ -736,7 +784,7 @@ export function PrototypingShell() {
                         ? <LoginThumb active={isActive} />
                         : screen.id === 'usuarios-add-modal'
                           ? <UsersModalThumb active={isActive} />
-                          : screen.id === 'usuarios' || screen.id === 'profissionais' || screen.id === 'clientes' || screen.id === 'pesquisa' || screen.id === 'pesquisa-profissional' || screen.id === 'servicos'
+                          : screen.id === 'usuarios' || screen.id === 'profissionais' || screen.id === 'clientes' || screen.id === 'pesquisa-subcategorias' || screen.id === 'pesquisa-perguntas' || screen.id === 'pesquisa-modelo' || screen.id === 'pesquisa-profissional' || screen.id === 'servicos-categorias' || screen.id === 'servicos-tipos'
                             ? <UsersThumb active={isActive} />
                             : screen.id === 'profissionais-detalhe' || screen.id === 'eventos-detalhe' || screen.id === 'clientes-detalhe' || screen.id === 'pesquisa-detalhe'
                               ? <EventDetailThumb active={isActive} />
@@ -880,10 +928,12 @@ export function PrototypingShell() {
           />
         ) : activeJourney === 'pesquisa' ? (
           <PesquisaScreen
+            key={pesquisaInitialTab}
             role={role}
             sidebarOffset={200}
             onNavChange={handleNavChange}
             onViewDetail={handleViewPesquisaDetail}
+            initialTab={pesquisaInitialTab}
           />
         ) : activeJourney === 'clientes' && clientesView === 'detalhe' && selectedCliente ? (
           <ClienteDetailScreen
@@ -917,9 +967,11 @@ export function PrototypingShell() {
           />
         ) : activeJourney === 'servicos' ? (
           <ServicosScreen
+            key={servicosInitialTab}
             role={role}
             sidebarOffset={200}
             onNavChange={handleNavChange}
+            initialTab={servicosInitialTab}
           />
         ) : activeJourney === 'usuarios' ? (
           <UsersScreen

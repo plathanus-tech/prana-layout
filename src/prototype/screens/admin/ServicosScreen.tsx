@@ -16,7 +16,7 @@ import type { UserRole } from './UsersScreen';
 import styles from './ServicosScreen.module.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type ServicosTab = 'categorias' | 'tipos';
+export type ServicosTab = 'categorias' | 'tipos';
 type ItemStatus  = 'ativo' | 'inativo';
 
 interface Categoria {
@@ -279,14 +279,15 @@ function IconPicker({ value, onChange }: IconPickerProps) {
 interface ServicosScreenProps {
   role:           UserRole;
   sidebarOffset?: number;
+  initialTab?:    ServicosTab;
   onNavChange?:   (item: string) => void;
 }
 
 // ─── ServicosScreen ───────────────────────────────────────────────────────────
-export function ServicosScreen({ role, sidebarOffset = 0, onNavChange }: ServicosScreenProps) {
+export function ServicosScreen({ role, sidebarOffset = 0, onNavChange, initialTab = 'categorias' }: ServicosScreenProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav,   setActiveNav]   = useState('servicos');
-  const [activeTab,   setActiveTab]   = useState<ServicosTab>('categorias');
+  const [activeTab,   setActiveTab]   = useState<ServicosTab>(initialTab);
 
   // ── Dados ──────────────────────────────────────────────────────────────────
   const [categorias, setCategorias] = useState<Categoria[]>(MOCK_CATEGORIAS);

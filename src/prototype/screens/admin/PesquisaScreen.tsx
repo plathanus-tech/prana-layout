@@ -15,7 +15,7 @@ import type { UserRole } from './UsersScreen';
 import styles from './PesquisaScreen.module.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type PesquisaTabType = 'subcategorias' | 'perguntas' | 'modelo';
+export type PesquisaTabType = 'subcategorias' | 'perguntas' | 'modelo';
 type ItemStatus      = 'ativo' | 'inativo';
 type ModeloPublico   = 'beneficiario' | 'gestor' | 'profissional';
 type Ator            = 'beneficiario' | 'profissional' | 'gestor';
@@ -1014,13 +1014,14 @@ interface PesquisaScreenProps {
   sidebarOffset?: number;
   onNavChange?:   (item: string) => void;
   onViewDetail?:  (p: Pesquisa) => void;
+  initialTab?:    PesquisaTabType;
 }
 
 // ─── PesquisaScreen ───────────────────────────────────────────────────────────
-export function PesquisaScreen({ role, sidebarOffset = 0, onNavChange }: PesquisaScreenProps) {
+export function PesquisaScreen({ role, sidebarOffset = 0, onNavChange, initialTab = 'subcategorias' }: PesquisaScreenProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav,   setActiveNav]   = useState('pesquisa');
-  const [activeTab,   setActiveTab]   = useState<PesquisaTabType>('subcategorias');
+  const [activeTab,   setActiveTab]   = useState<PesquisaTabType>(initialTab);
 
   // ── Subcategorias ─────────────────────────────────────────────────────────
   const [subcategorias,    setSubcategorias]    = useState<Subcategoria[]>(MOCK_SUBCATEGORIAS);
