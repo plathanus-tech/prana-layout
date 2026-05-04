@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Clock, CheckCircle2, Sparkles, Wind, Footprints, MapPin } from 'lucide-react';
+import { Clock, CheckCircle2, Sparkles, Wind, Footprints, MapPin, type LucideIcon } from 'lucide-react';
 import { Button } from '../../components/Button/Button';
 import { Toggle } from '../../components/Toggle/Toggle';
 import { AppHeader } from '../components/AppHeader';
@@ -16,7 +16,7 @@ interface ServiceConfig {
   name: string;
   duration: number;
   description: string;
-  Icon: React.ComponentType<{ size?: number }>;
+  Icon: LucideIcon;
 }
 
 interface EventConfig {

@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock, Layers, Calendar } from 'lucide-react';
+import { CheckCircle2, Clock, Layers, Calendar, type LucideIcon } from 'lucide-react';
 import { Button } from '../../components/Button/Button';
 import { AppHeader } from '../components/AppHeader';
 import type { SuccessVariant } from './SuccessScreen';
@@ -14,7 +14,7 @@ interface SummaryItem {
 }
 
 interface VariantContent {
-  Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  Icon: LucideIcon;
   iconVariant: 'confirmed' | 'waitlist';
   title: string;
   subtitle: React.ReactNode;

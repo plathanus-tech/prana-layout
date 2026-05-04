@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock, Layers, Calendar } from 'lucide-react';
+import { CheckCircle2, Clock, Layers, Calendar, type LucideIcon } from 'lucide-react';
 import { Button } from '../../components/Button/Button';
 import { AppHeader } from '../components/AppHeader';
 import styles from './SuccessScreen.module.css';
@@ -41,7 +41,7 @@ const SUMMARY: Record<string, SummaryItem[]> = {
 // ─── Conteúdo por variante ─────────────────────────────────
 
 interface VariantContent {
-  Icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  Icon: LucideIcon;
   title: string;
   subtitle: React.ReactNode;
 }

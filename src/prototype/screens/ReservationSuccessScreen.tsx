@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock, CalendarX, Sparkles, Footprints } from 'lucide-react';
+import { CheckCircle2, Clock, CalendarX, Sparkles, Footprints, type LucideIcon } from 'lucide-react';
 import { AppHeader } from '../components/AppHeader';
 import styles from './ReservationSuccessScreen.module.css';
 
@@ -13,7 +13,7 @@ export type ReservationSuccessVariant =
 
 interface ReservationInfo {
   name: string;
-  Icon: React.ComponentType<{ size?: number }>;
+  Icon: LucideIcon;
   dayTime: string;
 }
 
@@ -33,7 +33,7 @@ const DEMO: Record<string, ReservationInfo> = {
 // ─── Conteúdo por variante ──────────────────────────────
 
 interface VariantContent {
-  WrapIcon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  WrapIcon: LucideIcon;
   iconStyle: 'brand' | 'neutral' | 'waitlist';
   title: string;
   subtitle: React.ReactNode;

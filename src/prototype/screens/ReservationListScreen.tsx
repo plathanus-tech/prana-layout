@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Clock, CheckCircle2, Calendar, Sparkles, Footprints, CalendarX, RefreshCcw, X } from 'lucide-react';
+import { Clock, CheckCircle2, Calendar, Sparkles, Footprints, CalendarX, RefreshCcw, X, type LucideIcon } from 'lucide-react';
 import { Button } from '../../components/Button/Button';
 import { Dropdown } from '../../components/Dropdown/Dropdown';
 import { Feedback } from '../../components/Feedback/Feedback';
@@ -24,7 +24,7 @@ const CANCEL_REASONS = [
 interface Reservation {
   id: string;
   name: string;
-  Icon: React.ComponentType<{ size?: number }>;
+  Icon: LucideIcon;
   dayTime: string;
   status: 'confirmed' | 'waitlist';
 }

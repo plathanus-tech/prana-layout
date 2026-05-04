@@ -68,7 +68,7 @@ const defaultUser: SidebarUser = {
 function PranaLogoFull() {
   return (
     <img
-      src="/logos/PRANA_ENXOVAL__LOGO_Eventos_2_Magenta.svg"
+      src={`${import.meta.env.BASE_URL}logos/PRANA_ENXOVAL__LOGO_Eventos_2_Magenta.svg`}
       alt="Prana"
       style={{ height: 46, width: 'auto', display: 'block' }}
     />
@@ -78,7 +78,7 @@ function PranaLogoFull() {
 function PranaLogoIcon() {
   return (
     <img
-      src="/logos/PRANA_ENXOVAL__LOGO_Icone_Magenta.svg"
+      src={`${import.meta.env.BASE_URL}logos/PRANA_ENXOVAL__LOGO_Icone_Magenta.svg`}
       alt="Prana"
       style={{ height: 40, width: 40, display: 'block', objectFit: 'contain' }}
     />

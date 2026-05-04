@@ -123,7 +123,7 @@ export function AuthScreen({ viewport = 'desktop', onNavigate }: AuthScreenProps
       <div className={styles.card}>
         {/* Header */}
         <img
-          src="/logos/PRANA_ENXOVAL__LOGO_Eventos_2_Magenta.svg"
+          src={`${import.meta.env.BASE_URL}logos/PRANA_ENXOVAL__LOGO_Eventos_2_Magenta.svg`}
           alt="Espaço Prana"
           className={[styles.logo, viewport === 'mobile' ? styles.logoMobile : ''].filter(Boolean).join(' ')}
         />

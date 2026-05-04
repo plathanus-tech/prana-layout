@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Calendar, Sparkles, Footprints, Clock } from 'lucide-react';
+import { Calendar, Sparkles, Footprints, Clock, type LucideIcon } from 'lucide-react';
 import { Button } from '../../components/Button/Button';
 import { Feedback } from '../../components/Feedback/Feedback';
 import { AppHeader } from '../components/AppHeader';
@@ -10,7 +10,7 @@ import styles from './ReservationRescheduleScreen.module.css';
 
 interface ReservationInfo {
   name: string;
-  Icon: React.ComponentType<{ size?: number }>;
+  Icon: LucideIcon;
   dayTime: string;
   /** Dias com todos os horários esgotados → lista de espera */
   exhaustedDayKeys?: string[];

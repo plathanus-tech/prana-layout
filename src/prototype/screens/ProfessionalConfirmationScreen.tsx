@@ -1,77 +1,112 @@
-import { useState } from 'react';
-import { MapPin, Calendar, Briefcase, Clock, Banknote, Wallet, Users, Building2, MailCheck, CheckCircle2, XCircle } from 'lucide-react';
-import { Button } from '../../components/Button/Button';
-import { Feedback } from '../../components/Feedback/Feedback';
-import { AppHeader } from '../components/AppHeader';
-import type { ProfessionalSuccessVariant } from './ProfessionalSuccessScreen';
-import styles from './ProfessionalConfirmationScreen.module.css';
-import successStyles from './ProfessionalSuccessScreen.module.css';
+import {
+  Banknote,
+  Briefcase,
+  Building2,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  MailCheck,
+  MapPin,
+  Users,
+  Wallet,
+  XCircle,
+} from "lucide-react";
+import { useState } from "react";
+import { Button } from "../../components/Button/Button";
+import { Feedback } from "../../components/Feedback/Feedback";
+import { AppHeader } from "../components/AppHeader";
+import styles from "./ProfessionalConfirmationScreen.module.css";
+import type { ProfessionalSuccessVariant } from "./ProfessionalSuccessScreen";
+import successStyles from "./ProfessionalSuccessScreen.module.css";
 
 // ─── Demo data ──────────────────────────────────────────
 
 interface EventDay {
-  key:       string;
-  dayName:   string;
-  dayNum:    number;
-  month:     string;
+  key: string;
+  dayName: string;
+  dayNum: number;
+  month: string;
   timeRange: string;
 }
 
 const EVENT_DAYS: EventDay[] = [
-  { key: '2026-04-22', dayName: 'Qua', dayNum: 22, month: 'abr', timeRange: '09:00 – 17:00' },
-  { key: '2026-04-23', dayName: 'Qui', dayNum: 23, month: 'abr', timeRange: '09:00 – 17:00' },
-  { key: '2026-04-24', dayName: 'Sex', dayNum: 24, month: 'abr', timeRange: '09:00 – 13:00' },
+  {
+    key: "2026-04-22",
+    dayName: "Qua",
+    dayNum: 22,
+    month: "abr",
+    timeRange: "09:00 – 17:00",
+  },
+  {
+    key: "2026-04-23",
+    dayName: "Qui",
+    dayNum: 23,
+    month: "abr",
+    timeRange: "09:00 – 17:00",
+  },
+  {
+    key: "2026-04-24",
+    dayName: "Sex",
+    dayNum: 24,
+    month: "abr",
+    timeRange: "09:00 – 13:00",
+  },
 ];
 
 const EVENT = {
-  name:            'Programa de Bem-Estar',
-  company:         'Google',
-  location:        'Escritório Google · Av. Brigadeiro Faria Lima, 3477 - São Paulo',
-  service:         'Quick Massage',
+  name: "Programa de Bem-Estar",
+  company: "Google",
+  location: "Escritório Google · Av. Brigadeiro Faria Lima, 3477 - São Paulo",
+  service: "Quick Massage",
   sessionDuration: 15,
-  totalPayment:    'R$ 840,00',
+  totalPayment: "R$ 840,00",
   specialRequests: [
-    'Usar uniforme branco com logo Prana.',
-    'Chegar com 30 minutos de antecedência para organizar o espaço.',
-    'Trazer mesa dobrável e acessórios próprios.',
+    "Usar uniforme branco com logo Prana.",
+    "Chegar com 30 minutos de antecedência para organizar o espaço.",
+    "Trazer mesa dobrável e acessórios próprios.",
   ],
   travelAllowances: [
-    'Reembolso de deslocamento',
-    'Acomodação incluída',
-    'Alimentação durante o evento',
+    "Reembolso de deslocamento",
+    "Acomodação incluída",
+    "Alimentação durante o evento",
   ],
 };
 
 // ─── Tipos ──────────────────────────────────────────────
 
-type AllDays   = 'yes' | 'no' | null;
-type SubChoice = 'partial' | 'unavailable' | null;
+type AllDays = "yes" | "no" | null;
+type SubChoice = "partial" | "unavailable" | null;
 
 // ─── Componente ─────────────────────────────────────────
 
 interface ProfessionalConfirmationScreenProps {
-  viewport?:                'mobile' | 'desktop';
-  variant?:                 'normal' | 'full' | 'answered-confirmed' | 'answered-declined' | 'answered-partial';
-  showUpdatedValue?:        boolean;
-  updatedTravelAllowance?:  string;
-  updatedPayment?:          string;
-  onNavigate?:              (variant: ProfessionalSuccessVariant) => void;
+  viewport?: "mobile" | "desktop";
+  variant?:
+    | "normal"
+    | "full"
+    | "answered-confirmed"
+    | "answered-declined"
+    | "answered-partial";
+  showUpdatedValue?: boolean;
+  updatedTravelAllowance?: string;
+  updatedPayment?: string;
+  onNavigate?: (variant: ProfessionalSuccessVariant) => void;
 }
 
 export function ProfessionalConfirmationScreen({
-  viewport                = 'desktop',
-  variant                 = 'normal',
-  showUpdatedValue        = false,
-  updatedTravelAllowance  = '',
-  updatedPayment          = '',
+  viewport = "desktop",
+  variant = "normal",
   onNavigate,
 }: ProfessionalConfirmationScreenProps) {
-  const isDesktop  = viewport === 'desktop';
-  const isFull     = variant === 'full';
-  const isAnswered = variant === 'answered-confirmed' || variant === 'answered-declined' || variant === 'answered-partial';
+  const isDesktop = viewport === "desktop";
+  const isFull = variant === "full";
+  const isAnswered =
+    variant === "answered-confirmed" ||
+    variant === "answered-declined" ||
+    variant === "answered-partial";
 
-  const [allDays,     setAllDays]     = useState<AllDays>(null);
-  const [subChoice,   setSubChoice]   = useState<SubChoice>(null);
+  const [allDays, setAllDays] = useState<AllDays>(null);
+  const [subChoice, setSubChoice] = useState<SubChoice>(null);
   const [partialDays, setPartialDays] = useState<Set<string>>(new Set());
 
   function selectAllDays(val: AllDays) {
@@ -82,11 +117,11 @@ export function ProfessionalConfirmationScreen({
 
   function selectSubChoice(val: SubChoice) {
     setSubChoice(val);
-    if (val !== 'partial') setPartialDays(new Set());
+    if (val !== "partial") setPartialDays(new Set());
   }
 
   function toggleDay(key: string) {
-    setPartialDays(prev => {
+    setPartialDays((prev) => {
       const next = new Set(prev);
       next.has(key) ? next.delete(key) : next.add(key);
       return next;
@@ -95,22 +130,26 @@ export function ProfessionalConfirmationScreen({
 
   // ── CTA ──────────────────────────────────────────────────
   const canConfirm =
-    allDays === 'yes' ||
-    (allDays === 'no' && subChoice === 'unavailable') ||
-    (allDays === 'no' && subChoice === 'partial' && partialDays.size > 0);
+    allDays === "yes" ||
+    (allDays === "no" && subChoice === "unavailable") ||
+    (allDays === "no" && subChoice === "partial" && partialDays.size > 0);
 
   function ctaLabel() {
-    if (allDays === 'yes')                           return 'Confirmar participação';
-    if (allDays === 'no' && subChoice === 'partial') return 'Informar disponibilidade';
-    if (allDays === 'no' && subChoice === 'unavailable') return 'Confirmar indisponibilidade';
-    return 'Confirmar disponibilidade';
+    if (allDays === "yes") return "Confirmar participação";
+    if (allDays === "no" && subChoice === "partial")
+      return "Informar disponibilidade";
+    if (allDays === "no" && subChoice === "unavailable")
+      return "Confirmar indisponibilidade";
+    return "Confirmar disponibilidade";
   }
 
   function handleConfirm() {
     if (!canConfirm) return;
-    if (allDays === 'yes')                                    onNavigate?.('confirmed');
-    else if (allDays === 'no' && subChoice === 'partial')     onNavigate?.('partial');
-    else if (allDays === 'no' && subChoice === 'unavailable') onNavigate?.('unavailable');
+    if (allDays === "yes") onNavigate?.("confirmed");
+    else if (allDays === "no" && subChoice === "partial")
+      onNavigate?.("partial");
+    else if (allDays === "no" && subChoice === "unavailable")
+      onNavigate?.("unavailable");
   }
 
   // ── Render ────────────────────────────────────────────
@@ -118,36 +157,69 @@ export function ProfessionalConfirmationScreen({
   // ── Renderização: Convite já respondido ──
   if (isAnswered) {
     const statusLabel =
-      variant === 'answered-confirmed' ? 'Confirmado' :
-      variant === 'answered-declined'  ? 'Recusado' :
-                                         'Disponibilidade parcial informada';
+      variant === "answered-confirmed"
+        ? "Confirmado"
+        : variant === "answered-declined"
+          ? "Recusado"
+          : "Disponibilidade parcial informada";
 
     const badgeClass =
-      variant === 'answered-confirmed' ? styles.statusBadgeConfirmed :
-      variant === 'answered-declined'  ? styles.statusBadgeDeclined :
-                                         styles.statusBadgePartial;
+      variant === "answered-confirmed"
+        ? styles.statusBadgeConfirmed
+        : variant === "answered-declined"
+          ? styles.statusBadgeDeclined
+          : styles.statusBadgePartial;
 
     const statusIcon =
-      variant === 'answered-confirmed' ? <CheckCircle2 size={11} /> :
-      variant === 'answered-declined'  ? <XCircle      size={11} /> :
-                                         <Clock        size={11} />;
+      variant === "answered-confirmed" ? (
+        <CheckCircle2 size={11} />
+      ) : variant === "answered-declined" ? (
+        <XCircle size={11} />
+      ) : (
+        <Clock size={11} />
+      );
 
     return (
       <div className={successStyles.page}>
         <AppHeader />
 
-        <div className={[successStyles.content, isDesktop ? successStyles.contentDesktop : ''].filter(Boolean).join(' ')}>
-          <div className={[successStyles.card, isDesktop ? successStyles.cardDesktop : ''].filter(Boolean).join(' ')}>
-
+        <div
+          className={[
+            successStyles.content,
+            isDesktop ? successStyles.contentDesktop : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          <div
+            className={[
+              successStyles.card,
+              isDesktop ? successStyles.cardDesktop : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
             {/* Ícone */}
-            <div className={[successStyles.iconWrap, successStyles.iconWrapUnavailable].join(' ')}>
+            <div
+              className={[
+                successStyles.iconWrap,
+                successStyles.iconWrapUnavailable,
+              ].join(" ")}
+            >
               <MailCheck size={36} strokeWidth={1.5} />
             </div>
 
             {/* Título + subtítulo */}
             <div className={successStyles.body}>
               <h1 className={successStyles.title}>Convite já respondido</h1>
-              <p className={[successStyles.subtitle, isDesktop ? successStyles.subtitleDesktop : ''].filter(Boolean).join(' ')}>
+              <p
+                className={[
+                  successStyles.subtitle,
+                  isDesktop ? successStyles.subtitleDesktop : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
                 Você já respondeu a este convite e não pode acessá-lo novamente.
               </p>
             </div>
@@ -156,7 +228,7 @@ export function ProfessionalConfirmationScreen({
             <div className={successStyles.summary}>
               <div className={styles.summaryNameRow}>
                 <p className={successStyles.summaryEventName}>{EVENT.name}</p>
-                <span className={[styles.statusBadge, badgeClass].join(' ')}>
+                <span className={[styles.statusBadge, badgeClass].join(" ")}>
                   {statusIcon}
                   {statusLabel}
                 </span>
@@ -170,7 +242,6 @@ export function ProfessionalConfirmationScreen({
               <span className={successStyles.ornamentDot} />
               <span className={successStyles.ornamentLine} />
             </div>
-
           </div>
         </div>
       </div>
@@ -183,18 +254,47 @@ export function ProfessionalConfirmationScreen({
       <div className={successStyles.page}>
         <AppHeader />
 
-        <div className={[successStyles.content, isDesktop ? successStyles.contentDesktop : ''].filter(Boolean).join(' ')}>
-          <div className={[successStyles.card, isDesktop ? successStyles.cardDesktop : ''].filter(Boolean).join(' ')}>
-
+        <div
+          className={[
+            successStyles.content,
+            isDesktop ? successStyles.contentDesktop : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          <div
+            className={[
+              successStyles.card,
+              isDesktop ? successStyles.cardDesktop : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
             {/* Ícone */}
-            <div className={[successStyles.iconWrap, successStyles.iconWrapUnavailable].filter(Boolean).join(' ')}>
+            <div
+              className={[
+                successStyles.iconWrap,
+                successStyles.iconWrapUnavailable,
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            >
               <Users size={36} strokeWidth={1.5} />
             </div>
 
             {/* Texto */}
             <div className={successStyles.body}>
-              <h1 className={successStyles.title}>Obrigado pelo seu interesse</h1>
-              <p className={[successStyles.subtitle, isDesktop ? successStyles.subtitleDesktop : ''].filter(Boolean).join(' ')}>
+              <h1 className={successStyles.title}>
+                Obrigado pelo seu interesse
+              </h1>
+              <p
+                className={[
+                  successStyles.subtitle,
+                  isDesktop ? successStyles.subtitleDesktop : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
                 Todas as vagas para este evento já foram preenchidas.
               </p>
             </div>
@@ -202,7 +302,9 @@ export function ProfessionalConfirmationScreen({
             {/* Card do evento */}
             <div className={successStyles.summary}>
               <p className={successStyles.summaryEventName}>{EVENT.name}</p>
-              <p className={successStyles.summaryLabel}>As vagas foram preenchidas para este evento</p>
+              <p className={successStyles.summaryLabel}>
+                As vagas foram preenchidas para este evento
+              </p>
             </div>
 
             {/* Ornamento */}
@@ -211,7 +313,6 @@ export function ProfessionalConfirmationScreen({
               <span className={successStyles.ornamentDot} />
               <span className={successStyles.ornamentLine} />
             </div>
-
           </div>
         </div>
       </div>
@@ -225,22 +326,31 @@ export function ProfessionalConfirmationScreen({
 
       {/* Hero */}
       <div className={styles.hero}>
-        <div className={[styles.heroInner, isDesktop ? styles.heroInnerDesktop : ''].filter(Boolean).join(' ')}>
+        <div
+          className={[
+            styles.heroInner,
+            isDesktop ? styles.heroInnerDesktop : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
           <span className={styles.heroTag}>Convite</span>
           <h1 className={styles.heroTitle}>{EVENT.name}</h1>
         </div>
       </div>
 
       {/* Conteúdo */}
-      <div className={[styles.content, isDesktop ? styles.contentDesktop : ''].filter(Boolean).join(' ')}>
-
+      <div
+        className={[styles.content, isDesktop ? styles.contentDesktop : ""]
+          .filter(Boolean)
+          .join(" ")}
+      >
         {/* ── 1. Resumo do evento ── */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Resumo do evento</h2>
 
           <div className={styles.eventCard}>
             <div className={styles.infoRows}>
-
               <div className={styles.infoRow}>
                 <MapPin size={14} className={styles.infoIcon} />
                 <div className={styles.infoBody}>
@@ -265,9 +375,10 @@ export function ProfessionalConfirmationScreen({
                 <Calendar size={14} className={styles.infoIcon} />
                 <div className={styles.infoBody}>
                   <span className={styles.infoLabel}>Data e horário</span>
-                  {EVENT_DAYS.map(day => (
+                  {EVENT_DAYS.map((day) => (
                     <span key={day.key} className={styles.infoValue}>
-                      {day.dayName}, {day.dayNum} de {day.month} · {day.timeRange}
+                      {day.dayName}, {day.dayNum} de {day.month} ·{" "}
+                      {day.timeRange}
                     </span>
                   ))}
                 </div>
@@ -289,19 +400,25 @@ export function ProfessionalConfirmationScreen({
                 <Clock size={14} className={styles.infoIcon} />
                 <div className={styles.infoBody}>
                   <span className={styles.infoLabel}>Duração por sessão</span>
-                  <span className={styles.infoValue}>{EVENT.sessionDuration} min</span>
+                  <span className={styles.infoValue}>
+                    {EVENT.sessionDuration} min
+                  </span>
                   <span className={styles.infoNote}>
-                    Serve como orientação de atendimento, não altera o valor total.
+                    Serve como orientação de atendimento, não altera o valor
+                    total.
                   </span>
                 </div>
               </div>
-
             </div>
 
             <div className={styles.paymentRow}>
               <div className={styles.paymentBody}>
-                <span className={styles.paymentAmount}>{EVENT.totalPayment}</span>
-                <span className={styles.paymentLabel}>Valor total pelo trabalho</span>
+                <span className={styles.paymentAmount}>
+                  {EVENT.totalPayment}
+                </span>
+                <span className={styles.paymentLabel}>
+                  Valor total pelo trabalho
+                </span>
               </div>
               <div className={styles.paymentIconWrap}>
                 <Banknote size={20} />
@@ -355,18 +472,22 @@ export function ProfessionalConfirmationScreen({
               <button
                 className={[
                   styles.choiceBtn,
-                  allDays === 'yes' ? styles.choiceBtnYesActive : '',
-                ].filter(Boolean).join(' ')}
-                onClick={() => selectAllDays('yes')}
+                  allDays === "yes" ? styles.choiceBtnYesActive : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => selectAllDays("yes")}
               >
                 Sim
               </button>
               <button
                 className={[
                   styles.choiceBtn,
-                  allDays === 'no' ? styles.choiceBtnNoActive : '',
-                ].filter(Boolean).join(' ')}
-                onClick={() => selectAllDays('no')}
+                  allDays === "no" ? styles.choiceBtnNoActive : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => selectAllDays("no")}
               >
                 Não
               </button>
@@ -374,25 +495,34 @@ export function ProfessionalConfirmationScreen({
           </div>
 
           {/* Sub-opções — aparece ao selecionar "Não" */}
-          {allDays === 'no' && (
+          {allDays === "no" && (
             <div className={styles.subSection}>
-
               {/* Opção A: informar dias */}
               <button
                 className={[
                   styles.optionCard,
-                  subChoice === 'partial' ? styles.optionCardActive : '',
-                ].filter(Boolean).join(' ')}
-                onClick={() => selectSubChoice('partial')}
+                  subChoice === "partial" ? styles.optionCardActive : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => selectSubChoice("partial")}
               >
-                <div className={[
-                  styles.optionRadio,
-                  subChoice === 'partial' ? styles.optionRadioActive : '',
-                ].filter(Boolean).join(' ')}>
-                  {subChoice === 'partial' && <span className={styles.optionRadioDot} />}
+                <div
+                  className={[
+                    styles.optionRadio,
+                    subChoice === "partial" ? styles.optionRadioActive : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {subChoice === "partial" && (
+                    <span className={styles.optionRadioDot} />
+                  )}
                 </div>
                 <div className={styles.optionInfo}>
-                  <span className={styles.optionName}>Informar dias disponíveis</span>
+                  <span className={styles.optionName}>
+                    Informar dias disponíveis
+                  </span>
                   <span className={styles.optionSub}>
                     Selecione os dias que você pode participar
                   </span>
@@ -400,18 +530,20 @@ export function ProfessionalConfirmationScreen({
               </button>
 
               {/* Day strip — aparece ao escolher parcial */}
-              {subChoice === 'partial' && (
+              {subChoice === "partial" && (
                 <>
                   <div className={styles.dayStrip}>
-                    {EVENT_DAYS.map(day => {
+                    {EVENT_DAYS.map((day) => {
                       const isSelected = partialDays.has(day.key);
                       return (
                         <button
                           key={day.key}
                           className={[
                             styles.dayBtn,
-                            isSelected ? styles.dayBtnSelected : '',
-                          ].filter(Boolean).join(' ')}
+                            isSelected ? styles.dayBtnSelected : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
                           onClick={() => toggleDay(day.key)}
                         >
                           <span className={styles.dayName}>{day.dayName}</span>
@@ -441,29 +573,40 @@ export function ProfessionalConfirmationScreen({
               <button
                 className={[
                   styles.declineBtn,
-                  subChoice === 'unavailable' ? styles.declineBtnActive : '',
-                ].filter(Boolean).join(' ')}
-                onClick={() => selectSubChoice('unavailable')}
+                  subChoice === "unavailable" ? styles.declineBtnActive : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onClick={() => selectSubChoice("unavailable")}
               >
-                <div className={[
-                  styles.declineRadio,
-                  subChoice === 'unavailable' ? styles.declineRadioActive : '',
-                ].filter(Boolean).join(' ')}>
-                  {subChoice === 'unavailable' && <span className={styles.declineRadioDot} />}
+                <div
+                  className={[
+                    styles.declineRadio,
+                    subChoice === "unavailable"
+                      ? styles.declineRadioActive
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {subChoice === "unavailable" && (
+                    <span className={styles.declineRadioDot} />
+                  )}
                 </div>
                 <span>Não poderei participar</span>
               </button>
-
             </div>
           )}
-
         </section>
-
       </div>
 
       {/* CTA */}
       <div className={styles.ctaBar}>
-        <div className={[styles.ctaInner, isDesktop ? styles.ctaInnerDesktop : ''].filter(Boolean).join(' ')}>
+        <div
+          className={[styles.ctaInner, isDesktop ? styles.ctaInnerDesktop : ""]
+            .filter(Boolean)
+            .join(" ")}
+        >
           <div className={styles.buttonWrapper}>
             <Button
               variant="primary"

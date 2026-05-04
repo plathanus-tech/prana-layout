@@ -8,7 +8,7 @@ export interface AppHeaderProps {
 }
 
 export function AppHeader({
-  logoSrc = '/logos/PRANA_ENXOVAL__LOGO_Eventos_2_Magenta.svg',
+  logoSrc = `${import.meta.env.BASE_URL}logos/PRANA_ENXOVAL__LOGO_Eventos_2_Magenta.svg`,
   logoAlt = 'Espaço Prana',
 }: AppHeaderProps) {
   return (

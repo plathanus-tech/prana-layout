@@ -680,7 +680,7 @@ export function PrototypingShell() {
         <div className={styles.navHeader}>
           <div className={styles.navBrand}>
             <img
-              src="/logos/PRANA_ENXOVAL__LOGO_Icone_Magenta.svg"
+              src={`${import.meta.env.BASE_URL}logos/PRANA_ENXOVAL__LOGO_Icone_Magenta.svg`}
               alt="Prana"
               className={styles.navLogo}
             />

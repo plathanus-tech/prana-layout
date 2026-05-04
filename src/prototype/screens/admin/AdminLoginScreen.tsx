@@ -94,7 +94,7 @@ function LoginScreen({ onNavigate, onLoginSuccess }: { onNavigate: (v: LoginView
     <div className={styles.page}>
       <div className={styles.card}>
         <img
-          src="/logos/PRANA_ENXOVAL__LOGO_Eventos_2_Magenta.svg"
+          src={`${import.meta.env.BASE_URL}logos/PRANA_ENXOVAL__LOGO_Eventos_2_Magenta.svg`}
           alt="Prana"
           className={styles.logo}
         />
@@ -202,7 +202,7 @@ function RecuperarSenhaScreen({ onNavigate }: { onNavigate: (v: LoginView) => vo
     <div className={styles.page}>
       <div className={styles.card}>
         <img
-          src="/logos/PRANA_ENXOVAL__LOGO_Eventos_2_Magenta.svg"
+          src={`${import.meta.env.BASE_URL}logos/PRANA_ENXOVAL__LOGO_Eventos_2_Magenta.svg`}
           alt="Prana"
           className={styles.logo}
         />
@@ -312,7 +312,7 @@ function NovaSenhaScreen({ onNavigate }: { onNavigate: (v: LoginView) => void })
     <div className={styles.page}>
       <div className={styles.card}>
         <img
-          src="/logos/PRANA_ENXOVAL__LOGO_Eventos_2_Magenta.svg"
+          src={`${import.meta.env.BASE_URL}logos/PRANA_ENXOVAL__LOGO_Eventos_2_Magenta.svg`}
           alt="Prana"
           className={styles.logo}
         />

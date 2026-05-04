@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CalendarX, Calendar, Sparkles, Footprints } from 'lucide-react';
+import { CalendarX, Calendar, Sparkles, Footprints, type LucideIcon } from 'lucide-react';
 import { Button } from '../../components/Button/Button';
 import { Dropdown } from '../../components/Dropdown/Dropdown';
 import { AppHeader } from '../components/AppHeader';
@@ -21,7 +21,7 @@ const CANCEL_REASONS = [
 
 interface ReservationInfo {
   name: string;
-  Icon: React.ComponentType<{ size?: number }>;
+  Icon: LucideIcon;
   dayTime: string;
   status: 'confirmed' | 'waitlist';
 }

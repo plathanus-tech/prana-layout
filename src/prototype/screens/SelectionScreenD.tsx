@@ -1,39 +1,86 @@
-import { useState, useRef, useEffect } from 'react';
-import { Clock, MapPin, Calendar, CheckCircle2, Sparkles, Wind, Footprints } from 'lucide-react';
-import { Button } from '../../components/Button/Button';
-import { Feedback } from '../../components/Feedback/Feedback';
-import { Toggle } from '../../components/Toggle/Toggle';
-import { AppHeader } from '../components/AppHeader';
-import styles from './SelectionScreenD.module.css';
+import {
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Footprints,
+  MapPin,
+  Sparkles,
+  Wind,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "../../components/Button/Button";
+import { Feedback } from "../../components/Feedback/Feedback";
+import { Toggle } from "../../components/Toggle/Toggle";
+import { AppHeader } from "../components/AppHeader";
+import styles from "./SelectionScreenD.module.css";
 
 const EVENTS = {
   single: {
-    name: 'Semana do Bem-Estar',
-    dateStr: '10 a 14 de abril de 2026',
-    location: 'Sala de Treinamentos - Bloco A',
+    name: "Semana do Bem-Estar",
+    dateStr: "10 a 14 de abril de 2026",
+    location: "Sala de Treinamentos - Bloco A",
     multiService: false,
     maxServices: 1,
   },
   multi: {
-    name: 'Day Off Corporativo',
-    dateStr: '28 de abril de 2026',
-    location: 'Espaço Prana - Unidade Paulista',
+    name: "Day Off Corporativo",
+    dateStr: "28 de abril de 2026",
+    location: "Espaço Prana - Unidade Paulista",
     multiService: true,
     maxServices: 2,
   },
 };
 
 const SERVICES = [
-  { id: 'massage',     name: 'Quick Massage',   duration: 15, description: 'Massagem nas costas e pescoço',          Icon: Sparkles,   waitlistOnly: false },
-  { id: 'reflexology', name: 'Reflexologia',    duration: 20, description: 'Massagem nos pontos de pressão dos pés', Icon: Footprints, waitlistOnly: true  },
-  { id: 'meditation',  name: 'Meditação',       duration: 20, description: 'Sessão de relaxamento e atenção plena',  Icon: Wind,       waitlistOnly: false },
+  {
+    id: "massage",
+    name: "Quick Massage",
+    duration: 15,
+    description: "Massagem nas costas e pescoço",
+    Icon: Sparkles,
+    waitlistOnly: false,
+  },
+  {
+    id: "reflexology",
+    name: "Reflexologia",
+    duration: 20,
+    description: "Massagem nos pontos de pressão dos pés",
+    Icon: Footprints,
+    waitlistOnly: true,
+  },
+  {
+    id: "meditation",
+    name: "Meditação",
+    duration: 20,
+    description: "Sessão de relaxamento e atenção plena",
+    Icon: Wind,
+    waitlistOnly: false,
+  },
 ];
 
-const DAY_NAMES   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-const MONTH_NAMES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const DAY_NAMES = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const MONTH_NAMES = [
+  "jan",
+  "fev",
+  "mar",
+  "abr",
+  "mai",
+  "jun",
+  "jul",
+  "ago",
+  "set",
+  "out",
+  "nov",
+  "dez",
+];
 
 function generateDays() {
-  const days: { key: string; dayName: string; dayNum: number; month: string }[] = [];
+  const days: {
+    key: string;
+    dayName: string;
+    dayNum: number;
+    month: string;
+  }[] = [];
   const d = new Date(2026, 3, 11);
   while (days.length < 8) {
     if (d.getDay() !== 0 && d.getDay() !== 6) {
@@ -50,10 +97,26 @@ function generateDays() {
 }
 
 function generateSlots(serviceId: string, dayKey: string) {
-  const base = ['09:00','09:30','10:00','10:30','11:00','11:30','13:00','13:30','14:00','14:30','15:00','15:30'];
-  const dayNum = parseInt(dayKey.split('-')[2]);
+  const base = [
+    "09:00",
+    "09:30",
+    "10:00",
+    "10:30",
+    "11:00",
+    "11:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30",
+  ];
+  const dayNum = parseInt(dayKey.split("-")[2]);
   const seed = serviceId.charCodeAt(0);
-  return base.map((time, i) => ({ time, available: (dayNum + i + seed) % 3 !== 0 }));
+  return base.map((time, i) => ({
+    time,
+    available: (dayNum + i + seed) % 3 !== 0,
+  }));
 }
 
 const DAYS = generateDays();
@@ -65,61 +128,64 @@ type ShiftGroup = { label: string; slots: Slot[] };
 
 function groupSlotsByShift(slots: Slot[]): ShiftGroup[] {
   const groups: ShiftGroup[] = [
-    { label: 'Manhã', slots: [] },
-    { label: 'Tarde', slots: [] },
-    { label: 'Noite', slots: [] },
+    { label: "Manhã", slots: [] },
+    { label: "Tarde", slots: [] },
+    { label: "Noite", slots: [] },
   ];
   for (const slot of slots) {
-    const hour = parseInt(slot.time.split(':')[0]);
+    const hour = parseInt(slot.time.split(":")[0]);
     if (hour < 12) groups[0].slots.push(slot);
     else if (hour < 18) groups[1].slots.push(slot);
     else groups[2].slots.push(slot);
   }
-  return groups.filter(g => g.slots.length > 0);
+  return groups.filter((g) => g.slots.length > 0);
 }
 
 function formatTimer(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
+  return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
 type ScheduleChoice = { dayKey: string | null; time: string | null };
 
-interface SelectionScreenDProps { viewport?: 'mobile' | 'desktop'; }
-
-export function SelectionScreenD({ viewport = 'desktop' }: SelectionScreenDProps) {
-  const [multiMode, setMultiMode]     = useState(false);
-  const event                          = multiMode ? EVENTS.multi : EVENTS.single;
+export function SelectionScreenD() {
+  const [multiMode, setMultiMode] = useState(false);
+  const event = multiMode ? EVENTS.multi : EVENTS.single;
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [schedules, setSchedules]     = useState<Record<string, ScheduleChoice>>({});
+  const [schedules, setSchedules] = useState<Record<string, ScheduleChoice>>(
+    {},
+  );
   // Qual serviço está com o scheduler expandido (apenas um por vez)
-  const [expandedId, setExpandedId]   = useState<string | null>(null);
-  const [timers, setTimers]           = useState<Record<string, number | null>>({});
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [timers, setTimers] = useState<Record<string, number | null>>({});
   const timerRefs = useRef<Record<string, ReturnType<typeof setInterval>>>({});
 
   useEffect(() => {
     const refs = timerRefs.current;
-    return () => { Object.values(refs).forEach(id => clearInterval(id)); };
+    return () => {
+      Object.values(refs).forEach((id) => clearInterval(id));
+    };
   }, []);
 
   function startTimer(serviceId: string) {
-    if (timerRefs.current[serviceId]) clearInterval(timerRefs.current[serviceId]);
-    setTimers(prev => ({ ...prev, [serviceId]: 300 }));
+    if (timerRefs.current[serviceId])
+      clearInterval(timerRefs.current[serviceId]);
+    setTimers((prev) => ({ ...prev, [serviceId]: 300 }));
     let remaining = 300;
     timerRefs.current[serviceId] = setInterval(() => {
       remaining -= 1;
       if (remaining <= 0) {
         clearInterval(timerRefs.current[serviceId]);
         delete timerRefs.current[serviceId];
-        setTimers(prev => ({ ...prev, [serviceId]: null }));
-        setSchedules(prev => {
+        setTimers((prev) => ({ ...prev, [serviceId]: null }));
+        setSchedules((prev) => {
           const existing = prev[serviceId];
           if (!existing) return prev;
           return { ...prev, [serviceId]: { ...existing, time: null } };
         });
       } else {
-        setTimers(prev => ({ ...prev, [serviceId]: remaining }));
+        setTimers((prev) => ({ ...prev, [serviceId]: remaining }));
       }
     }, 1000);
   }
@@ -129,7 +195,7 @@ export function SelectionScreenD({ viewport = 'desktop' }: SelectionScreenDProps
       clearInterval(timerRefs.current[serviceId]);
       delete timerRefs.current[serviceId];
     }
-    setTimers(prev => ({ ...prev, [serviceId]: null }));
+    setTimers((prev) => ({ ...prev, [serviceId]: null }));
   }
 
   function toggleService(id: string) {
@@ -140,7 +206,10 @@ export function SelectionScreenD({ viewport = 'desktop' }: SelectionScreenDProps
       const next = new Set(selectedIds);
       next.delete(id);
       setSelectedIds(next);
-      setSchedules(prev => { const { [id]: _, ...rest } = prev; return rest; });
+      setSchedules((prev) => {
+        const { [id]: _, ...rest } = prev;
+        return rest;
+      });
       if (expandedId === id) setExpandedId(null);
       clearTimer(id);
     } else {
@@ -150,7 +219,7 @@ export function SelectionScreenD({ viewport = 'desktop' }: SelectionScreenDProps
         setSelectedIds(new Set([id]));
         setSchedules({});
       } else {
-        setSelectedIds(prev => new Set([...prev, id]));
+        setSelectedIds((prev) => new Set([...prev, id]));
       }
       setExpandedId(id); // O recém-selecionado abre; os outros colapsam
     }
@@ -162,24 +231,29 @@ export function SelectionScreenD({ viewport = 'desktop' }: SelectionScreenDProps
   }
 
   function setDay(serviceId: string, dayKey: string) {
-    setSchedules(prev => ({ ...prev, [serviceId]: { dayKey, time: null } }));
+    setSchedules((prev) => ({ ...prev, [serviceId]: { dayKey, time: null } }));
     clearTimer(serviceId);
   }
   function setTime(serviceId: string, time: string) {
-    setSchedules(prev => ({ ...prev, [serviceId]: { ...(prev[serviceId] ?? { dayKey: null }), time } }));
+    setSchedules((prev) => ({
+      ...prev,
+      [serviceId]: { ...(prev[serviceId] ?? { dayKey: null }), time },
+    }));
     startTimer(serviceId);
   }
 
   const selectedCount = selectedIds.size;
-  const canBook = selectedCount > 0 && [...selectedIds].every(id => {
-    const svc = SERVICES.find(s => s.id === id)!;
-    if (svc.waitlistOnly) return true;
-    const sch = schedules[id];
-    return sch?.dayKey && sch?.time;
-  });
+  const canBook =
+    selectedCount > 0 &&
+    [...selectedIds].every((id) => {
+      const svc = SERVICES.find((s) => s.id === id)!;
+      if (svc.waitlistOnly) return true;
+      const sch = schedules[id];
+      return sch?.dayKey && sch?.time;
+    });
 
   function handleMultiToggle(e: React.ChangeEvent<HTMLInputElement>) {
-    Object.keys(timerRefs.current).forEach(id => clearTimer(id));
+    Object.keys(timerRefs.current).forEach((id) => clearTimer(id));
     setMultiMode(e.target.checked);
     setSelectedIds(new Set());
     setSchedules({});
@@ -196,12 +270,21 @@ export function SelectionScreenD({ viewport = 'desktop' }: SelectionScreenDProps
           <span className={styles.eventTag}>• Agendamento</span>
           <h1 className={styles.eventName}>{event.name}</h1>
           <div className={styles.eventMeta}>
-            <span className={styles.eventMetaItem}><Calendar size={14} className={styles.metaIcon} />{event.dateStr}</span>
+            <span className={styles.eventMetaItem}>
+              <Calendar size={14} className={styles.metaIcon} />
+              {event.dateStr}
+            </span>
             <span className={styles.eventMetaSep}>·</span>
-            <span className={styles.eventMetaItem}><MapPin size={14} className={styles.metaIcon} />{event.location}</span>
+            <span className={styles.eventMetaItem}>
+              <MapPin size={14} className={styles.metaIcon} />
+              {event.location}
+            </span>
           </div>
           {event.multiService && (
-            <p className={styles.eventHint}>Selecione até {event.maxServices} serviços — cada um com seu próprio horário.</p>
+            <p className={styles.eventHint}>
+              Selecione até {event.maxServices} serviços — cada um com seu
+              próprio horário.
+            </p>
           )}
         </div>
       </div>
@@ -210,40 +293,64 @@ export function SelectionScreenD({ viewport = 'desktop' }: SelectionScreenDProps
         {/* Toggle de protótipo */}
         <div className={styles.protoToggle}>
           <span className={styles.protoLabel}>🧪 Protótipo</span>
-          <Toggle label="Múltiplos serviços" checked={multiMode} onChange={handleMultiToggle} />
+          <Toggle
+            label="Múltiplos serviços"
+            checked={multiMode}
+            onChange={handleMultiToggle}
+          />
         </div>
 
         {/* Lista de serviços */}
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>{multiMode ? 'Escolha seus serviços' : 'Escolha o serviço'}</h2>
+          <h2 className={styles.sectionTitle}>
+            {multiMode ? "Escolha seus serviços" : "Escolha o serviço"}
+          </h2>
 
           <div className={styles.serviceList}>
-            {SERVICES.map(service => {
-              const isSelected  = selectedIds.has(service.id);
-              const isExpanded  = isSelected && (!multiMode || expandedId === service.id);
-              const isCollapsed = isSelected && multiMode && expandedId !== service.id;
-              const isDisabled  = !isSelected && selectedCount >= event.maxServices;
-              const sch         = schedules[service.id];
-              const isComplete  = isSelected && (service.waitlistOnly || (sch?.dayKey && sch?.time));
-              const selectedDay = DAYS.find(d => d.key === sch?.dayKey);
+            {SERVICES.map((service) => {
+              const isSelected = selectedIds.has(service.id);
+              const isExpanded =
+                isSelected && (!multiMode || expandedId === service.id);
+              const isCollapsed =
+                isSelected && multiMode && expandedId !== service.id;
+              const isDisabled =
+                !isSelected && selectedCount >= event.maxServices;
+              const sch = schedules[service.id];
+              const isComplete =
+                isSelected &&
+                (service.waitlistOnly || (sch?.dayKey && sch?.time));
+              const selectedDay = DAYS.find((d) => d.key === sch?.dayKey);
 
               return (
                 <div
                   key={service.id}
                   className={[
                     styles.card,
-                    isSelected  ? styles.cardSelected  : '',
-                    isCollapsed ? styles.cardCollapsed  : '',
-                    isDisabled  ? styles.cardDisabled   : '',
-                  ].filter(Boolean).join(' ')}
+                    isSelected ? styles.cardSelected : "",
+                    isCollapsed ? styles.cardCollapsed : "",
+                    isDisabled ? styles.cardDisabled : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                 >
                   {/* Header: clicável para (des)selecionar ou re-expandir */}
                   <button
                     className={styles.cardHeader}
-                    onClick={() => isCollapsed ? reExpand(service.id) : toggleService(service.id)}
+                    onClick={() =>
+                      isCollapsed
+                        ? reExpand(service.id)
+                        : toggleService(service.id)
+                    }
                     disabled={isDisabled}
                   >
-                    <div className={[styles.cardIcon, isSelected ? styles.cardIconSelected : ''].filter(Boolean).join(' ')}>
+                    <div
+                      className={[
+                        styles.cardIcon,
+                        isSelected ? styles.cardIconSelected : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
                       <service.Icon size={18} />
                     </div>
 
@@ -254,21 +361,26 @@ export function SelectionScreenD({ viewport = 'desktop' }: SelectionScreenDProps
                       {isCollapsed && isComplete && !service.waitlistOnly ? (
                         <span className={styles.cardSummary}>
                           <CheckCircle2 size={12} />
-                          {selectedDay?.dayName} {selectedDay?.dayNum} de {selectedDay?.month} · {sch?.time}
+                          {selectedDay?.dayName} {selectedDay?.dayNum} de{" "}
+                          {selectedDay?.month} · {sch?.time}
                         </span>
                       ) : isCollapsed && service.waitlistOnly ? (
                         <span className={styles.cardSummary}>
-                          <CheckCircle2 size={12} />Na lista de espera
+                          <CheckCircle2 size={12} />
+                          Na lista de espera
                         </span>
                       ) : (
-                        <span className={styles.cardMeta}><Clock size={12} />{service.duration} min · {service.description}</span>
+                        <span className={styles.cardMeta}>
+                          <Clock size={12} />
+                          {service.duration} min · {service.description}
+                        </span>
                       )}
 
                       {isExpanded && isComplete && (
                         <span className={styles.cardComplete}>
                           <CheckCircle2 size={12} />
                           {service.waitlistOnly
-                            ? 'Na lista de espera'
+                            ? "Na lista de espera"
                             : `${selectedDay?.dayName} ${selectedDay?.dayNum} de ${selectedDay?.month} · ${sch?.time}`}
                         </span>
                       )}
@@ -276,13 +388,27 @@ export function SelectionScreenD({ viewport = 'desktop' }: SelectionScreenDProps
 
                     {/* Checkbox ou radio */}
                     <div
-                      className={[styles.selector, isSelected ? styles.selectorSelected : ''].filter(Boolean).join(' ')}
-                      onClick={e => { e.stopPropagation(); toggleService(service.id); }}
+                      className={[
+                        styles.selector,
+                        isSelected ? styles.selectorSelected : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleService(service.id);
+                      }}
                     >
                       {multiMode ? (
-                        <span className={styles.checkbox}>{isSelected && <span className={styles.checkmark}>✓</span>}</span>
+                        <span className={styles.checkbox}>
+                          {isSelected && (
+                            <span className={styles.checkmark}>✓</span>
+                          )}
+                        </span>
                       ) : (
-                        <span className={styles.radio}>{isSelected && <span className={styles.radioDot} />}</span>
+                        <span className={styles.radio}>
+                          {isSelected && <span className={styles.radioDot} />}
+                        </span>
                       )}
                     </div>
                   </button>
@@ -292,23 +418,44 @@ export function SelectionScreenD({ viewport = 'desktop' }: SelectionScreenDProps
                     <div className={styles.cardBody}>
                       {service.waitlistOnly ? (
                         <div className={styles.waitlist}>
-                          <Feedback type="warning" title="Horários esgotados" message="Todos os horários disponíveis para este serviço estão ocupados." />
-                          <Button variant="secondary" size="sm">Entrar na lista de espera</Button>
+                          <Feedback
+                            type="warning"
+                            title="Horários esgotados"
+                            message="Todos os horários disponíveis para este serviço estão ocupados."
+                          />
+                          <Button variant="secondary" size="sm">
+                            Entrar na lista de espera
+                          </Button>
                         </div>
                       ) : (
                         <div className={styles.scheduler}>
                           <div className={styles.pickerSection}>
-                            <h4 className={styles.pickerLabel}>Escolha o dia</h4>
+                            <h4 className={styles.pickerLabel}>
+                              Escolha o dia
+                            </h4>
                             <div className={styles.dayStrip}>
-                              {DAYS.map(day => (
+                              {DAYS.map((day) => (
                                 <button
                                   key={day.key}
-                                  className={[styles.dayBtn, sch?.dayKey === day.key ? styles.dayBtnActive : ''].filter(Boolean).join(' ')}
+                                  className={[
+                                    styles.dayBtn,
+                                    sch?.dayKey === day.key
+                                      ? styles.dayBtnActive
+                                      : "",
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" ")}
                                   onClick={() => setDay(service.id, day.key)}
                                 >
-                                  <span className={styles.dayName}>{day.dayName}</span>
-                                  <span className={styles.dayNum}>{day.dayNum}</span>
-                                  <span className={styles.dayMonth}>{day.month}</span>
+                                  <span className={styles.dayName}>
+                                    {day.dayName}
+                                  </span>
+                                  <span className={styles.dayNum}>
+                                    {day.dayNum}
+                                  </span>
+                                  <span className={styles.dayMonth}>
+                                    {day.month}
+                                  </span>
                                 </button>
                               ))}
                             </div>
@@ -316,22 +463,40 @@ export function SelectionScreenD({ viewport = 'desktop' }: SelectionScreenDProps
 
                           {sch?.dayKey && (
                             <div className={styles.pickerSection}>
-                              <h4 className={styles.pickerLabel}>Horário disponível</h4>
+                              <h4 className={styles.pickerLabel}>
+                                Horário disponível
+                              </h4>
                               <div className={styles.shiftGroups}>
-                                {groupSlotsByShift(generateSlots(service.id, sch.dayKey)).map(shift => (
-                                  <div key={shift.label} className={styles.shiftGroup}>
-                                    <span className={styles.shiftLabel}>{shift.label}</span>
+                                {groupSlotsByShift(
+                                  generateSlots(service.id, sch.dayKey),
+                                ).map((shift) => (
+                                  <div
+                                    key={shift.label}
+                                    className={styles.shiftGroup}
+                                  >
+                                    <span className={styles.shiftLabel}>
+                                      {shift.label}
+                                    </span>
                                     <div className={styles.timeGrid}>
-                                      {shift.slots.map(slot => (
+                                      {shift.slots.map((slot) => (
                                         <button
                                           key={slot.time}
                                           className={[
                                             styles.timeBtn,
-                                            !slot.available        ? styles.timeBtnUnavailable : '',
-                                            sch.time === slot.time ? styles.timeBtnActive       : '',
-                                          ].filter(Boolean).join(' ')}
+                                            !slot.available
+                                              ? styles.timeBtnUnavailable
+                                              : "",
+                                            sch.time === slot.time
+                                              ? styles.timeBtnActive
+                                              : "",
+                                          ]
+                                            .filter(Boolean)
+                                            .join(" ")}
                                           disabled={!slot.available}
-                                          onClick={() => slot.available && setTime(service.id, slot.time)}
+                                          onClick={() =>
+                                            slot.available &&
+                                            setTime(service.id, slot.time)
+                                          }
                                         >
                                           {slot.time}
                                         </button>
@@ -347,7 +512,10 @@ export function SelectionScreenD({ viewport = 'desktop' }: SelectionScreenDProps
                       {timers[service.id] != null && (
                         <div className={styles.timerBanner}>
                           <Clock size={14} />
-                          <span>Você tem {formatTimer(timers[service.id]!)} para agendar</span>
+                          <span>
+                            Você tem {formatTimer(timers[service.id]!)} para
+                            agendar
+                          </span>
                         </div>
                       )}
                     </div>
@@ -368,8 +536,8 @@ export function SelectionScreenD({ viewport = 'desktop' }: SelectionScreenDProps
       {/* CTA fixo */}
       <div className={styles.ctaBar}>
         <div className={styles.ctaInner}>
-          <Button variant="primary" size="lg"  disabled={!canBook}>
-            Agendar {selectedCount > 1 ? 'serviços' : 'serviço'}
+          <Button variant="primary" size="lg" disabled={!canBook}>
+            Agendar {selectedCount > 1 ? "serviços" : "serviço"}
           </Button>
         </div>
       </div>
