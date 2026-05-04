@@ -4,6 +4,7 @@ import { Input } from '../../components/Input/Input';
 import { Button } from '../../components/Button/Button';
 import { Feedback } from '../../components/Feedback/Feedback';
 import { RadioButton } from '../../components/RadioButton/RadioButton';
+import { Dropdown } from '../../components/Dropdown/Dropdown';
 import styles from './AuthScreen.module.css';
 
 const EMPRESA_TERCEIRIZADA_OPTIONS = [
@@ -11,10 +12,20 @@ const EMPRESA_TERCEIRIZADA_OPTIONS = [
   { label: 'Não', value: 'nao' },
 ];
 
+const AREA_OPTIONS = [
+  { label: 'Gestor',     value: 'gestor'     },
+  { label: 'RH',        value: 'rh'         },
+  { label: 'Financeiro', value: 'financeiro' },
+  { label: 'Operações', value: 'operacoes'  },
+  { label: 'Outros',    value: 'outros'     },
+];
+
 interface FormFields {
   empresaTerceirizada: string;
   nomeEmpresa: string;
   nome: string;
+  area: string;
+  areaOutros: string;
   email: string;
   telefone: string;
   codigoEmpresa: string;
@@ -24,6 +35,8 @@ interface FormErrors {
   empresaTerceirizada?: string;
   nomeEmpresa?: string;
   nome?: string;
+  area?: string;
+  areaOutros?: string;
   email?: string;
   telefone?: string;
   codigoEmpresa?: string;
@@ -52,6 +65,8 @@ export function AuthScreen({ viewport = 'desktop', onNavigate }: AuthScreenProps
     empresaTerceirizada: '',
     nomeEmpresa: '',
     nome: '',
+    area: '',
+    areaOutros: '',
     email: '',
     telefone: '',
     codigoEmpresa: '',
@@ -174,6 +189,30 @@ export function AuthScreen({ viewport = 'desktop', onNavigate }: AuthScreenProps
               autoComplete="name"
               disabled={loading}
             />
+            <Dropdown
+              label="Área"
+              options={AREA_OPTIONS}
+              value={fields.area}
+              placeholder="Selecione sua área"
+              onChange={val => {
+                setFields(prev => ({ ...prev, area: val, areaOutros: '' }));
+                if (errors.area) setErrors(prev => ({ ...prev, area: undefined }));
+              }}
+              error={errors.area}
+              disabled={loading}
+            />
+            {fields.area === 'outros' && (
+              <Input
+                label="Qual área?"
+                name="areaOutros"
+                type="text"
+                placeholder="Informe sua área"
+                value={fields.areaOutros}
+                onChange={handleChange}
+                error={errors.areaOutros}
+                disabled={loading}
+              />
+            )}
             <Input
               label="E-mail"
               name="email"

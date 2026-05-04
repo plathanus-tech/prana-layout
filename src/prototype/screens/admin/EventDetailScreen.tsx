@@ -110,6 +110,8 @@ interface EventDetail {
     empresa: SurveyConfig;
   };
   helpCostText: string;
+  specialRequests: string;
+  isRecorrente: boolean; // empresa com contrato recorrente — oculta linha "Empresa" na pesquisa pós-evento
 
   // — Dados de Avaliação ────────────────────────────────────────────────────────
   npsData?: {
@@ -390,6 +392,8 @@ const DEFAULT_DETAIL: EventDetail = {
     },
   },
   helpCostText: "",
+  specialRequests: "",
+  isRecorrente: false,
 };
 
 const MOCK_DETAIL: Record<string, EventDetail> = {
@@ -444,6 +448,9 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
     },
     helpCostText:
       "R$ 50,00 por profissional · válido para deslocamento acima de 50 km",
+    specialRequests:
+      "Solicitar mesas ergonômicas para Quick Massage. Confirmar acesso para cadeirante.",
+    isRecorrente: true, // Itaú Unibanco — contrato recorrente
 
     // — Dados de Avaliação ────────────────────────────────────────────────────
     npsData: {
@@ -601,6 +608,8 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
       },
     },
     helpCostText: "",
+    specialRequests: "",
+    isRecorrente: false, // Natura — contrato esporádico
   },
   "EVT-003": {
     services: ["Quick Massage", "Ginástica Laboral", "Nutrição"],
@@ -650,6 +659,8 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
       },
     },
     helpCostText: "R$ 45,00 por profissional · inclui refeição no local",
+    specialRequests: "",
+    isRecorrente: true, // Ambev — contrato recorrente
   },
   "EVT-005": {
     services: ["Ginástica Laboral", "Quick Massage"],
@@ -696,6 +707,8 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
       },
     },
     helpCostText: "",
+    specialRequests: "",
+    isRecorrente: true, // Bradesco — contrato recorrente
 
     // — Dados de Avaliação ────────────────────────────────────────────────────
     npsData: {
@@ -1982,9 +1995,11 @@ function CRMSection({
           </div>
         </Field>
         <Field label="Responsável Prana">{detail.responsible}</Field>
-        {role === "adm" && detail.notes && (
+        {role === "adm" && (
           <Field label="Anotações (interno)" fullWidth>
-            <span className={styles.notesValue}>{detail.notes}</span>
+            <span className={styles.notesValue}>
+              {detail.notes || <span className={styles.fieldEmpty}>—</span>}
+            </span>
           </Field>
         )}
       </div>
@@ -2463,114 +2478,120 @@ function ConfigSection({
                 { key: "profissional" as const, label: "Profissional" },
                 { key: "empresa" as const, label: "Empresa" },
               ] as const
-            ).map(({ key, label }) => {
-              const cfg = ev.survey[key];
-              const isOff = cfg.model === "nao-enviar";
-              return (
-                <tr key={key} className={styles.surveyTr}>
-                  <td className={styles.surveyTd}>
-                    <span className={styles.surveyProfile}>{label}</span>
-                  </td>
-                  <td className={styles.surveyTd}>
-                    {canEdit ? (
-                      <EditSelect
-                        value={cfg.model}
-                        onChange={(v) =>
-                          setEv((d) => ({
-                            ...d,
-                            survey: {
-                              ...d.survey,
-                              [key]: { ...d.survey[key], model: v },
-                            },
-                          }))
-                        }
-                        options={SURVEY_MODELS}
-                      />
-                    ) : (
-                      <span
-                        className={[
-                          styles.fieldValue,
-                          isOff ? styles.surveyOff : "",
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                      >
-                        {surveyModelLabel(cfg.model)}
-                      </span>
-                    )}
-                  </td>
-                  <td className={styles.surveyTd}>
-                    {canEdit ? (
-                      <EditSelect
-                        value={cfg.delay}
-                        onChange={(v) =>
-                          setEv((d) => ({
-                            ...d,
-                            survey: {
-                              ...d.survey,
-                              [key]: { ...d.survey[key], delay: v },
-                            },
-                          }))
-                        }
-                        options={DELAY_OPTIONS_EVENT}
-                      />
-                    ) : isOff ? (
-                      <span className={styles.surveyOff}>—</span>
-                    ) : (
-                      <span className={styles.fieldValue}>
-                        {delayTimeLabel(cfg.delay)}
-                      </span>
-                    )}
-                  </td>
-                  <td className={styles.surveyTd}>
-                    {canEdit && !isOff ? (
-                      <EditSelect
-                        value={cfg.gatilho}
-                        onChange={(v) =>
-                          setEv((d) => ({
-                            ...d,
-                            survey: {
-                              ...d.survey,
-                              [key]: { ...d.survey[key], gatilho: v },
-                            },
-                          }))
-                        }
-                        options={GATILHO_OPTIONS}
-                      />
-                    ) : (
-                      <span
-                        className={isOff ? styles.surveyOff : styles.fieldValue}
-                      >
-                        {isOff ? "—" : gatilhoLabel(cfg.gatilho)}
-                      </span>
-                    )}
-                  </td>
-                  <td className={styles.surveyTd}>
-                    {canEdit && !isOff ? (
-                      <EditSelect
-                        value={cfg.canal}
-                        onChange={(v) =>
-                          setEv((d) => ({
-                            ...d,
-                            survey: {
-                              ...d.survey,
-                              [key]: { ...d.survey[key], canal: v },
-                            },
-                          }))
-                        }
-                        options={CANAL_OPTIONS}
-                      />
-                    ) : (
-                      <span
-                        className={isOff ? styles.surveyOff : styles.fieldValue}
-                      >
-                        {isOff ? "—" : canalLabel(cfg.canal)}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
+            )
+              .filter(({ key }) => !(key === "empresa" && detail.isRecorrente))
+              .map(({ key, label }) => {
+                const cfg = ev.survey[key];
+                const isOff = cfg.model === "nao-enviar";
+                return (
+                  <tr key={key} className={styles.surveyTr}>
+                    <td className={styles.surveyTd}>
+                      <span className={styles.surveyProfile}>{label}</span>
+                    </td>
+                    <td className={styles.surveyTd}>
+                      {canEdit ? (
+                        <EditSelect
+                          value={cfg.model}
+                          onChange={(v) =>
+                            setEv((d) => ({
+                              ...d,
+                              survey: {
+                                ...d.survey,
+                                [key]: { ...d.survey[key], model: v },
+                              },
+                            }))
+                          }
+                          options={SURVEY_MODELS}
+                        />
+                      ) : (
+                        <span
+                          className={[
+                            styles.fieldValue,
+                            isOff ? styles.surveyOff : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                        >
+                          {surveyModelLabel(cfg.model)}
+                        </span>
+                      )}
+                    </td>
+                    <td className={styles.surveyTd}>
+                      {canEdit ? (
+                        <EditSelect
+                          value={cfg.delay}
+                          onChange={(v) =>
+                            setEv((d) => ({
+                              ...d,
+                              survey: {
+                                ...d.survey,
+                                [key]: { ...d.survey[key], delay: v },
+                              },
+                            }))
+                          }
+                          options={DELAY_OPTIONS_EVENT}
+                        />
+                      ) : isOff ? (
+                        <span className={styles.surveyOff}>—</span>
+                      ) : (
+                        <span className={styles.fieldValue}>
+                          {delayTimeLabel(cfg.delay)}
+                        </span>
+                      )}
+                    </td>
+                    <td className={styles.surveyTd}>
+                      {canEdit && !isOff ? (
+                        <EditSelect
+                          value={cfg.gatilho}
+                          onChange={(v) =>
+                            setEv((d) => ({
+                              ...d,
+                              survey: {
+                                ...d.survey,
+                                [key]: { ...d.survey[key], gatilho: v },
+                              },
+                            }))
+                          }
+                          options={GATILHO_OPTIONS}
+                        />
+                      ) : (
+                        <span
+                          className={
+                            isOff ? styles.surveyOff : styles.fieldValue
+                          }
+                        >
+                          {isOff ? "—" : gatilhoLabel(cfg.gatilho)}
+                        </span>
+                      )}
+                    </td>
+                    <td className={styles.surveyTd}>
+                      {canEdit && !isOff ? (
+                        <EditSelect
+                          value={cfg.canal}
+                          onChange={(v) =>
+                            setEv((d) => ({
+                              ...d,
+                              survey: {
+                                ...d.survey,
+                                [key]: { ...d.survey[key], canal: v },
+                              },
+                            }))
+                          }
+                          options={CANAL_OPTIONS}
+                        />
+                      ) : (
+                        <span
+                          className={
+                            isOff ? styles.surveyOff : styles.fieldValue
+                          }
+                        >
+                          {isOff ? "—" : canalLabel(cfg.canal)}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
         <span
@@ -2662,7 +2683,7 @@ function ConfigSection({
       </div>
 
       {/* ── Ajuda de custo ────────────────────────────────────────────────── */}
-      <div className={[styles.configGroup, styles.configGroupLast].join(" ")}>
+      <div className={styles.configGroup}>
         <span className={styles.configGroupTitle}>Ajuda de custo</span>
         <div className={styles.fieldsCol}>
           <div className={[styles.field, styles.fieldFull].join(" ")}>
@@ -2679,6 +2700,32 @@ function ConfigSection({
             ) : (
               <span className={styles.fieldValue}>
                 {ev.helpCostText || (
+                  <span className={styles.fieldEmpty}>—</span>
+                )}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Pedidos especiais ─────────────────────────────────────────────── */}
+      <div className={[styles.configGroup, styles.configGroupLast].join(" ")}>
+        <span className={styles.configGroupTitle}>Pedidos especiais</span>
+        <div className={styles.fieldsCol}>
+          <div className={[styles.field, styles.fieldFull].join(" ")}>
+            <span className={styles.fieldLabel}>Descrição</span>
+            {canEdit ? (
+              <textarea
+                className={styles.editTextarea}
+                placeholder="Ex.: Solicitar mesas ergonômicas. Confirmar acesso para cadeirante."
+                value={ev.specialRequests}
+                onChange={(e) =>
+                  setEv((d) => ({ ...d, specialRequests: e.target.value }))
+                }
+              />
+            ) : (
+              <span className={styles.fieldValue}>
+                {ev.specialRequests || (
                   <span className={styles.fieldEmpty}>—</span>
                 )}
               </span>
@@ -2917,20 +2964,15 @@ function CriteriaModal({
   onSend: () => void;
 }) {
   const [step, setStep] = useState<1 | 2>(1);
-  const [specialty, setSpecialty] = useState("");
+  const [specialties, setSpecialties] = useState<string[]>([]);
+  const [specOpen, setSpecOpen] = useState(false);
   const [minRating, setMinRating] = useState("0");
   const [gender, setGender] = useState("");
   const [minEvents, setMinEvents] = useState(""); // string para suportar placeholder
   const [maxDistStr, setMaxDistStr] = useState(""); // opcional, string para placeholder
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const SPECIALTY_OPTS = [
-    { value: "", label: "Selecione uma especialidade" },
-    ...Array.from(new Set(MOCK_DB_PROFS.map((p) => p.func))).map((f) => ({
-      value: f,
-      label: f,
-    })),
-  ] as const;
+  const SPECIALTY_OPTS = Array.from(new Set(MOCK_DB_PROFS.map((p) => p.func)));
   const RATING_OPTS = [
     { value: "0", label: "Qualquer avaliação" },
     { value: "3", label: "★★★   Regular ou acima" },
@@ -2946,7 +2988,7 @@ function CriteriaModal({
   function computeResults(): DBProfessional[] {
     const maxDist = maxDistStr !== "" ? Number(maxDistStr) : Infinity;
     return MOCK_DB_PROFS.filter((p) => {
-      if (specialty && p.func !== specialty) return false;
+      if (specialties.length > 0 && !specialties.includes(p.func)) return false;
       if (Number(minRating) > 0 && p.rating < Number(minRating)) return false;
       if (gender && p.gender !== gender) return false;
       if (minEvents !== "" && p.eventsDone < Number(minEvents)) return false;
@@ -3036,18 +3078,93 @@ function CriteriaModal({
                     </div>
                   </div>
 
-                  {/* Especialidade — obrigatório */}
-                  <div className={styles.modalField}>
+                  {/* Especialidade — multiselect */}
+                  <div
+                    className={styles.modalField}
+                    style={{ position: "relative" }}
+                  >
                     <span className={styles.modalFieldLabel}>
                       Especialidade
                       <span className={styles.modalFieldRequired}> *</span>
                     </span>
-                    <EditSelect
-                      value={specialty}
-                      onChange={setSpecialty}
-                      options={SPECIALTY_OPTS}
-                      fullWidth
-                    />
+                    <div
+                      className={styles.multiSelectWrap}
+                      onClick={() => setSpecOpen((o) => !o)}
+                    >
+                      <div className={styles.multiSelectTags}>
+                        {specialties.length === 0 && (
+                          <span className={styles.multiSelectPlaceholder}>
+                            Selecione especialidades
+                          </span>
+                        )}
+                        {specialties.map((s) => (
+                          <span key={s} className={styles.multiSelectTag}>
+                            {s}
+                            <button
+                              className={styles.multiSelectTagRemove}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSpecialties((prev) =>
+                                  prev.filter((x) => x !== s),
+                                );
+                              }}
+                              aria-label={`Remover ${s}`}
+                            >
+                              <X size={10} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                      <ChevronDown
+                        size={13}
+                        className={[
+                          styles.editSelectChevron,
+                          styles.multiSelectChevron,
+                        ].join(" ")}
+                      />
+                    </div>
+                    {specOpen && (
+                      <>
+                        <div
+                          className={styles.multiSelectBackdrop}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSpecOpen(false);
+                          }}
+                        />
+                        <div className={styles.multiSelectDropdown}>
+                          {SPECIALTY_OPTS.map((opt) => {
+                            const checked = specialties.includes(opt);
+                            return (
+                              <div
+                                key={opt}
+                                className={[
+                                  styles.multiSelectOption,
+                                  checked
+                                    ? styles.multiSelectOptionChecked
+                                    : "",
+                                ]
+                                  .filter(Boolean)
+                                  .join(" ")}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSpecialties((prev) =>
+                                    checked
+                                      ? prev.filter((x) => x !== opt)
+                                      : [...prev, opt],
+                                  );
+                                }}
+                              >
+                                <span className={styles.multiSelectCheckbox}>
+                                  {checked && <Check size={10} />}
+                                </span>
+                                {opt}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Qualificação mínima */}
@@ -3132,10 +3249,10 @@ function CriteriaModal({
               <button className={styles.modalBtnSecondary} onClick={onClose}>
                 Cancelar
               </button>
-              {/* Avançar desabilitado até que a especialidade seja selecionada */}
+              {/* Avançar desabilitado até que ao menos uma especialidade seja selecionada */}
               <button
                 className={styles.modalBtnPrimary}
-                disabled={!specialty}
+                disabled={specialties.length === 0}
                 onClick={handleAdvance}
               >
                 Avançar

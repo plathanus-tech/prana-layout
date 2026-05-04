@@ -15,7 +15,7 @@ import type { UserRole } from './UsersScreen';
 import styles from './PesquisaScreen.module.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type PesquisaTabType = 'subcategorias' | 'perguntas' | 'modelo';
+export type PesquisaTabType = 'subcategorias' | 'perguntas' | 'modelo';
 type ItemStatus      = 'ativo' | 'inativo';
 type ModeloPublico   = 'beneficiario' | 'gestor' | 'profissional';
 type Ator            = 'beneficiario' | 'profissional' | 'gestor';
@@ -1014,13 +1014,14 @@ interface PesquisaScreenProps {
   sidebarOffset?: number;
   onNavChange?:   (item: string) => void;
   onViewDetail?:  (p: Pesquisa) => void;
+  initialTab?:    PesquisaTabType;
 }
 
 // ─── PesquisaScreen ───────────────────────────────────────────────────────────
-export function PesquisaScreen({ role, sidebarOffset = 0, onNavChange }: PesquisaScreenProps) {
+export function PesquisaScreen({ role, sidebarOffset = 0, onNavChange, initialTab = 'subcategorias' }: PesquisaScreenProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav,   setActiveNav]   = useState('pesquisa');
-  const [activeTab,   setActiveTab]   = useState<PesquisaTabType>('subcategorias');
+  const [activeTab,   setActiveTab]   = useState<PesquisaTabType>(initialTab);
 
   // ── Subcategorias ─────────────────────────────────────────────────────────
   const [subcategorias,    setSubcategorias]    = useState<Subcategoria[]>(MOCK_SUBCATEGORIAS);
@@ -1232,21 +1233,18 @@ export function PesquisaScreen({ role, sidebarOffset = 0, onNavChange }: Pesquis
               className={[styles.tab, activeTab === 'subcategorias' ? styles.tabActive : ''].filter(Boolean).join(' ')}
               onClick={() => setActiveTab('subcategorias')}
             >
-              <Tag size={14} />
               Subcategoria de pesquisas
             </button>
             <button
               className={[styles.tab, activeTab === 'perguntas' ? styles.tabActive : ''].filter(Boolean).join(' ')}
               onClick={() => setActiveTab('perguntas')}
             >
-              <ClipboardList size={14} />
               Perguntas
             </button>
             <button
               className={[styles.tab, activeTab === 'modelo' ? styles.tabActive : ''].filter(Boolean).join(' ')}
               onClick={() => setActiveTab('modelo')}
             >
-              <LayoutTemplate size={14} />
               Modelo
             </button>
           </div>
