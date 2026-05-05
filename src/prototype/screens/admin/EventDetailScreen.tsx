@@ -2778,8 +2778,8 @@ function AddProfPopover({
   );
 }
 
-// ─── SelectProfModal ──────────────────────────────────────────────────────────
-function SelectProfModal({
+// ─── ADM09A_SelectProfessionalModal ───────────────────────────────────────────
+function ADM09A_SelectProfessionalModal({
   onClose,
   onSend,
 }: {
@@ -2953,8 +2953,8 @@ function SelectProfModal({
   );
 }
 
-// ─── CriteriaModal ────────────────────────────────────────────────────────────
-function CriteriaModal({
+// ─── ADM09B_CriteriaInviteModal ───────────────────────────────────────────────
+function ADM09B_CriteriaInviteModal({
   activeService,
   onClose,
   onSend,
@@ -3886,7 +3886,7 @@ function ProfissionaisTab({
 
       {/* Modal: selecionar profissional diretamente */}
       {addModal === "select" && (
-        <SelectProfModal
+        <ADM09A_SelectProfessionalModal
           onClose={() => setAddModal(null)}
           onSend={handleSendInvites}
         />
@@ -3894,7 +3894,7 @@ function ProfissionaisTab({
 
       {/* Modal: convite por critérios (2 etapas) */}
       {addModal === "criteria" && (
-        <CriteriaModal
+        <ADM09B_CriteriaInviteModal
           activeService={activeService}
           onClose={() => setAddModal(null)}
           onSend={handleSendInvites}
