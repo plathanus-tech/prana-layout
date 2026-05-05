@@ -1562,8 +1562,8 @@ function AddProfPopover({ onSelect, onCriteria, onClose }: {
   );
 }
 
-// ─── SelectProfModal ──────────────────────────────────────────────────────────
-function SelectProfModal({ onClose, onSend }: { onClose: () => void; onSend: () => void }) {
+// ─── ADM09A_SelectProfessionalModal ───────────────────────────────────────────
+function ADM09A_SelectProfessionalModal({ onClose, onSend }: { onClose: () => void; onSend: () => void }) {
   const [search,   setSearch]   = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -1685,8 +1685,8 @@ function SelectProfModal({ onClose, onSend }: { onClose: () => void; onSend: () 
   );
 }
 
-// ─── CriteriaModal ────────────────────────────────────────────────────────────
-function CriteriaModal({ activeService, onClose, onSend }: {
+// ─── ADM09B_CriteriaInviteModal ───────────────────────────────────────────────
+function ADM09B_CriteriaInviteModal({ activeService, onClose, onSend }: {
   activeService: string;
   onClose: () => void;
   onSend:  () => void;
@@ -2378,12 +2378,12 @@ function ProfissionaisTab({ role, event, serviceConfig, configStatus }: {
 
       {/* Modal: selecionar profissional diretamente */}
       {addModal === 'select' && (
-        <SelectProfModal onClose={() => setAddModal(null)} onSend={handleSendInvites} />
+        <ADM09A_SelectProfessionalModal onClose={() => setAddModal(null)} onSend={handleSendInvites} />
       )}
 
       {/* Modal: convite por critérios (2 etapas) */}
       {addModal === 'criteria' && (
-        <CriteriaModal
+        <ADM09B_CriteriaInviteModal
           activeService={activeService}
           onClose={() => setAddModal(null)}
           onSend={handleSendInvites}

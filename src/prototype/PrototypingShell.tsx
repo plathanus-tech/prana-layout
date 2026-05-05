@@ -109,6 +109,24 @@ const SCREENS: ScreenDef[] = [
     allowedRoles: ['adm', 'empresa'],
     icon: <FileText size={15} />,
   },
+  {
+    id: 'eventos-select-prof-modal',
+    journey: 'eventos',
+    index: 3,
+    label: 'ADM-09-A Selecionar profissional',
+    sub: 'Modal · Aba Profissionais',
+    allowedRoles: ['adm', 'empresa'],
+    icon: <FileText size={15} />,
+  },
+  {
+    id: 'eventos-criteria-modal',
+    journey: 'eventos',
+    index: 4,
+    label: 'ADM-09-B Convite por critérios',
+    sub: 'Modal · Aba Profissionais',
+    allowedRoles: ['adm', 'empresa'],
+    icon: <FileText size={15} />,
+  },
 
   // — Jornada: Usuários (Admin only) ──────────────────────────────────────────
   {
@@ -600,7 +618,7 @@ export function PrototypingShell() {
     if (screen.id === 'login-nova-senha') { setActiveJourney('login'); setLoginView('nova-senha'); }
     // Navegação direta pelo painel de telas do protótipo
     if (screen.id === 'eventos-lista')   setEventsView('lista');
-    if (screen.id === 'eventos-detalhe') {
+    if (screen.id === 'eventos-detalhe' || screen.id === 'eventos-select-prof-modal' || screen.id === 'eventos-criteria-modal') {
       // Usa EVT-001 como evento de demonstração se nenhum selecionado
       if (!selectedEvent) {
         // import lazy: usamos o primeiro evento da lista como demo
@@ -782,7 +800,7 @@ export function PrototypingShell() {
                     <div className={[styles.thumbnail, isActive ? styles.thumbnailActive : ''].join(' ')}>
                       {screen.journey === 'login'
                         ? <LoginThumb active={isActive} />
-                        : screen.id === 'usuarios-add-modal'
+                        : screen.id === 'usuarios-add-modal' || screen.id === 'eventos-select-prof-modal' || screen.id === 'eventos-criteria-modal'
                           ? <UsersModalThumb active={isActive} />
                           : screen.id === 'usuarios' || screen.id === 'profissionais' || screen.id === 'clientes' || screen.id === 'pesquisa-subcategorias' || screen.id === 'pesquisa-perguntas' || screen.id === 'pesquisa-modelo' || screen.id === 'pesquisa-profissional' || screen.id === 'servicos-categorias' || screen.id === 'servicos-tipos'
                             ? <UsersThumb active={isActive} />
