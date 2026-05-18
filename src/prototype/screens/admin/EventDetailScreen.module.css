@@ -896,6 +896,37 @@
   white-space: nowrap;
 }
 
+/* Badge de substituição */
+.profSubstituteBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--color-status-orange-bg, #FFF7ED);
+  border: 1px solid #FED7AA;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-status-orange-fg, #C2410C);
+  white-space: nowrap;
+}
+
+/* Info do profissional substituto ("Em substituição a X nos dias Y") */
+.profSubstituteInfo {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-status-orange-fg, #C2410C);
+  font-style: italic;
+}
+
+/* Info do profissional substituído ("Substituído por X nos dias Y") */
+.profSubstitutedInfo {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
 /* Linha com função + tag de especialidade */
 .profMeta {
   display: flex;
@@ -1767,6 +1798,191 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);
   line-height: 1.55;
+}
+
+/* ── Modal de confirmação de disponibilidade parcial ──────────────────────── */
+.partialDaysList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.partialDayOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-surface);
+  user-select: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.partialDayOption:has(input:checked) {
+  border-color: var(--color-brand-500);
+  background: var(--color-brand-50, #fdf5f5);
+  color: var(--color-brand-500);
+}
+.partialDayOption input[type="checkbox"] {
+  accent-color: var(--color-brand-500);
+  width: 14px;
+  height: 14px;
+}
+
+.partialContactAlert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--color-status-warning-bg, #FFFBEB);
+  border: 1px solid var(--color-status-warning-border, #FDE68A);
+}
+
+.partialContactAlertIcon {
+  color: var(--color-status-warning-fg, #D97706);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.partialContactAlertBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+.partialContactAlertBody strong {
+  color: var(--color-text-primary);
+}
+
+.partialContactRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--color-gray-50, #FAF8F7);
+  border: 1px solid var(--color-gray-200);
+}
+
+.partialContactRowIcon {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.partialContactRowText {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+}
+
+/* ── Modal de substituição de profissional ────────────────────────────────── */
+
+/* Campo de busca do substituto */
+.substituteSearchWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.substituteSearchIcon {
+  position: absolute;
+  left: 10px;
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.substituteSearchInput {
+  width: 100%;
+  padding: 8px 12px 8px 32px;
+  border: 1px solid var(--color-gray-300);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  outline: none;
+  box-sizing: border-box;
+}
+.substituteSearchInput:focus {
+  border-color: var(--color-brand-500);
+}
+
+/* Lista de candidatos */
+.substituteList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 6px;
+}
+
+/* Opção de profissional (radio label) */
+.substituteOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-gray-200);
+  background: var(--color-bg-surface);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.substituteOption:hover {
+  border-color: var(--color-gray-300);
+  background: var(--color-gray-50);
+}
+.substituteOptionSelected {
+  border-color: var(--color-brand-500);
+  background: var(--color-brand-50, #fdf5f5);
+}
+.substituteOption input[type="radio"] {
+  accent-color: var(--color-brand-500);
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.substituteOptionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.substituteOptionName {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.substituteOptionFunc {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.substituteEmpty {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  padding: 8px 12px;
+  text-align: center;
 }
 
 /* ─── Aba Agendamentos ───────────────────────────────────────────────────────*/
@@ -3128,6 +3344,12 @@
   flex: 1;
 }
 
+.commentsListScrollable {
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
 .commentCard {
   display: flex;
   flex-direction: row;
@@ -3461,6 +3683,81 @@
   gap: 16px;
 }
 
+/* ── Fotos do evento ─────────────────────────────────────────────────────── */
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.photoItem {
+  position: relative;
+  border-radius: 10px;
+  background: var(--color-gray-100, #F5F1F0);
+  border: 1px solid var(--color-gray-200, #EAE5E3);
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+
+.photoPlaceholderInner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brand-200, #D4A5A6);
+}
+
+.photoDeleteBtn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.42);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.photoItem:hover .photoDeleteBtn {
+  opacity: 1;
+}
+
+.photoDeleteBtn:hover {
+  background: rgba(178, 85, 87, 0.85);
+}
+
+.photoItemRemoved {
+  opacity: 0.45;
+}
+
+.photoRemovedOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photoRemovedLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  background: #fff;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
 /* ─── Toggle rows (Dados de cadastro + Múltiplos serviços) ───────────────────*/
 .toggleRow {
   display: flex;
@@ -3780,5 +4077,60 @@
   background: var(--color-brand-500);
   border-color: var(--color-brand-500);
   color: #fff;
+}
+
+/* ─── IBE footnote + classification table (aba Relatório) ─────────────────── */
+.ibeFootnote {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  line-height: 1.5;
+  margin: 12px 0 4px;
+}
+
+.ibeClassTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0;
+}
+
+.ibeClassRow {
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.ibeClassRow:last-child {
+  border-bottom: none;
+}
+
+.ibeClassRange {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 400;
+  color: var(--color-text-tertiary);
+  padding: 4px 8px 4px 0;
+  white-space: nowrap;
+  width: 60px;
+}
+
+.ibeClassDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+
+.ibeClassLabel {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 400;
+  color: var(--color-text-tertiary);
+  padding: 4px 0;
+}
+
+.ibeClassLabelCell {
+  display: flex;
+  align-items: center;
 }
 

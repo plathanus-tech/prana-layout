@@ -379,6 +379,27 @@
   font-weight: var(--font-weight-medium);
 }
 
+/* Wrapper flex para texto de profissionais + ícone de alerta */
+.profsCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Ícone de alerta de staffing urgente */
+.profAlertIcon {
+  color: #D97706;
+  flex-shrink: 0;
+}
+
+/* Linha com alerta de staffing urgente (admin only) */
+.trAlert td {
+  background: #FFFBED !important;
+}
+.trAlert:hover td {
+  background: #FFF8D6 !important;
+}
+
 /* ─── Status Badge ───────────────────────────────────────────────────────────*/
 .statusBadge {
   display: inline-flex;

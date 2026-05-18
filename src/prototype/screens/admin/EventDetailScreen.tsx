@@ -23,11 +23,13 @@ import {
   Hand,
   HandHeart,
   Heart,
+  Image,
   Leaf,
   Mail,
   MapPin,
   Palette,
   Pencil,
+  Phone,
   Search,
   Send,
   SlidersHorizontal,
@@ -513,6 +515,38 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
         text: "A ginástica laboral foi incrível! Recomendo para todos da empresa.",
         author: "Colaborador · Operações",
       },
+      {
+        text: "Quick Massage fez toda a diferença. Senti alívio imediato nas tensões do pescoço e ombros após horas na frente do computador.",
+        author: "Colaboradora · Jurídico",
+      },
+      {
+        text: "Ação muito bem organizada. Os profissionais foram pontuais e extremamente atenciosos com cada colaborador.",
+        author: "Colaborador · Administrativo",
+      },
+      {
+        text: "Iniciativa que mostra o quanto a empresa se preocupa com o nosso bem-estar. Espero que se repita em breve!",
+        author: "Colaboradora · Marketing",
+      },
+      {
+        text: "O ambiente foi muito acolhedor. Senti que realmente saí renovada para as próximas horas de trabalho.",
+        author: "Colaboradora · Comercial",
+      },
+      {
+        text: "Parabéns pela organização. A fila fluiu bem e não precisei esperar mais de 5 minutos.",
+        author: "Colaborador · Suporte",
+      },
+      {
+        text: "A acupuntura foi surpreendente. Fiquei com receio no início, mas o profissional explicou tudo e me deixou confortável.",
+        author: "Colaborador · Engenharia",
+      },
+      {
+        text: "Seria ótimo ter esse tipo de ação mensalmente. Impacto direto na produtividade e no humor da equipe.",
+        author: "Colaboradora · Produto",
+      },
+      {
+        text: "Profissionais altamente capacitados. Deu para perceber que são especialistas de verdade no que fazem.",
+        author: "Colaborador · Data",
+      },
     ],
     benchmarkData: {
       eventScore: 8.2,
@@ -764,6 +798,34 @@ const MOCK_DETAIL: Record<string, EventDetail> = {
         text: "Excelente iniciativa da empresa. Profissionais muito capacitados.",
         author: "Colaborador · RH",
       },
+      {
+        text: "Cada vez que participo desse tipo de ação saio mais energizado. Efeito imediato no foco e na disposição.",
+        author: "Colaborador · Financeiro",
+      },
+      {
+        text: "A abordagem da ginástica laboral foi bem direcionada para quem passa muitas horas sentado. Exercícios perfeitos.",
+        author: "Colaboradora · Administrativo",
+      },
+      {
+        text: "Senti melhora real nas dores de coluna que me acompanham há meses. Agradeço pela atenção individualizada.",
+        author: "Colaboradora · Jurídico",
+      },
+      {
+        text: "Ação muito importante para o clima da empresa. Todos ficaram bem-humorados durante o dia após a ginástica.",
+        author: "Colaborador · Comercial",
+      },
+      {
+        text: "Profissional extremamente didático. Ensinou exercícios que posso reproduzir em casa para manter os benefícios.",
+        author: "Colaboradora · Produto",
+      },
+      {
+        text: "Organização impecável e ótimo aproveitamento do tempo disponível. Sem filas ou atrasos.",
+        author: "Colaborador · Suporte",
+      },
+      {
+        text: "A empresa mostra que se preocupa de verdade com a saúde dos colaboradores. Evento como esse faz diferença real.",
+        author: "Colaboradora · Marketing",
+      },
     ],
     benchmarkData: {
       eventScore: 8.1,
@@ -824,10 +886,16 @@ interface Profissional {
   func: string; // função profissional
   tag: string; // especialidade / categoria
   status: ProfissionalStatus;
-  partialDays?: string[]; // ex: ['seg', 'qua', 'sex']
+  partialDays?: string[]; // dias em que está disponível (ex: ['13/04', '15/04'])
+  confirmedDays?: string[]; // dias confirmados pelo admin após modal parcial
+  phone?: string; // contato para negociação fora da plataforma
   repasse: number; // R$ — valor atual do repasse
   rating?: number; // média de avaliação (ex: 4.2) — eventos concluídos
   ratingCount?: number; // quantidade de avaliações recebidas
+  // Substituição
+  substitutedBy?: { name: string; days: string[] }; // prof original — substituído por quem e em quais dias
+  isSubstitute?: boolean; // este prof é um substituto
+  substituteFor?: { name: string; days: string[] }; // substituto — em substituição a quem e em quais dias
 }
 
 // Configuração visual de cada status (tokens do design system via inline style)
@@ -909,7 +977,8 @@ const MOCK_PROFISSIONAIS: Record<string, Profissional[]> = {
       tag: "Auriculoterapia",
       status: "pendente",
       repasse: 180,
-      partialDays: ["seg", "qua", "sex"],
+      partialDays: ["13/04", "15/04"],
+      phone: "(11) 99123-4567",
     },
     {
       id: "p3",
@@ -934,7 +1003,8 @@ const MOCK_PROFISSIONAIS: Record<string, Profissional[]> = {
       tag: "Auriculoterapia",
       status: "pendente",
       repasse: 180,
-      partialDays: ["ter", "qui"],
+      partialDays: ["14/04", "15/04"],
+      phone: "(11) 97654-3210",
     },
     {
       id: "p6",
@@ -985,7 +1055,8 @@ const MOCK_PROFISSIONAIS: Record<string, Profissional[]> = {
       tag: "Yoga Corporativo",
       status: "pendente",
       repasse: 160,
-      partialDays: ["seg", "ter"],
+      partialDays: ["14/04"],
+      phone: "(21) 98765-4321",
     },
     {
       id: "p4",
@@ -2273,7 +2344,7 @@ function ConfigSection({
           <thead>
             <tr>
               <th className={styles.serviceTh}>Serviço</th>
-              <th className={styles.serviceTh}>Valor de repasse</th>
+              {role !== 'empresa' && <th className={styles.serviceTh}>Valor de repasse</th>}
               <th className={styles.serviceTh}>Duração</th>
               <th className={styles.serviceTh}>Qtd. profissionais</th>
             </tr>
@@ -2282,35 +2353,37 @@ function ConfigSection({
             {ev.serviceConfig.map((svc, i) => (
               <tr key={svc.name} className={styles.serviceTr}>
                 <td className={styles.serviceTd}>{svc.name}</td>
-                <td className={styles.serviceTd}>
-                  {canEdit ? (
-                    <div className={styles.editNumWrap}>
-                      <span className={styles.editSuffix}>R$</span>
-                      <input
-                        className={[styles.editInput, styles.editInputNum].join(
-                          " ",
-                        )}
-                        type="number"
-                        min={0}
-                        value={svc.repasse}
-                        onChange={(e) =>
-                          setEv((d) => {
-                            const sc = [...d.serviceConfig];
-                            sc[i] = {
-                              ...sc[i],
-                              repasse: Number(e.target.value),
-                            };
-                            return { ...d, serviceConfig: sc };
-                          })
-                        }
-                      />
-                    </div>
-                  ) : (
-                    <span className={styles.fieldValue}>
-                      R$ {svc.repasse.toFixed(2).replace(".", ",")}
-                    </span>
-                  )}
-                </td>
+                {role !== 'empresa' && (
+                  <td className={styles.serviceTd}>
+                    {canEdit ? (
+                      <div className={styles.editNumWrap}>
+                        <span className={styles.editSuffix}>R$</span>
+                        <input
+                          className={[styles.editInput, styles.editInputNum].join(
+                            " ",
+                          )}
+                          type="number"
+                          min={0}
+                          value={svc.repasse}
+                          onChange={(e) =>
+                            setEv((d) => {
+                              const sc = [...d.serviceConfig];
+                              sc[i] = {
+                                ...sc[i],
+                                repasse: Number(e.target.value),
+                              };
+                              return { ...d, serviceConfig: sc };
+                            })
+                          }
+                        />
+                      </div>
+                    ) : (
+                      <span className={styles.fieldValue}>
+                        R$ {svc.repasse.toFixed(2).replace(".", ",")}
+                      </span>
+                    )}
+                  </td>
+                )}
                 <td className={styles.serviceTd}>
                   {canEdit ? (
                     <div className={styles.editNumWrap}>
@@ -2374,83 +2447,10 @@ function ConfigSection({
           </tbody>
         </table>
 
-        {/* ── Agendamento múltiplo ───────────────────────────────────────── */}
-        <div className={styles.configSubGroup}>
-          <div className={styles.toggleRow}>
-            <div className={styles.toggleLabelStack}>
-              <span className={styles.fieldLabel}>
-                Permitir múltiplos serviços por beneficiário
-              </span>
-              <span className={styles.fieldHelp}>
-                Se ativado, o beneficiário pode agendar mais de um tipo de
-                serviço no mesmo evento
-              </span>
-            </div>
-            <Toggle
-              checked={ev.allowMultipleServices}
-              onChange={
-                canEdit
-                  ? (v) =>
-                      setEv((d) => ({
-                        ...d,
-                        allowMultipleServices: v,
-                        maxServicesPerBeneficiary: v
-                          ? d.maxServicesPerBeneficiary
-                          : undefined,
-                      }))
-                  : undefined
-              }
-              disabled={!canEdit}
-            />
-          </div>
-
-          {ev.allowMultipleServices && (
-            <div className={styles.field} style={{ marginTop: 12 }}>
-              <span className={styles.fieldLabel}>
-                Quantidade máxima de serviços por beneficiário
-                <span className={styles.fieldOptional}> (opcional)</span>
-              </span>
-              <span className={styles.fieldHelp}>
-                Sem limite definido, o beneficiário pode agendar todos os tipos
-                disponíveis
-              </span>
-              {canEdit ? (
-                <div className={styles.editNumWrap}>
-                  <input
-                    className={[styles.editInput, styles.editInputNumWide].join(
-                      " ",
-                    )}
-                    type="number"
-                    min={2}
-                    placeholder="Ilimitado"
-                    value={ev.maxServicesPerBeneficiary ?? ""}
-                    onChange={(e) =>
-                      setEv((d) => ({
-                        ...d,
-                        maxServicesPerBeneficiary: e.target.value
-                          ? Number(e.target.value)
-                          : undefined,
-                      }))
-                    }
-                  />
-                  <span className={styles.editSuffix}>serviços</span>
-                </div>
-              ) : (
-                <span className={styles.fieldValue}>
-                  {ev.maxServicesPerBeneficiary ? (
-                    `${ev.maxServicesPerBeneficiary} serviços`
-                  ) : (
-                    <span className={styles.fieldEmpty}>Ilimitado</span>
-                  )}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* ── Pesquisa pós-evento ────────────────────────────────────────────── */}
-      <div className={styles.configGroup}>
+      {/* ── Pesquisa pós-evento — apenas Admin ───────────────────────────── */}
+      {role !== 'empresa' && <div className={styles.configGroup}>
         <span className={styles.configGroupTitle}>Pesquisa pós-evento</span>
         <span
           className={styles.fieldHelp}
@@ -2602,88 +2602,11 @@ function ConfigSection({
           perguntas cadastradas para cada serviço, conforme os serviços
           agendados pelo beneficiário.
         </span>
-      </div>
+      </div>}
 
-      {/* ── Dados de cadastro do beneficiário ──────────────────────────────── */}
-      <div className={styles.configGroup}>
-        <span className={styles.configGroupTitle}>
-          Dados de cadastro do beneficiário
-        </span>
-        <span
-          className={styles.fieldHelp}
-          style={{ marginBottom: 12, display: "block", padding: "0 20px" }}
-        >
-          Define quais campos o beneficiário deve preencher ao se autenticar
-          para agendamento
-        </span>
 
-        {/* Toggle: Empresa terceirizada */}
-        <div className={styles.toggleRow}>
-          <div className={styles.toggleLabelStack}>
-            <span className={styles.fieldLabel}>Empresa terceirizada</span>
-            <span className={styles.fieldHelp}>
-              Se ativado, o beneficiário informará a empresa terceirizada na
-              autenticação
-            </span>
-          </div>
-          <Toggle
-            checked={ev.requireThirdPartyCompany}
-            onChange={
-              canEdit
-                ? (v) => setEv((d) => ({ ...d, requireThirdPartyCompany: v }))
-                : undefined
-            }
-            disabled={!canEdit}
-          />
-        </div>
-
-        {/* Toggle: Código do evento */}
-        <div className={styles.toggleRow} style={{ marginTop: 16 }}>
-          <div className={styles.toggleLabelStack}>
-            <span className={styles.fieldLabel}>Código do evento</span>
-            <span className={styles.fieldHelp}>
-              Se ativado, o beneficiário deverá informar o código ao se
-              autenticar
-            </span>
-          </div>
-          <Toggle
-            checked={ev.requireEventCode}
-            onChange={
-              canEdit
-                ? (v) =>
-                    setEv((d) => ({
-                      ...d,
-                      requireEventCode: v,
-                      eventCode: v
-                        ? d.eventCode || generateEventCode(eventName)
-                        : d.eventCode,
-                    }))
-                : undefined
-            }
-            disabled={!canEdit}
-          />
-        </div>
-
-        {ev.requireEventCode && (
-          <div className={styles.field} style={{ marginTop: 12 }}>
-            <span className={styles.fieldLabel}>Código</span>
-            {canEdit ? (
-              <EditInput
-                value={ev.eventCode ?? ""}
-                onChange={(v) => setEv((d) => ({ ...d, eventCode: v }))}
-                placeholder="Ex: SIPAT-2026"
-              />
-            ) : (
-              <span className={styles.fieldValue}>
-                {ev.eventCode || <span className={styles.fieldEmpty}>—</span>}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* ── Ajuda de custo ────────────────────────────────────────────────── */}
-      <div className={styles.configGroup}>
+      {/* ── Ajuda de custo (somente Admin) ────────────────────────────────── */}
+      {role !== 'empresa' && <div className={styles.configGroup}>
         <span className={styles.configGroupTitle}>Ajuda de custo</span>
         <div className={styles.fieldsCol}>
           <div className={[styles.field, styles.fieldFull].join(" ")}>
@@ -2706,7 +2629,7 @@ function ConfigSection({
             )}
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* ── Pedidos especiais ─────────────────────────────────────────────── */}
       <div className={[styles.configGroup, styles.configGroupLast].join(" ")}>
@@ -2732,6 +2655,96 @@ function ConfigSection({
             )}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── ParametrizacaoSection ────────────────────────────────────────────────────
+function ParametrizacaoSection({ ev: initialEv }: { ev: EventDetail }) {
+  const [ev, setEv] = useState<EventDetail>(initialEv);
+
+  return (
+    <div className={styles.section}>
+      <div className={styles.sectionHeader}>
+        <span className={styles.sectionTitle}>Parametrização</span>
+      </div>
+
+      {/* ── Permitir múltiplos serviços ─────────────────────────────────── */}
+      <div className={styles.configGroup}>
+        <span className={styles.configGroupTitle}>Agendamento</span>
+        <div className={styles.toggleRow} style={{ paddingTop: 14 }}>
+          <div className={styles.toggleLabelStack}>
+            <span className={styles.fieldLabel}>
+              Permitir múltiplos serviços por beneficiário
+            </span>
+            <span className={styles.fieldHelp}>
+              Se ativado, o beneficiário pode agendar mais de um tipo de
+              serviço no mesmo evento
+            </span>
+          </div>
+          <Toggle
+            checked={ev.allowMultipleServices}
+            onChange={(v) => setEv((d) => ({
+              ...d,
+              allowMultipleServices: v,
+              maxServicesPerBeneficiary: v ? d.maxServicesPerBeneficiary : undefined,
+            }))}
+          />
+        </div>
+      </div>
+
+      {/* ── Dados de cadastro do beneficiário ──────────────────────────── */}
+      <div className={[styles.configGroup, styles.configGroupLast].join(' ')}>
+        <span className={styles.configGroupTitle}>
+          Dados de cadastro do beneficiário
+        </span>
+        <span
+          className={styles.fieldHelp}
+          style={{ display: 'block', padding: '4px 20px 12px' }}
+        >
+          Define quais campos o beneficiário deve preencher ao se autenticar
+          para agendamento
+        </span>
+
+        {/* Toggle: Empresa terceirizada */}
+        <div className={styles.toggleRow}>
+          <div className={styles.toggleLabelStack}>
+            <span className={styles.fieldLabel}>Empresa terceirizada</span>
+            <span className={styles.fieldHelp}>
+              Se ativado, o beneficiário informará a empresa terceirizada na
+              autenticação
+            </span>
+          </div>
+          <Toggle
+            checked={ev.requireThirdPartyCompany}
+            onChange={(v) => setEv((d) => ({ ...d, requireThirdPartyCompany: v }))}
+          />
+        </div>
+
+        {/* Toggle: Código do evento */}
+        <div className={styles.toggleRow} style={{ marginTop: 16 }}>
+          <div className={styles.toggleLabelStack}>
+            <span className={styles.fieldLabel}>Código do evento</span>
+            <span className={styles.fieldHelp}>
+              Se ativado, o beneficiário deverá informar o código ao se
+              autenticar
+            </span>
+          </div>
+          <Toggle
+            checked={ev.requireEventCode}
+            onChange={(v) => setEv((d) => ({ ...d, requireEventCode: v }))}
+          />
+        </div>
+
+        {ev.requireEventCode && (
+          <div className={styles.field} style={{ marginTop: 12 }}>
+            <span className={styles.fieldLabel}>Código</span>
+            <span className={styles.fieldValue}>
+              {ev.eventCode || <span className={styles.fieldEmpty}>—</span>}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -3503,17 +3516,398 @@ function ResendModal({
   );
 }
 
+// ─── Pool de profissionais disponíveis para substituição ─────────────────────
+const MOCK_SUBSTITUTE_POOL: Array<{ id: string; name: string; func: string }> = [
+  { id: 'sub-1', name: 'Fernanda Lima',  func: 'Massoterapeuta'      },
+  { id: 'sub-2', name: 'Ricardo Alves',  func: 'Terapeuta Holístico' },
+  { id: 'sub-3', name: 'Mariana Torres', func: 'Massoterapeuta'      },
+  { id: 'sub-4', name: 'Gustavo Mendes', func: 'Auriculoterapeuta'   },
+  { id: 'sub-5', name: 'Priscila Nunes', func: 'Nutricionista'       },
+];
+
+// ─── Dias restantes após substituição parcial ────────────────────────────────
+// Retorna os dias em que o profissional ainda permanece ativo.
+// Full-time (sem confirmedDays): usa eventDays como base.
+// Parcial (com confirmedDays): usa confirmedDays como base.
+// Subtrai os dias transferidos ao substituto (substitutedBy.days).
+function getProfRemainingDays(
+  prof: Profissional,
+  eventDays: string[],
+): string[] {
+  if (!prof.substitutedBy) return prof.confirmedDays ?? [];
+  const substituted = new Set(prof.substitutedBy.days);
+  const base = prof.confirmedDays?.length ? prof.confirmedDays : eventDays;
+  return base.filter((d) => !substituted.has(d));
+}
+
+// ─── Cobertura diária de profissionais por serviço ───────────────────────────
+// Retorna quantos dias do evento têm o número mínimo de profissionais cobertos.
+// Profissional full-time (sem confirmedDays/partialDays) → cobre todos os dias.
+// Profissional parcial confirmado (com confirmedDays) → cobre apenas esses dias.
+function computeDailyCoverage(
+  profs: Profissional[],
+  tag: string,
+  profCount: number,
+  eventDays: string[],
+): { covered: number; total: number } {
+  if (eventDays.length === 0 || profCount <= 0)
+    return { covered: 0, total: 0 };
+  const tagConfirmed = profs.filter(
+    (p) => p.tag === tag && p.status === "confirmado",
+  );
+  let covered = 0;
+  for (const day of eventDays) {
+    const n = tagConfirmed.filter((p) => {
+      if (!p.partialDays?.length && !p.confirmedDays?.length) return true; // full-time
+      if (p.confirmedDays?.length) return p.confirmedDays.includes(day);
+      return false;
+    }).length;
+    if (n >= profCount) covered++;
+  }
+  return { covered, total: eventDays.length };
+}
+
+// ─── PartialConfirmModal ──────────────────────────────────────────────────────
+function PartialConfirmModal({
+  prof,
+  onConfirm,
+  onClose,
+}: {
+  prof: Profissional;
+  onConfirm: (days: string[]) => void;
+  onClose: () => void;
+}) {
+  const [selectedDays, setSelectedDays] = useState<string[]>([
+    ...(prof.partialDays ?? []),
+  ]);
+  const [confirmed, setConfirmed] = useState(false);
+
+  function toggleDay(day: string) {
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
+    );
+  }
+
+  function handleConfirm() {
+    setConfirmed(true);
+    setTimeout(() => {
+      onConfirm(selectedDays);
+      onClose();
+    }, 1800);
+  }
+
+  return (
+    <div
+      className={styles.modalOverlay}
+      onClick={confirmed ? undefined : onClose}
+    >
+      <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+        {confirmed ? (
+          <div className={styles.modalSuccess}>
+            <span className={styles.modalSuccessIcon}>
+              <Check size={22} />
+            </span>
+            <span className={styles.modalSuccessTitle}>
+              Profissional confirmado
+            </span>
+            <span className={styles.modalSuccessSub}>
+              {prof.name} foi adicionado(a) à lista de confirmados.
+            </span>
+          </div>
+        ) : (
+          <>
+            {/* Header */}
+            <div className={styles.modalHeader}>
+              <div className={styles.modalTitleRow}>
+                <Check size={16} className={styles.modalTitleIcon} />
+                <span className={styles.modalTitle}>Confirmar profissional</span>
+              </div>
+              <button
+                className={styles.modalClose}
+                onClick={onClose}
+                aria-label="Fechar"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <p className={styles.modalInfo}>
+              <strong>{prof.name}</strong> possui disponibilidade parcial.
+              Selecione os dias em que ele(a) irá participar do evento.
+            </p>
+
+            {/* Seleção de dias */}
+            <div className={styles.modalFields}>
+              <div className={styles.modalField}>
+                <span className={styles.modalFieldLabel}>
+                  Dias disponíveis para seleção
+                </span>
+                <div className={styles.partialDaysList}>
+                  {(prof.partialDays ?? []).map((day) => (
+                    <label key={day} className={styles.partialDayOption}>
+                      <input
+                        type="checkbox"
+                        checked={selectedDays.includes(day)}
+                        onChange={() => toggleDay(day)}
+                      />
+                      <span>{day}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Aviso de contato externo */}
+            <div className={styles.partialContactAlert}>
+              <AlertCircle size={14} className={styles.partialContactAlertIcon} />
+              <div className={styles.partialContactAlertBody}>
+                <strong>Contato fora da plataforma</strong>
+                <span>
+                  Confirme a disponibilidade com o profissional antes de
+                  registrar aqui.
+                </span>
+              </div>
+            </div>
+
+            {/* Telefone */}
+            {prof.phone && (
+              <div className={styles.partialContactRow}>
+                <Phone size={13} className={styles.partialContactRowIcon} />
+                <span className={styles.partialContactRowText}>
+                  {prof.phone}
+                </span>
+              </div>
+            )}
+
+            {/* Ações */}
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalBtnSecondary}
+                onClick={onClose}
+              >
+                Cancelar
+              </button>
+              <button
+                className={styles.modalBtnPrimary}
+                disabled={selectedDays.length === 0}
+                onClick={handleConfirm}
+              >
+                <Check size={13} />
+                Confirmar profissional
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── SubstitutionModal ────────────────────────────────────────────────────────
+function SubstitutionModal({
+  prof,
+  eventDays,
+  onConfirm,
+  onClose,
+}: {
+  prof: Profissional;
+  eventDays: string[];
+  // Passa o prof original de volta para evitar closure stale no componente pai
+  onConfirm: (original: Profissional, substitute: { name: string; func: string }, days: string[]) => void;
+  onClose: () => void;
+}) {
+  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState<(typeof MOCK_SUBSTITUTE_POOL)[0] | null>(null);
+  // Pré-seleciona os dias confirmados do prof (ou todos os dias do evento)
+  const daysToShow = eventDays.length > 0
+    ? eventDays
+    : (prof.confirmedDays?.length ? prof.confirmedDays : []);
+  const [selectedDays, setSelectedDays] = useState<string[]>([...daysToShow]);
+  const [confirmed, setConfirmed] = useState(false);
+
+  const filtered = MOCK_SUBSTITUTE_POOL.filter(
+    (p) => !search || p.name.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  function toggleDay(day: string) {
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
+    );
+  }
+
+  function handleConfirm() {
+    if (!selected || selectedDays.length === 0) return;
+    // Captura valores locais antes de entrar no setTimeout para evitar leitura stale
+    const snapshot = { prof, selected, selectedDays: [...selectedDays] };
+    setConfirmed(true);
+    setTimeout(() => {
+      onConfirm(snapshot.prof, snapshot.selected, snapshot.selectedDays);
+      onClose();
+    }, 1800);
+  }
+
+  return (
+    <div
+      className={styles.modalOverlay}
+      onClick={confirmed ? undefined : onClose}
+    >
+      <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+        {confirmed ? (
+          <div className={styles.modalSuccess}>
+            <span className={styles.modalSuccessIcon}>
+              <Check size={22} />
+            </span>
+            <span className={styles.modalSuccessTitle}>
+              Substituição registrada
+            </span>
+            <span className={styles.modalSuccessSub}>
+              {selected?.name} foi adicionado(a) como substituto(a) de{" "}
+              {prof.name}.
+            </span>
+          </div>
+        ) : (
+          <>
+            {/* Header */}
+            <div className={styles.modalHeader}>
+              <div className={styles.modalTitleRow}>
+                <UserPlus size={16} className={styles.modalTitleIcon} />
+                <span className={styles.modalTitle}>Substituir profissional</span>
+              </div>
+              <button
+                className={styles.modalClose}
+                onClick={onClose}
+                aria-label="Fechar"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <p className={styles.modalInfo}>
+              Selecione o substituto de <strong>{prof.name}</strong> e os dias
+              em que irá atuar no evento.
+            </p>
+
+            <div className={styles.modalFields}>
+              {/* Busca de substituto */}
+              <div className={styles.modalField}>
+                <span className={styles.modalFieldLabel}>
+                  Profissional substituto
+                </span>
+                <div className={styles.substituteSearchWrap}>
+                  <Search size={13} className={styles.substituteSearchIcon} />
+                  <input
+                    type="text"
+                    className={styles.substituteSearchInput}
+                    placeholder="Buscar por nome…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+                <div className={styles.substituteList}>
+                  {filtered.map((p) => (
+                    <label
+                      key={p.id}
+                      className={[
+                        styles.substituteOption,
+                        selected?.id === p.id
+                          ? styles.substituteOptionSelected
+                          : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
+                      <input
+                        type="radio"
+                        name="substitute"
+                        checked={selected?.id === p.id}
+                        onChange={() => setSelected(p)}
+                      />
+                      <div className={styles.substituteOptionInfo}>
+                        <span className={styles.substituteOptionName}>
+                          {p.name}
+                        </span>
+                        <span className={styles.substituteOptionFunc}>
+                          {p.func}
+                        </span>
+                      </div>
+                    </label>
+                  ))}
+                  {filtered.length === 0 && (
+                    <span className={styles.substituteEmpty}>
+                      Nenhum profissional encontrado.
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Seleção de dias */}
+              {daysToShow.length > 0 && (
+                <div className={styles.modalField}>
+                  <span className={styles.modalFieldLabel}>
+                    Dias de atuação
+                  </span>
+                  <div className={styles.partialDaysList}>
+                    {daysToShow.map((day) => (
+                      <label key={day} className={styles.partialDayOption}>
+                        <input
+                          type="checkbox"
+                          checked={selectedDays.includes(day)}
+                          onChange={() => toggleDay(day)}
+                        />
+                        <span>{day}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Aviso de contato externo */}
+            <div className={styles.partialContactAlert}>
+              <AlertCircle size={14} className={styles.partialContactAlertIcon} />
+              <div className={styles.partialContactAlertBody}>
+                <strong>Confirme a disponibilidade</strong>
+                <span>
+                  Entre em contato com o profissional antes de registrar a
+                  substituição.
+                </span>
+              </div>
+            </div>
+
+            {/* Ações */}
+            <div className={styles.modalActions}>
+              <button className={styles.modalBtnSecondary} onClick={onClose}>
+                Cancelar
+              </button>
+              <button
+                className={styles.modalBtnPrimary}
+                disabled={!selected || selectedDays.length === 0}
+                onClick={handleConfirm}
+              >
+                <Check size={13} />
+                Confirmar substituição
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── ProfissionaisTab ─────────────────────────────────────────────────────────
 function ProfissionaisTab({
   role,
   event,
   serviceConfig,
   configStatus,
+  eventSchedule,
 }: {
   role: UserRole;
   event: EventItem;
   serviceConfig: ServiceConfig[];
   configStatus: ConfigStatus;
+  eventSchedule: DaySchedule[];
 }) {
   const [modalTarget, setModalTarget] = useState<
     "global" | Profissional | null
@@ -3521,14 +3915,24 @@ function ProfissionaisTab({
   const [addPopover, setAddPopover] = useState(false);
   const [addModal, setAddModal] = useState<"select" | "criteria" | null>(null);
   const [toastVisible, setToastVisible] = useState(false);
+  const [partialConfirmModal, setPartialConfirmModal] =
+    useState<Profissional | null>(null);
+  const [substituteModal, setSubstituteModal] =
+    useState<Profissional | null>(null);
 
   // ── Toggle de serviço ─────────────────────────────────────
   const services = serviceConfig.map((s) => s.name);
   const [activeService, setActiveService] = useState<string>(services[0] ?? "");
 
+  // ── Lista mutável de profissionais (permite confirmar parciais) ────────────
+  const [localProfs, setLocalProfs] = useState<Profissional[]>(
+    () => MOCK_PROFISSIONAIS[event.id] ?? [],
+  );
+
   // Reseta ao trocar de evento
   useEffect(() => {
     setActiveService(serviceConfig[0]?.name ?? "");
+    setLocalProfs(MOCK_PROFISSIONAIS[event.id] ?? []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event.id]);
 
@@ -3542,11 +3946,62 @@ function ProfissionaisTab({
     setTimeout(() => setToastVisible(false), 3000);
   }
 
-  const allProfs = MOCK_PROFISSIONAIS[event.id] ?? [];
+  // Confirma profissional parcial: move para confirmado com os dias selecionados
+  function handlePartialConfirm(prof: Profissional, days: string[]) {
+    setLocalProfs((prev) =>
+      prev.map((p) =>
+        p.id === prof.id
+          ? { ...p, status: "confirmado", confirmedDays: days }
+          : p,
+      ),
+    );
+  }
+
+  // Registra substituição: marca original como substituído e insere novo prof
+  function handleSubstitution(
+    original: Profissional | null,
+    substitute: { name: string; func: string },
+    days: string[],
+  ) {
+    if (!original || days.length === 0) return;
+    const newId = `sub-${Date.now()}`;
+    setLocalProfs((prev) => [
+      ...prev.map((p) =>
+        p.id === original.id
+          ? { ...p, substitutedBy: { name: substitute.name, days } }
+          : p,
+      ),
+      {
+        id: newId,
+        name: substitute.name,
+        func: substitute.func,
+        tag: original.tag,
+        status: "confirmado" as ProfissionalStatus,
+        confirmedDays: days,
+        isSubstitute: true,
+        substituteFor: { name: original.name, days },
+        repasse: original.repasse,
+      },
+    ]);
+  }
+
+  const allProfs = localProfs;
+
+  // Dias do evento (ex: ['13/04', '14/04', '15/04']) — deve vir antes dos filtros
+  const eventDays = eventSchedule.map((d) => d.day);
+
   // Filtra apenas os profissionais do serviço ativo
   const serviceProfs = allProfs.filter((p) => p.tag === activeService);
 
-  const confirmed = serviceProfs.filter((p) => p.status === "confirmado");
+  const confirmed = serviceProfs.filter((p) => {
+    if (p.status !== "confirmado") return false;
+    // Substitução total → remove da lista (profissional não tem mais dias ativos)
+    if (p.substitutedBy) {
+      const remaining = getProfRemainingDays(p, eventDays) ?? [];
+      return remaining.length > 0;
+    }
+    return true;
+  });
   const pending = serviceProfs.filter((p) => p.status === "pendente");
   const refused = serviceProfs.filter((p) => p.status === "recusado");
 
@@ -3557,7 +4012,18 @@ function ProfissionaisTab({
   const eventIsFull = totalConfirmed >= event.professionals.needed;
   const activeProfCount =
     serviceConfig.find((s) => s.name === activeService)?.profCount ?? Infinity;
-  const serviceIsFull = confirmed.length >= activeProfCount;
+
+  // Cobertura diária do serviço ativo (quando há dias definidos e profCount finito)
+  const activeCoverage =
+    eventDays.length > 0 && activeProfCount !== Infinity
+      ? computeDailyCoverage(allProfs, activeService, activeProfCount, eventDays)
+      : null;
+
+  // "Cheio" quando todos os dias estão cobertos (ou contagem simples quando não há agenda)
+  const serviceIsFull =
+    activeCoverage !== null
+      ? activeCoverage.covered >= activeCoverage.total && activeCoverage.total > 0
+      : confirmed.length >= activeProfCount;
 
   // ── Linha de profissional ──────────────────────────────────────────────────
   function ProfRow({ prof }: { prof: Profissional }) {
@@ -3593,6 +4059,11 @@ function ProfissionaisTab({
                   Disponibilidade parcial
                 </span>
               )}
+              {prof.isSubstitute && (
+                <span className={styles.profSubstituteBadge}>
+                  Substituição
+                </span>
+              )}
             </div>
             <div className={styles.profMeta}>
               <span className={styles.profRole}>{prof.func}</span>
@@ -3601,17 +4072,72 @@ function ProfissionaisTab({
               </span>
               <span className={styles.profTag}>{prof.tag}</span>
             </div>
-            {hasPartial && (
+            {hasPartial && prof.status !== "confirmado" && (
               <span className={styles.profPartialDays}>
                 Disponível: {prof.partialDays!.join(", ")}
+              </span>
+            )}
+            {/* Dias confirmados — parcial sem substituição */}
+            {prof.status === "confirmado" &&
+              !!prof.confirmedDays?.length &&
+              !prof.isSubstitute &&
+              !prof.substitutedBy && (
+                <span className={styles.profPartialDays}>
+                  Participará em: {prof.confirmedDays.join(", ")}
+                </span>
+              )}
+            {/* Dias restantes — prof original após substituição parcial */}
+            {!!prof.substitutedBy && (
+              <span className={styles.profPartialDays}>
+                Participará em:{" "}
+                {(getProfRemainingDays(prof, eventDays) ?? []).join(", ")}
+              </span>
+            )}
+            {/* Dias de atuação — profissional substituto */}
+            {!!prof.substituteFor && (
+              <span className={styles.profPartialDays}>
+                Participará em: {(prof.substituteFor?.days ?? []).join(", ")}
               </span>
             )}
           </div>
 
           {/* Ações à direita */}
-          {((role === "adm" && prof.status === "pendente" && !isPast) ||
+          {((role === "adm" &&
+            (prof.status === "pendente" || prof.status === "confirmado") &&
+            !isPast) ||
             isPast) && (
             <div className={styles.profActions}>
+              {/* Substituir — apenas confirmados em eventos ativos que ainda não foram substituídos */}
+              {role === "adm" &&
+                prof.status === "confirmado" &&
+                !isPast &&
+                !prof.substitutedBy && (
+                  <button
+                    className={styles.editBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSubstituteModal(prof);
+                    }}
+                    aria-label={`Substituir ${prof.name}`}
+                  >
+                    <UserPlus size={13} />
+                    Substituir
+                  </button>
+                )}
+              {/* Confirmar manualmente — apenas pendentes com disponibilidade parcial */}
+              {role === "adm" && prof.status === "pendente" && hasPartial && !isPast && (
+                <button
+                  className={styles.editBtn}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPartialConfirmModal(prof);
+                  }}
+                  aria-label={`Confirmar ${prof.name}`}
+                >
+                  <Check size={13} />
+                  Confirmar profissional
+                </button>
+              )}
               {/* Reenviar convite — apenas pendentes em eventos ativos */}
               {role === "adm" && prof.status === "pendente" && !isPast && (
                 <button
@@ -3746,12 +4272,22 @@ function ProfissionaisTab({
       {/* ── Toggle de serviços ────────────────────────────── */}
       <div className={styles.agViewToggle}>
         {services.map((svcName) => {
+          const svcProfCount =
+            serviceConfig.find((s) => s.name === svcName)?.profCount ?? 0;
+          // Usar cobertura diária quando há agenda definida; caso contrário contagem simples
+          const svcCoverage =
+            eventDays.length > 0 && svcProfCount > 0
+              ? computeDailyCoverage(allProfs, svcName, svcProfCount, eventDays)
+              : null;
           const svcConf = allProfs.filter(
             (p) => p.tag === svcName && p.status === "confirmado",
           ).length;
-          const svcProfCount =
-            serviceConfig.find((s) => s.name === svcName)?.profCount ?? 0;
-          const isSvcMet = svcProfCount > 0 && svcConf >= svcProfCount;
+          const isSvcMet = svcCoverage
+            ? svcCoverage.covered === svcCoverage.total && svcCoverage.total > 0
+            : svcProfCount > 0 && svcConf >= svcProfCount;
+          const badgeLabel = svcCoverage
+            ? `${svcCoverage.covered}/${svcCoverage.total} dias`
+            : `${svcConf}/${svcProfCount}`;
           return (
             <button
               key={svcName}
@@ -3777,7 +4313,7 @@ function ProfissionaisTab({
                     : undefined
                 }
               >
-                {svcConf}/{svcProfCount}
+                {badgeLabel}
               </span>
             </button>
           );
@@ -3834,7 +4370,9 @@ function ProfissionaisTab({
               <span
                 className={styles.profProgress}
                 style={
-                  confirmed.length >= activeProfCount
+                  (activeCoverage
+                    ? activeCoverage.covered === activeCoverage.total && activeCoverage.total > 0
+                    : confirmed.length >= activeProfCount)
                     ? {
                         background: "var(--color-status-success-bg)",
                         borderColor: "var(--color-green-300)",
@@ -3843,9 +4381,9 @@ function ProfissionaisTab({
                     : undefined
                 }
               >
-                {confirmed.length}/
-                {activeProfCount === Infinity ? "?" : activeProfCount}{" "}
-                confirmados
+                {activeCoverage
+                  ? `${activeCoverage.covered}/${activeCoverage.total} dias cobertos`
+                  : `${confirmed.length}/${activeProfCount === Infinity ? "?" : activeProfCount} confirmados`}
               </span>
             }
           />
@@ -3872,6 +4410,27 @@ function ProfissionaisTab({
             </>
           )}
         </>
+      )}
+
+      {/* Modal de confirmação de disponibilidade parcial */}
+      {partialConfirmModal && (
+        <PartialConfirmModal
+          prof={partialConfirmModal}
+          onConfirm={(days) => handlePartialConfirm(partialConfirmModal, days)}
+          onClose={() => setPartialConfirmModal(null)}
+        />
+      )}
+
+      {/* Modal de substituição de profissional */}
+      {substituteModal && (
+        <SubstitutionModal
+          prof={substituteModal}
+          eventDays={eventDays}
+          onConfirm={(original, substitute, days) =>
+            handleSubstitution(original, substitute, days)
+          }
+          onClose={() => setSubstituteModal(null)}
+        />
       )}
 
       {/* Modal de reenvio de convite */}
@@ -5098,17 +5657,26 @@ function AgendamentosTab({
           </div>
         )}
 
-        {/* Direita: ação */}
-        {role === "adm" && (
+        {/* Direita: ações */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button
             type="button"
             className={styles.editBtn}
-            onClick={() => setShowNewAgendamento(true)}
           >
-            <UserPlus size={14} />
-            Novo agendamento
+            <Download size={14} />
+            Gerar agenda impressa
           </button>
-        )}
+          {role === "adm" && (
+            <button
+              type="button"
+              className={styles.editBtn}
+              onClick={() => setShowNewAgendamento(true)}
+            >
+              <UserPlus size={14} />
+              Novo agendamento
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Timeline grid ────────────────────────────────────────────────── */}
@@ -5542,14 +6110,14 @@ function ParticipationBarChart({ eventDetail }: { eventDetail?: EventDetail }) {
               className={styles.lineDot}
               style={{ background: "#CFADAE", borderRadius: 2 }}
             />
-            Convidados
+            Vagas
           </div>
           <div className={styles.lineLegendItem}>
             <span
               className={styles.lineDot}
               style={{ background: "#B25557", borderRadius: 2 }}
             />
-            Presentes
+            Participantes
           </div>
         </div>
       </div>
@@ -5571,6 +6139,7 @@ function ParticipationBarChart({ eventDetail }: { eventDetail?: EventDetail }) {
             const cx = xCenter(i);
             return (
               <g key={d.label}>
+                {/* Barra Vagas */}
                 <rect
                   x={cx - barGap / 2 - barW}
                   y={bY(d.convidados)}
@@ -5584,6 +6153,18 @@ function ParticipationBarChart({ eventDetail }: { eventDetail?: EventDetail }) {
                   }
                   onMouseLeave={() => setHovered(null)}
                 />
+                {/* Data label Vagas */}
+                <text
+                  x={cx - barGap / 2 - barW / 2}
+                  y={bY(d.convidados) - 4}
+                  textAnchor="middle"
+                  fontSize="8"
+                  fontWeight="600"
+                  fill="#9E8E8F"
+                >
+                  {d.convidados}
+                </text>
+                {/* Barra Participantes */}
                 <rect
                   x={cx + barGap / 2}
                   y={bY(d.presentes)}
@@ -5597,6 +6178,18 @@ function ParticipationBarChart({ eventDetail }: { eventDetail?: EventDetail }) {
                   }
                   onMouseLeave={() => setHovered(null)}
                 />
+                {/* Data label Participantes */}
+                <text
+                  x={cx + barGap / 2 + barW / 2}
+                  y={bY(d.presentes) - 4}
+                  textAnchor="middle"
+                  fontSize="8"
+                  fontWeight="600"
+                  fill="#B25557"
+                >
+                  {d.presentes}
+                </text>
+                {/* Label do eixo X */}
                 <text
                   x={cx}
                   y={H - 6}
@@ -5624,8 +6217,8 @@ function ParticipationBarChart({ eventDetail }: { eventDetail?: EventDetail }) {
               opacity: 1,
             }}
           >
-            {hovered.label} · {hovered.presentes} presentes /{" "}
-            {hovered.convidados} convidados
+            {hovered.label} · {hovered.presentes} participantes /{" "}
+            {hovered.convidados} vagas
           </div>
         )}
       </div>
@@ -6159,15 +6752,24 @@ function RankingAreas() {
 // ─── Qualitative Comments ─────────────────────────────────────────────────────
 function QualitativeComments({
   data,
+  scrollable,
 }: {
   data?: Array<{ text: string; author: string }>;
+  scrollable?: boolean;
 }) {
   const comments = data || [];
 
   return (
     <div className={styles.chartCard} style={{ minHeight: "unset" }}>
       <span className={styles.chartTitle}>Comentários qualitativos</span>
-      <div className={styles.commentsList}>
+      <div
+        className={[
+          styles.commentsList,
+          scrollable ? styles.commentsListScrollable : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
         {comments.map((c, i) => (
           <div key={i} className={styles.commentCard}>
             <span className={styles.commentIcon}>❝</span>
@@ -6788,6 +7390,14 @@ function RelatorioTab({
   const [editing, setEditing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // ── Fotos do evento ─────────────────────────────────────────────────────────
+  const MOCK_EVENT_PHOTOS = [1, 2, 3, 4, 5, 6];
+  const [removedPhotos, setRemovedPhotos] = useState<Set<number>>(new Set());
+  function handleRemovePhoto(id: number) {
+    setRemovedPhotos((prev) => new Set([...prev, id]));
+  }
+  const visiblePhotos = MOCK_EVENT_PHOTOS.filter((id) => !removedPhotos.has(id));
+
   // Snapshot for cancel
   const [snap, setSnap] = useState({
     title: base.title,
@@ -6848,6 +7458,8 @@ function RelatorioTab({
   async function handleDownloadPdf() {
     if (!printRef.current || isGenerating) return;
     setIsGenerating(true);
+    // Captura referência antes de qualquer await (evita null após re-render)
+    const printEl = printRef.current;
     try {
       const [{ default: html2canvas }, { jsPDF }, logoDataUrl] =
         await Promise.all([
@@ -6859,87 +7471,235 @@ function RelatorioTab({
           ),
         ]);
 
-      // Capture the printable region at 2× resolution
-      const canvas = await html2canvas(printRef.current, {
+      // Ocultar elementos marcados data-pdf-hide (ex: badge IA) antes da captura
+      const hiddenEls = Array.from(
+        printEl.querySelectorAll<HTMLElement>("[data-pdf-hide]"),
+      );
+      hiddenEls.forEach((el) => { el.style.display = "none"; });
+
+      // ── Escalar fontes para garantir legibilidade no PDF ─────────────────
+      // Sem escala, 12px CSS × scale:2 ÷ pxPerMm ≈ 7,7pt — abaixo do mínimo.
+      // Sobrescrevemos os tokens diretamente no elemento para que o html2canvas
+      // capture o texto em tamanho legível sem alterar o resto da UI.
+      const FONT_SCALE_TOKENS: Array<[string, string]> = [
+        ["--font-size-xs", "16px"],  // 10 × 1,6 → ~10,3pt no PDF
+        ["--font-size-sm", "20px"],  // 12 × 1,67 → ~12,9pt
+        ["--font-size-md", "22px"],  // 14 × 1,57 → ~14,2pt
+        ["--font-size-lg", "29px"],  // 18 × 1,61 → ~18,7pt
+        ["--font-size-xl", "32px"],  // 20 × 1,60 → ~20,6pt
+      ];
+      const origFontValues = FONT_SCALE_TOKENS.map(([k]) =>
+        printEl.style.getPropertyValue(k),
+      );
+      FONT_SCALE_TOKENS.forEach(([k, v]) => printEl.style.setProperty(k, v));
+
+      // ── Ranking: posições (+2pt) e largura do barLabel (evitar colisão) ────
+      // Os números de posição usam fontSize inline (não afetados pelos tokens CSS),
+      // por isso são corrigidos diretamente nos nós do DOM antes da captura.
+      const barLabels = Array.from(
+        printEl.querySelectorAll<HTMLElement>('[class*="barLabel"]'),
+      );
+      const origBarLabelWidths = barLabels.map((el) => ({
+        w: el.style.width,
+        minW: el.style.minWidth,
+      }));
+      barLabels.forEach((el) => {
+        el.style.width = "140px";
+        el.style.minWidth = "140px";
+      });
+
+      const rankPosBadges = Array.from(
+        printEl.querySelectorAll<HTMLElement>('[class*="barLabel"] > span'),
+      );
+      const origRankPosFontSizes = rankPosBadges.map((el) => el.style.fontSize);
+      rankPosBadges.forEach((el) => { el.style.fontSize = "14px"; });
+
+      const barPcts = Array.from(
+        printEl.querySelectorAll<HTMLElement>('[class*="barPct"]'),
+      );
+      const origBarPctWidths = barPcts.map((el) => el.style.width);
+      barPcts.forEach((el) => { el.style.width = "36px"; });
+
+      // Aguardar dois frames para o navegador re-calcular o layout com as novas fontes
+      await new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+
+      // ── Posições no-break calculadas no DOM já com fontes escaladas ───────
+      // (devem corresponder exatamente à geometria que o html2canvas irá capturar)
+      const CANVAS_SCALE = 2;
+      const printElRect = printEl.getBoundingClientRect();
+      const noBreakSections = Array.from(
+        printEl.querySelectorAll("[data-pdf-nobreak]"),
+      ).map((el) => {
+        const r = (el as HTMLElement).getBoundingClientRect();
+        const topCss    = r.top    - printElRect.top;
+        const bottomCss = r.bottom - printElRect.top;
+        return {
+          topPx:    topCss    * CANVAS_SCALE,
+          bottomPx: bottomCss * CANVAS_SCALE,
+        };
+      });
+
+      // Captura área imprimível a 2× (sem scroll — html2canvas captura o elemento inteiro)
+      const canvas = await html2canvas(printEl, {
         scale: 2,
         useCORS: true,
         backgroundColor: "#ffffff",
         logging: false,
       });
 
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
+      // Restaurar fontes, ranking e elementos ocultos
+      FONT_SCALE_TOKENS.forEach(([k], i) => {
+        if (origFontValues[i]) printEl.style.setProperty(k, origFontValues[i]);
+        else printEl.style.removeProperty(k);
       });
-      const pageW = pdf.internal.pageSize.getWidth(); // 210 mm
+      barLabels.forEach((el, i) => {
+        el.style.width = origBarLabelWidths[i].w;
+        el.style.minWidth = origBarLabelWidths[i].minW;
+      });
+      rankPosBadges.forEach((el, i) => { el.style.fontSize = origRankPosFontSizes[i]; });
+      barPcts.forEach((el, i) => { el.style.width = origBarPctWidths[i]; });
+      hiddenEls.forEach((el) => { el.style.display = ""; });
+
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageW = pdf.internal.pageSize.getWidth();  // 210 mm
       const pageH = pdf.internal.pageSize.getHeight(); // 297 mm
-      const margin = 10;
-      const headerH = 26; // taller to accommodate logo
+      const margin   = 14;
+      const headerH  = 38; // cabeçalho interno mais alto para acomodar logo maior
       const contentW = pageW - margin * 2;
 
-      const logoPdfH = headerH - 4; // 14 mm — 2 mm padding top + bottom
-      const logoPdfW = logoPdfH; // square logo (viewBox 1000×1000)
-      const textX = margin + logoPdfW + 5; // text starts right of logo
+      // Logo cabeçalho — maior para compensar área de respiro do SVG e garantir legibilidade
+      const logoHeaderH = headerH - 4; // 34 mm (visualmente ~27 mm de conteúdo útil)
+      const logoHeaderW = logoHeaderH;
+      const logoHeaderX = pageW - margin - logoHeaderW;
 
-      /* ── Branded header (reused on every page) ── */
+      /* ── Helper: Mês/Ano ─────────────────────────────────────────────── */
+      function getMesAno(): string {
+        const meses = [
+          "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+          "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro",
+        ];
+        const p = (event.startDate ?? "").split("/");
+        if (p.length === 3) {
+          const m = parseInt(p[1], 10);
+          return `${meses[m - 1] ?? p[1]}/${p[2]}`;
+        }
+        return event.startDate ?? "";
+      }
+
+      /* ── Cabeçalho interno ───────────────────────────────────────────── */
       function drawHeader() {
-        // Background
         pdf.setFillColor(178, 85, 87);
         pdf.rect(0, 0, pageW, headerH, "F");
-
-        // Logo (white SVG paths — transparent PNG overlaid on red background)
-        pdf.addImage(logoDataUrl, "PNG", margin, 2, logoPdfW, logoPdfH);
-
-        // Event info — right-aligned
+        // Logo maior à direita
+        pdf.addImage(logoDataUrl, "PNG", logoHeaderX, (headerH - logoHeaderH) / 2, logoHeaderW, logoHeaderH);
+        // Evento e empresa à esquerda
+        const midY = headerH / 2 + 1.5;
         const dateStr = event.endDate
           ? `${event.startDate} – ${event.endDate}`
           : event.startDate;
-        const midY = headerH / 2 + 1.5;
-
         pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(9);
+        pdf.setFontSize(12);
         pdf.setTextColor(255, 255, 255);
-        pdf.text(event.name, textX, midY - 2.5);
-
+        pdf.text(event.name, margin, midY - 3);
         pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(7.5);
+        pdf.setFontSize(12);
         pdf.setTextColor(255, 220, 220);
-        pdf.text(`${event.company}  ·  ${dateStr}`, textX, midY + 2);
+        pdf.text(`${event.company}  ·  ${dateStr}`, margin, midY + 4);
       }
 
-      /* ── Footer helper ── */
+      /* ── Rodapé ──────────────────────────────────────────────────────── */
       function drawFooter() {
         pdf.setFont("helvetica", "italic");
-        pdf.setFontSize(7);
+        pdf.setFontSize(12);
         pdf.setTextColor(180, 180, 180);
         pdf.text(
           "Gerado automaticamente por Espaço Prana",
           pageW / 2,
-          pageH - 4,
+          pageH - 5,
           { align: "center" },
         );
       }
 
-      /* ── Paginate canvas across A4 pages ── */
-      const pxPerMm = canvas.width / contentW;
-      const availH = pageH - headerH - margin - margin; // usable height per page
+      /* ══ CAPA — fundo inteiramente vermelho ══════════════════════════════ */
+      pdf.setFillColor(178, 85, 87);
+      pdf.rect(0, 0, pageW, pageH, "F");
 
+      // Logo da capa — grande e centralizado
+      const logoCoverSize = 54;
+      pdf.addImage(
+        logoDataUrl, "PNG",
+        (pageW - logoCoverSize) / 2,
+        pageH * 0.26,
+        logoCoverSize,
+        logoCoverSize,
+      );
+
+      // O SVG do logo tem área de respiro (~18% em cada extremidade vertical).
+      // O conteúdo visual útil termina em ≈82% da altura do SVG renderizado.
+      const logoVisualBottom = pageH * 0.26 + logoCoverSize * 0.82;
+
+      // Linha decorativa — 16 px ≈ 4 mm abaixo do conteúdo visual do logo
+      pdf.setDrawColor(255, 220, 220);
+      pdf.setLineWidth(0.3);
+      const lineY = logoVisualBottom + 4;
+      pdf.line(margin * 4, lineY, pageW - margin * 4, lineY);
+
+      // Título — respiro generoso entre linha e bloco de texto
+      const textY = lineY + 12;
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(17);
+      pdf.setTextColor(255, 255, 255);
+      pdf.text(event.company, pageW / 2, textY, { align: "center" });
+
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(12);
+      pdf.setTextColor(255, 215, 215);
+      pdf.text("Programa de Bem-Estar Corporativo", pageW / 2, textY + 7, { align: "center" });
+
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(12);
+      pdf.setTextColor(255, 240, 240);
+      pdf.text(`Relatório Executivo  ·  ${getMesAno()}`, pageW / 2, textY + 14, { align: "center" });
+
+      // Rodapé da capa
+      pdf.setFont("helvetica", "italic");
+      pdf.setFontSize(12);
+      pdf.setTextColor(255, 195, 195);
+      pdf.text("Gerado automaticamente por Espaço Prana", pageW / 2, pageH - 12, { align: "center" });
+
+      /* ══ PÁGINAS DE CONTEÚDO ══════════════════════════════════════════════
+         Estratégia de no-break:
+         - Posições calculadas acima, no DOM com fontes escaladas (pré-captura),
+           garantindo correspondência exata com a geometria do canvas.
+         - Antes de paginar, verificar se o corte cai dentro de uma dessas seções;
+           se sim, recuar o corte para o topo da seção.
+      ══════════════════════════════════════════════════════════════════════ */
+      pdf.addPage();
       drawHeader();
 
+      const pxPerMm  = canvas.width / contentW;
+      const availH   = pageH - headerH - margin - margin;
+      const availHpx = availH * pxPerMm;
+
       let srcYpx = 0;
-      let pageIndex = 0;
 
       while (srcYpx < canvas.height) {
-        const sliceHpx = Math.min(
-          Math.ceil(availH * pxPerMm),
-          canvas.height - srcYpx,
-        );
+        let pageEndPx = srcYpx + availHpx;
+
+        // Evitar corte dentro de seção marcada
+        for (const { topPx, bottomPx } of noBreakSections) {
+          if (pageEndPx > topPx && pageEndPx < bottomPx && srcYpx < topPx) {
+            pageEndPx = topPx; // recua para antes da seção
+            break;
+          }
+        }
+
+        pageEndPx = Math.min(pageEndPx, canvas.height);
+        const sliceHpx = Math.max(1, Math.ceil(pageEndPx - srcYpx));
         const sliceHmm = sliceHpx / pxPerMm;
 
-        // Vertical slice of the captured canvas
         const sliceCanvas = document.createElement("canvas");
-        sliceCanvas.width = canvas.width;
+        sliceCanvas.width  = canvas.width;
         sliceCanvas.height = sliceHpx;
         sliceCanvas.getContext("2d")!.drawImage(canvas, 0, -srcYpx);
 
@@ -6957,13 +7717,102 @@ function RelatorioTab({
         if (srcYpx < canvas.height) {
           drawFooter();
           pdf.addPage();
-          pageIndex++;
           drawHeader();
         }
       }
 
       drawFooter();
 
+      /* ══ COMENTÁRIOS QUALITATIVOS (única ocorrência no PDF) ══════════════ */
+      const comments = detail.evaluationComments ?? [];
+      if (comments.length > 0) {
+        pdf.addPage();
+        drawHeader();
+        drawFooter();
+
+        let cy = headerH + margin + 6;
+
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(12);
+        pdf.setTextColor(60, 40, 40);
+        pdf.text("Comentários Qualitativos", margin, cy);
+        cy += 10;
+
+        for (const c of comments) {
+          // 12pt = ~5.5 mm por linha; espaço interno: padding top 6 + padding bottom 8 + linha de autor
+          const wrapped = pdf.splitTextToSize(`"${c.text}"`, contentW - 10);
+          const lineH  = 6;
+          const boxH   = wrapped.length * lineH + 14; // top 7 + linhas + gap ~3 + autor + 4
+
+          if (cy + boxH > pageH - margin - 14) {
+            drawFooter();
+            pdf.addPage();
+            drawHeader();
+            drawFooter();
+            cy = headerH + margin + 6;
+          }
+
+          pdf.setFillColor(249, 247, 244);
+          pdf.setDrawColor(218, 208, 207);
+          pdf.roundedRect(margin, cy, contentW, boxH, 2, 2, "FD");
+
+          pdf.setFont("helvetica", "italic");
+          pdf.setFontSize(12);
+          pdf.setTextColor(70, 50, 50);
+          pdf.text(wrapped, margin + 4, cy + 7);
+
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(12);
+          pdf.setTextColor(140, 120, 120);
+          pdf.text(`— ${c.author}`, margin + 4, cy + boxH - 4);
+
+          cy += boxH + 5;
+        }
+      }
+
+      /* ══ GALERIA DE FOTOS ILUSTRATIVAS ═══════════════════════════════════ */
+      pdf.addPage();
+      drawHeader();
+      drawFooter();
+
+      let gy = headerH + margin + 6;
+
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(12);
+      pdf.setTextColor(60, 40, 40);
+      pdf.text("Galeria do Evento", margin, gy);
+      gy += 3; // 8 px ≈ 3 mm até o subtítulo
+
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(12);
+      pdf.setTextColor(140, 120, 120);
+      pdf.text(
+        "Registro fotográfico das ações de bem-estar realizadas durante o evento.",
+        margin,
+        gy + 5,
+      );
+      gy += 14;
+
+      const PHOTO_COUNT = 6;
+      const cols  = 3;
+      const gapX  = 5;
+      const gapY  = 6;
+      const thumbW = (contentW - gapX * (cols - 1)) / cols;
+      const thumbH = thumbW * 0.65;
+
+      for (let idx = 0; idx < PHOTO_COUNT; idx++) {
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+        const tx = margin + col * (thumbW + gapX);
+        const ty = gy + row * (thumbH + gapY);
+
+        // Área reservada para foto — retângulo limpo sem conteúdo sobreposto
+        pdf.setFillColor(234, 225, 223);
+        pdf.setDrawColor(210, 200, 198);
+        pdf.roundedRect(tx, ty, thumbW, thumbH, 3, 3, "FD");
+      }
+
+      /* ══ Salvar ══════════════════════════════════════════════════════════ */
       const slug = event.name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
@@ -7082,7 +7931,7 @@ function RelatorioTab({
               <span className={styles.relatorioMetaDot}>·</span>
               <span className={styles.relatorioMetaItem}>2 dias atrás</span>
               <span className={styles.relatorioMetaDot}>·</span>
-              <span className={styles.relatorioAiBadge}>✦ IA</span>
+              <span className={styles.relatorioAiBadge} data-pdf-hide="true">✦ IA</span>
             </div>
           </div>
 
@@ -7113,7 +7962,7 @@ function RelatorioTab({
                 >
                   {ibe}
                 </span>
-                <span className={styles.relatorioMetricLabel}>IBE</span>
+                <span className={styles.relatorioMetricLabel}>IBE*</span>
               </div>
               <div className={styles.relatorioMetricCard}>
                 <span
@@ -7171,16 +8020,41 @@ function RelatorioTab({
               {/* Spacer to align 3 cards with 4-column row above */}
               <div className={styles.relatorioMetricSpacer} />
             </div>
+            {/* IBE footnote + classification table */}
+            <p className={styles.ibeFootnote}>
+              *IBE – Índice de Bem-Estar Empresarial: Indicador desenvolvido para mensurar a efetividade das iniciativas de bem-estar corporativo. O IBE integra métricas de adesão, satisfação, NPS, impacto percebido e recorrência de participação.
+            </p>
+            <table className={styles.ibeClassTable}>
+              <tbody>
+                {[
+                  { range: "0–59",   color: "#9E8E8F", label: "Baixo impacto"      },
+                  { range: "60–74",  color: "#D4A843", label: "Impacto moderado"   },
+                  { range: "75–89",  color: "#5A9E6F", label: "Alto impacto"       },
+                  { range: "90–100", color: "#B25557", label: "Impacto estratégico" },
+                ].map((row) => (
+                  <tr key={row.range} className={styles.ibeClassRow}>
+                    <td className={styles.ibeClassRange}>{row.range}</td>
+                    <td className={styles.ibeClassLabel}>
+                      <span className={styles.ibeClassLabelCell}>
+                        <span className={styles.ibeClassDot} style={{ background: row.color }} />
+                        {row.label}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </section>
 
           {/* Visualizações */}
           <section className={styles.relatorioSection}>
             <h3 className={styles.relatorioSectionTitle}>Visualizações</h3>
-            <div className={styles.chartsRow}>
+            {/* Cada linha de gráficos tem data-pdf-nobreak independente para evitar corte */}
+            <div className={styles.chartsRow} data-pdf-nobreak="true">
               <NPSGaugeReport npsScore={detail.npsData?.npsScore} />
               <RadarChart data={detail.radarDimensions} />
             </div>
-            <div className={styles.relatorioChartsStack}>
+            <div className={styles.relatorioChartsStack} data-pdf-nobreak="true">
               <ParticipationBarChart eventDetail={detail} />
               <RankingAreas />
             </div>
@@ -7230,44 +8104,6 @@ function RelatorioTab({
             </div>
           </section>
 
-          {/* Comentários qualitativos — HUG (sem altura fixa) */}
-          <section className={styles.relatorioSection}>
-            <QualitativeComments data={detail.evaluationComments ?? []} />
-          </section>
-
-          {/* Métricas financeiras */}
-          <section className={styles.relatorioSection}>
-            <h3 className={styles.relatorioSectionTitle}>
-              Métricas financeiras
-            </h3>
-            <div className={styles.statCardsRow}>
-              <StatCard
-                label="Investimento total"
-                value="R$ 42,8k"
-                trend=""
-                trendDir="up"
-                hideTrend
-                icon={<DollarSign size={24} />}
-              />
-              <StatCard
-                label="Custo por colaborador impactado"
-                value="R$ 34,52"
-                trend=""
-                trendDir="up"
-                hideTrend
-                icon={<Users size={24} />}
-              />
-              <StatCard
-                label="Custo por ação"
-                value="R$ 18,70"
-                trend=""
-                trendDir="up"
-                hideTrend
-                icon={<TrendingUp size={24} />}
-              />
-            </div>
-          </section>
-
           {/* Insights */}
           <section className={styles.relatorioSection}>
             <h3 className={styles.relatorioSectionTitle}>Insights</h3>
@@ -7289,6 +8125,7 @@ function RelatorioTab({
               styles.relatorioSection,
               styles.relatorioObsSection,
             ].join(" ")}
+            data-pdf-nobreak="true"
           >
             <h3 className={styles.relatorioSectionTitle}>
               Observações e recomendações
@@ -7306,6 +8143,51 @@ function RelatorioTab({
           </section>
         </div>
         {/* ── End printable region ── */}
+
+        {/* Comentários qualitativos — visível na UI, fora do printRef (não duplicado no PDF) */}
+        <section className={styles.relatorioSection} style={{ marginTop: 0 }}>
+          <QualitativeComments data={detail.evaluationComments ?? []} scrollable />
+        </section>
+
+        {/* ── Fotos do evento ──────────────────────────────────────────────── */}
+        {visiblePhotos.length > 0 && (
+          <section className={styles.relatorioSection} style={{ marginTop: 0 }}>
+            <h3 className={styles.relatorioSectionTitle}>Fotos do evento</h3>
+            <div className={styles.photoGrid}>
+              {(role === "adm" ? MOCK_EVENT_PHOTOS : visiblePhotos).map((id) => (
+                <div
+                  key={id}
+                  className={[
+                    styles.photoItem,
+                    role === "adm" && removedPhotos.has(id)
+                      ? styles.photoItemRemoved
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  <div className={styles.photoPlaceholderInner}>
+                    <Image size={28} strokeWidth={1.2} />
+                  </div>
+                  {role === "adm" && !removedPhotos.has(id) && (
+                    <button
+                      className={styles.photoDeleteBtn}
+                      onClick={() => handleRemovePhoto(id)}
+                      title="Remover foto"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                  {role === "adm" && removedPhotos.has(id) && (
+                    <div className={styles.photoRemovedOverlay}>
+                      <span className={styles.photoRemovedLabel}>Removida</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
@@ -7556,6 +8438,10 @@ export function EventDetailScreen({
                   setEv={setEditValues}
                   eventName={event.name}
                 />
+
+                {role === 'empresa' && (
+                  <ParametrizacaoSection ev={displayValues} />
+                )}
               </>
             )}
 
@@ -7565,6 +8451,7 @@ export function EventDetailScreen({
                 event={event}
                 serviceConfig={detail.serviceConfig}
                 configStatus={configStatus}
+                eventSchedule={detail.configSchedule}
               />
             )}
 

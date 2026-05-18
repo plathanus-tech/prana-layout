@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import {
   Search, SlidersHorizontal, ChevronDown, QrCode,
-  Link2, Eye, ChevronLeft, ChevronRight, X, Download, Check,
+  Link2, Eye, ChevronLeft, ChevronRight, X, Download, Check, AlertTriangle,
 } from 'lucide-react';
 import { Sidebar } from '../../../components/Sidebar/Sidebar';
 import styles from './EventsScreen.module.css';
@@ -69,6 +69,18 @@ const STATUS_SORT_GROUP: Record<EventStatus, number> = {
   concluido:  3,  // concluído
   cancelado:  4,  // ao final
 };
+
+// ─── Alerta de staffing urgente (admin only) ──────────────────────────────────
+// Condição: faltam ≤ 5 dias para o evento E ainda há profissionais pendentes
+function isPendingAlert(ev: EventItem, role: UserRole): boolean {
+  if (role !== 'adm') return false;
+  if (ev.status === 'concluido' || ev.status === 'cancelado') return false;
+  if (ev.professionals.hired >= ev.professionals.needed) return false;
+  const start = parseEventDate(ev.startDate);
+  const today = Date.now();
+  const daysUntil = (start - today) / (1000 * 60 * 60 * 24);
+  return daysUntil >= 0 && daysUntil <= 5;
+}
 
 function sortEvents(a: EventItem, b: EventItem): number {
   const ga = STATUS_SORT_GROUP[a.status];
@@ -361,7 +373,10 @@ function EventsTable({ role, onViewDetail }: EventsTableProps) {
               </tr>
             ) : (
               pageItems.map(ev => (
-                <tr key={ev.id} className={styles.tr}>
+                <tr
+                  key={ev.id}
+                  className={[styles.tr, isPendingAlert(ev, role) ? styles.trAlert : ''].filter(Boolean).join(' ')}
+                >
 
                   {/* Evento: nome + ID (sem imagem/thumbnail) */}
                   <td className={styles.td}>
@@ -384,11 +399,21 @@ function EventsTable({ role, onViewDetail }: EventsTableProps) {
 
                   {/* Profissionais: contratados / necessários */}
                   <td className={styles.td}>
-                    <span className={[
-                      styles.cellText,
-                      ev.professionals.hired < ev.professionals.needed ? styles.profsIncomplete : '',
-                    ].filter(Boolean).join(' ')}>
-                      {ev.professionals.hired}/{ev.professionals.needed} profissionais
+                    <span className={styles.profsCell}>
+                      <span className={[
+                        styles.cellText,
+                        ev.professionals.hired < ev.professionals.needed ? styles.profsIncomplete : '',
+                      ].filter(Boolean).join(' ')}>
+                        {ev.professionals.hired}/{ev.professionals.needed} profissionais
+                      </span>
+                      {isPendingAlert(ev, role) && (
+                        <AlertTriangle
+                          size={13}
+                          className={styles.profAlertIcon}
+                          onMouseMove={(e) => setTooltip({ text: 'Evento com profissionais pendentes a menos de 5 dias', x: e.clientX, y: e.clientY })}
+                          onMouseLeave={() => setTooltip(null)}
+                        />
+                      )}
                     </span>
                   </td>
 
