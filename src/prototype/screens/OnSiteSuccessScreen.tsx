@@ -8,6 +8,7 @@ import styles from './OnSiteSuccessScreen.module.css';
 
 interface SummaryItem {
   name: string;
+  professional: string;
   time: string | null;
   day?: string;
   waitlisted: boolean;
@@ -38,7 +39,7 @@ function getContent(variant: SuccessVariant): VariantContent {
           </>
         ),
         summary: [
-          { name: 'Quick Massage', time: '09:00', waitlisted: false },
+          { name: 'Quick Massage', professional: 'Juliana Braga', time: '09:00', waitlisted: false },
         ],
       };
 
@@ -55,7 +56,7 @@ function getContent(variant: SuccessVariant): VariantContent {
           </>
         ),
         summary: [
-          { name: 'Meditação Profunda', time: null, day: 'ter, 14 de abr', waitlisted: true },
+          { name: 'Meditação Profunda', professional: 'Ana Costa', time: null, day: 'ter, 14 de abr', waitlisted: true },
         ],
       };
 
@@ -72,8 +73,8 @@ function getContent(variant: SuccessVariant): VariantContent {
           </>
         ),
         summary: [
-          { name: 'Quick Massage',    time: '09:00', waitlisted: false },
-          { name: 'Meditação Profunda', time: null, day: 'ter, 14 de abr', waitlisted: true  },
+          { name: 'Quick Massage',      professional: 'Juliana Braga', time: '09:00', waitlisted: false },
+          { name: 'Meditação Profunda', professional: 'Ana Costa',     time: null, day: 'ter, 14 de abr', waitlisted: true  },
         ],
       };
   }
@@ -119,16 +120,12 @@ export function OnSiteSuccessScreen({ viewport = 'desktop', variant = 'confirmed
                   {item.waitlisted ? (
                     <>
                       <Clock size={14} className={styles.summaryIconWaitlist} />
-                      <span>
-                        {item.name}, <em>lista de espera{item.day ? ` · ${item.day}` : ''}</em>
-                      </span>
+                      <span>{item.name} com {item.professional} — <em>lista de espera{item.day ? ` · ${item.day}` : ''}</em></span>
                     </>
                   ) : (
                     <>
                       <CheckCircle2 size={14} className={styles.summaryIconConfirmed} />
-                      <span>
-                        {item.name}, <strong>{DEMO_DATE} · {item.time}</strong>
-                      </span>
+                      <span>{item.name} com {item.professional} — <strong>{DEMO_DATE} · {item.time}</strong></span>
                     </>
                   )}
                 </li>

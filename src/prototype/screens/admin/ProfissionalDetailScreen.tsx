@@ -433,11 +433,18 @@ function NotaLineChart({ data, className }: { data: NotaPoint[]; className?: str
 }
 
 // ─── ProfRadarChart ───────────────────────────────────────────────────────────
-// Escala 0–10 (questionário de satisfação)
+// Escala 0–10. Série vermelha = Último evento; série amarela = Média em eventos
 function ProfRadarChart({ data, className }: { data: Array<{ axis: string; value: number }>; className?: string }) {
-  const [hovered, setHovered] = useState<{ label: string; value: number; x: number; y: number } | null>(null);
-  const VW = 430, VH = 310;
-  const cx = 215, cy = 175, maxR = 118, maxVal = 10;
+  // "Último evento" = dados reais; "Média em eventos" ≈ 90% dos valores
+  const ultimo = data;
+  const media  = data.map(d => ({ ...d, value: +(d.value * 0.9).toFixed(1) }));
+
+  const [hovered, setHovered] = useState<{
+    label: string; ultimo: number; media: number; x: number; y: number;
+  } | null>(null);
+
+  const VW = 540, VH = 220;
+  const cx = 270, cy = 112, maxR = 63, maxVal = 10;
   const n = data.length;
   const angleOf = (i: number) => -Math.PI / 2 + (2 * Math.PI * i) / n;
   const ptOf = (v: number, i: number) => ({
@@ -445,40 +452,72 @@ function ProfRadarChart({ data, className }: { data: Array<{ axis: string; value
     y: cy + (v / maxVal) * maxR * Math.sin(angleOf(i)),
   });
   const levels = [2, 4, 6, 8, 10];
-  const dataPolygon = data.map((d, i) => { const p = ptOf(d.value, i); return `${p.x},${p.y}`; }).join(' ');
+  const polyStr = (arr: typeof data) =>
+    arr.map((d, i) => { const p = ptOf(d.value, i); return `${p.x},${p.y}`; }).join(' ');
 
   return (
     <div className={[styles.chartCard, className].filter(Boolean).join(' ')} style={{ minHeight: 'unset' }}>
-      <span className={styles.chartTitle}>Radar de Desempenho</span>
+      {/* Header: título + legenda */}
+      <div className={styles.chartHeaderRow}>
+        <span className={styles.chartTitle}>Radar de Desempenho</span>
+        <div className={styles.lineLegend}>
+          <div className={styles.lineLegendItem}>
+            <span className={styles.lineDot} style={{ background: '#B25557' }} />
+            Último evento
+          </div>
+          <div className={styles.lineLegendItem}>
+            <span className={styles.lineDot} style={{ background: '#EAB308' }} />
+            Média
+          </div>
+        </div>
+      </div>
+
+      {/* Descrição */}
+      <span className={styles.radarDesc}>
+        Radar de desempenho com base nos pilares do IBE, considerando a média das avaliações
+        realizadas por beneficiários que utilizaram os serviços do profissional em eventos.
+      </span>
+
+      {/* SVG */}
       <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-        <svg viewBox={`0 0 ${VW} ${VH}`} style={{ display: 'block', height: '200px', width: 'auto', margin: '0 auto' }}>
+        <svg viewBox={`0 0 ${VW} ${VH}`} width="100%" style={{ display: 'block' }}>
+          {/* Grid rings */}
           {levels.map(lv => {
             const pts = data.map((_, i) => { const p = ptOf(lv, i); return `${p.x},${p.y}`; }).join(' ');
             return <polygon key={lv} points={pts} fill="none" stroke="#F0EDEC" strokeWidth="1" />;
           })}
+          {/* Level labels */}
           {[4, 8].map(lv => {
             const p = ptOf(lv, 2);
             return <text key={lv} x={p.x + 3} y={p.y + 3} fontSize="8" fill="#C8C0C0">{lv}</text>;
           })}
+          {/* Axes */}
           {data.map((_, i) => {
             const end = ptOf(maxVal, i);
             return <line key={i} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="#E8DFE0" strokeWidth="1" />;
           })}
-          <polygon points={dataPolygon} fill="#B25557" fillOpacity="0.18" stroke="#B25557" strokeWidth="2" />
-          {data.map((d, i) => {
+          {/* Média em eventos (amarelo, tracejado, abaixo) */}
+          <polygon points={polyStr(media)} fill="#EAB308" fillOpacity="0.12"
+            stroke="#EAB308" strokeWidth="1.5" strokeDasharray="4 3" />
+          {/* Último evento (vermelho, sólido, acima) */}
+          <polygon points={polyStr(ultimo)} fill="#B25557" fillOpacity="0.18"
+            stroke="#B25557" strokeWidth="2" />
+          {/* Pontos interativos — último evento */}
+          {ultimo.map((d, i) => {
             const p = ptOf(d.value, i);
             return (
               <circle key={i} cx={p.x} cy={p.y} r={hovered?.label === d.axis ? 7 : 5}
                 fill="#B25557" stroke="#fff" strokeWidth="2"
                 style={{ cursor: 'pointer', transition: 'r 120ms' }}
-                onMouseMove={e => setHovered({ label: d.axis, value: d.value, x: e.clientX, y: e.clientY })}
+                onMouseMove={e => setHovered({ label: d.axis, ultimo: d.value, media: media[i].value, x: e.clientX, y: e.clientY })}
                 onMouseLeave={() => setHovered(null)} />
             );
           })}
+          {/* Axis labels */}
           {data.map((d, i) => {
             const angle = angleOf(i);
-            const lx = cx + (maxR + 20) * Math.cos(angle);
-            const ly = cy + (maxR + 20) * Math.sin(angle);
+            const lx = cx + (maxR + 28) * Math.cos(angle);
+            const ly = cy + (maxR + 28) * Math.sin(angle);
             const anchor = Math.cos(angle) > 0.15 ? 'start' : Math.cos(angle) < -0.15 ? 'end' : 'middle';
             return (
               <text key={i} x={lx} y={ly + 4} textAnchor={anchor} fontSize="11" fill="#9E8E8F" fontWeight="500">
@@ -493,7 +532,7 @@ function ProfRadarChart({ data, className }: { data: Array<{ axis: string; value
             transform: 'translateX(-50%)', pointerEvents: 'none',
             whiteSpace: 'nowrap', zIndex: 9999, opacity: 1,
           }}>
-            {hovered.label}: {hovered.value} / 10
+            {hovered.label} · Último {hovered.ultimo} · Média {hovered.media}
           </div>
         )}
       </div>

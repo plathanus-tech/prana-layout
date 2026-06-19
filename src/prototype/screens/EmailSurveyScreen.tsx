@@ -150,9 +150,7 @@ export function EmailSurveyScreen({ viewport = 'desktop' }: EmailSurveyScreenPro
               letterSpacing: '0.01em',
             }}
           >
-            Quando fizer sentido para você, gostaríamos de te convidar a compartilhar
-            como foi sua experiência. Sua percepção nos ajuda a aprimorar cada detalhe
-            com ainda mais atenção e presença.
+            Gostaríamos de te convidar a compartilhar como foi sua experiência. Sua percepção nos ajuda a aprimorar cada detalhe com ainda mais atenção e presença.
           </p>
 
           {/* Spacer */}

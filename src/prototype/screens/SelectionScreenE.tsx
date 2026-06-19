@@ -22,16 +22,27 @@ const COMPANY_NAME = "Plathanus";
 
 export type ScenarioId = "A" | "B" | "C" | "D";
 
+interface ProfessionalConfig {
+  id: string;
+  name: string;
+  specialty: string;
+  initials: string;
+  exhaustedDayKeys?: string[];
+  globallyExhausted?: boolean;
+}
+
 interface ServiceConfig {
   id: string;
   name: string;
   duration: number;
   description: string;
   Icon: LucideIcon;
-  /** Todos os horários do serviço estão esgotados globalmente */
+  /** Todos os horários do serviço estão esgotados globalmente (fallback sem profissionais) */
   globallyExhausted?: boolean;
-  /** Chaves de dias específicos que estão esgotados para este serviço */
+  /** Chaves de dias específicos que estão esgotados para este serviço (fallback sem profissionais) */
   exhaustedDayKeys?: string[];
+  /** Profissionais disponíveis para este serviço */
+  professionals?: ProfessionalConfig[];
 }
 
 interface ScenarioConfig {
@@ -140,6 +151,17 @@ function formatTimer(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+// ─── Profissionais base ─────────────────────────────────────
+
+const PROS = {
+  juliana: { id: "juliana", name: "Juliana Braga", specialty: "Terapeuta",  initials: "JB" },
+  ana:     { id: "ana",     name: "Ana Costa",     specialty: "Terapeuta",  initials: "AC" },
+  carlos:  { id: "carlos",  name: "Carlos Lima",   specialty: "Terapeuta",  initials: "CL" },
+  beatriz: { id: "beatriz", name: "Beatriz Santos", specialty: "Terapeuta", initials: "BS" },
+  rafael:  { id: "rafael",  name: "Rafael Alves",  specialty: "Instrutor",  initials: "RA" },
+  marina:  { id: "marina",  name: "Marina Souza",  specialty: "Instrutora", initials: "MS" },
+};
+
 // ─── Cenários ──────────────────────────────────────────────
 
 const BASE_SERVICES = {
@@ -175,13 +197,31 @@ const SCENARIOS: Record<ScenarioId, ScenarioConfig> = {
     maxServices: 2,
     singleDay: false,
     services: [
-      BASE_SERVICES.massage,
-      BASE_SERVICES.reflexology,
-      BASE_SERVICES.meditation,
+      {
+        ...BASE_SERVICES.massage,
+        professionals: [
+          { ...PROS.juliana },
+          { ...PROS.ana, exhaustedDayKeys: [DAYS[2].key, DAYS[5].key] },
+        ],
+      },
+      {
+        ...BASE_SERVICES.reflexology,
+        professionals: [
+          { ...PROS.carlos },
+          { ...PROS.beatriz, exhaustedDayKeys: [DAYS[0].key, DAYS[4].key] },
+        ],
+      },
+      {
+        ...BASE_SERVICES.meditation,
+        professionals: [
+          { ...PROS.rafael },
+          { ...PROS.marina, exhaustedDayKeys: [DAYS[0].key] },
+        ],
+      },
     ],
   },
 
-  /** B — Dias esgotados: alguns dias indisponíveis levam à lista de espera */
+  /** B — Dias esgotados: alguns dias/profissionais indisponíveis */
   B: {
     eventName: "Semana do Bem-Estar",
     dateStr: "10 a 14 de abril de 2026",
@@ -191,10 +231,25 @@ const SCENARIOS: Record<ScenarioId, ScenarioConfig> = {
     services: [
       {
         ...BASE_SERVICES.massage,
-        exhaustedDayKeys: [DAYS[1].key, DAYS[3].key],
+        professionals: [
+          { ...PROS.juliana, exhaustedDayKeys: [DAYS[1].key, DAYS[3].key] },
+          { ...PROS.ana },
+        ],
       },
-      { ...BASE_SERVICES.reflexology, globallyExhausted: true },
-      BASE_SERVICES.meditation,
+      {
+        ...BASE_SERVICES.reflexology,
+        professionals: [
+          { ...PROS.carlos,  globallyExhausted: true },
+          { ...PROS.beatriz, globallyExhausted: true },
+        ],
+      },
+      {
+        ...BASE_SERVICES.meditation,
+        professionals: [
+          { ...PROS.rafael },
+          { ...PROS.marina },
+        ],
+      },
     ],
   },
 
@@ -205,7 +260,15 @@ const SCENARIOS: Record<ScenarioId, ScenarioConfig> = {
     location: "Sala de Treinamentos - Bloco A",
     maxServices: 1,
     singleDay: false,
-    services: [BASE_SERVICES.massage],
+    services: [
+      {
+        ...BASE_SERVICES.massage,
+        professionals: [
+          { ...PROS.juliana },
+          { ...PROS.ana, exhaustedDayKeys: [DAYS[4].key] },
+        ],
+      },
+    ],
   },
 
   /** D — Evento de 1 dia: sem seletor de dias, direto ao horário */
@@ -215,7 +278,22 @@ const SCENARIOS: Record<ScenarioId, ScenarioConfig> = {
     location: "Espaço Prana - Unidade Paulista",
     maxServices: 1,
     singleDay: true,
-    services: [BASE_SERVICES.massage, BASE_SERVICES.meditation],
+    services: [
+      {
+        ...BASE_SERVICES.massage,
+        professionals: [
+          { ...PROS.juliana },
+          { ...PROS.ana },
+        ],
+      },
+      {
+        ...BASE_SERVICES.meditation,
+        professionals: [
+          { ...PROS.rafael },
+          { ...PROS.marina },
+        ],
+      },
+    ],
   },
 };
 
@@ -249,6 +327,9 @@ export function SelectionScreenE({
   const [schedules, setSchedules] = useState<Record<string, ScheduleChoice>>(
     {},
   );
+  const [selectedProfessionals, setSelectedProfessionals] = useState<
+    Record<string, string | null>
+  >({});
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [timers, setTimers] = useState<Record<string, number | null>>({});
   const timerRefs = useRef<Record<string, ReturnType<typeof setInterval>>>({});
@@ -295,7 +376,7 @@ export function SelectionScreenE({
     setTimers((prev) => ({ ...prev, [serviceId]: null }));
   }
 
-  const effectiveMax = multiMode ? config.maxServices : 1;
+  const effectiveMax = multiMode ? Infinity : 1;
   const selectedCount = selectedIds.size;
 
   // ── Seleção de serviço ──────────────────────────────────
@@ -312,6 +393,10 @@ export function SelectionScreenE({
         const { [id]: _, ...rest } = prev;
         return rest;
       });
+      setSelectedProfessionals((prev) => {
+        const { [id]: _, ...rest } = prev;
+        return rest;
+      });
       if (expandedId === id) setExpandedId(null);
       clearTimer(id);
     } else {
@@ -320,17 +405,11 @@ export function SelectionScreenE({
 
       const nextSchedules = multiMode ? { ...schedules } : {};
 
-      // Cenário D (1 dia): pré-seleciona o único dia
-      if (config.singleDay) {
-        nextSchedules[id] = {
-          dayKey: DAYS[0].key,
-          time: null,
-          waitlisted: false,
-        };
-      }
-
       setSchedules(nextSchedules);
       setSelectedIds(multiMode ? new Set([...selectedIds, id]) : new Set([id]));
+      if (!multiMode) {
+        setSelectedProfessionals({});
+      }
       setExpandedId(id);
     }
   }
@@ -339,12 +418,51 @@ export function SelectionScreenE({
     setExpandedId(id);
   }
 
+  // ── Seleção de profissional ─────────────────────────────
+
+  function selectProfessional(serviceId: string, professionalId: string) {
+    const alreadySelected = selectedProfessionals[serviceId] === professionalId;
+    if (alreadySelected) return;
+
+    setSelectedProfessionals((prev) => ({
+      ...prev,
+      [serviceId]: professionalId,
+    }));
+
+    // Limpar horário anterior ao trocar de profissional
+    const svc = config.services.find((s) => s.id === serviceId)!;
+    const pro = svc.professionals?.find((p) => p.id === professionalId);
+
+    if (config.singleDay) {
+      // Evento de 1 dia: pré-seleciona o único dia com base na disponibilidade do profissional
+      const exhausted = !!pro?.globallyExhausted;
+      setSchedules((prev) => ({
+        ...prev,
+        [serviceId]: { dayKey: DAYS[0].key, time: null, waitlisted: exhausted },
+      }));
+      if (exhausted) startTimer(serviceId, true);
+      else clearTimer(serviceId);
+    } else {
+      // Limpar dia/hora ao trocar de profissional
+      setSchedules((prev) => {
+        const { [serviceId]: _, ...rest } = prev;
+        return rest;
+      });
+      clearTimer(serviceId);
+    }
+  }
+
   // ── Seleção de dia ─────────────────────────────────────
 
   function setDay(serviceId: string, dayKey: string) {
     const svc = config.services.find((s) => s.id === serviceId)!;
-    const exhausted =
-      !!svc.globallyExhausted || (svc.exhaustedDayKeys ?? []).includes(dayKey);
+    const proId = selectedProfessionals[serviceId];
+    const pro = svc.professionals?.find((p) => p.id === proId);
+
+    const exhausted = pro
+      ? (!!pro.globallyExhausted || (pro.exhaustedDayKeys ?? []).includes(dayKey))
+      : (!!svc.globallyExhausted || (svc.exhaustedDayKeys ?? []).includes(dayKey));
+
     setSchedules((prev) => ({
       ...prev,
       [serviceId]: { dayKey, time: null, waitlisted: exhausted },
@@ -357,6 +475,15 @@ export function SelectionScreenE({
   }
 
   function setTime(serviceId: string, time: string) {
+    const dayKey = schedules[serviceId]?.dayKey;
+    // Bloquear se outro serviço já ocupa o mesmo dia + horário
+    const hasConflict = [...selectedIds]
+      .filter((id) => id !== serviceId)
+      .some(
+        (id) =>
+          schedules[id]?.dayKey === dayKey && schedules[id]?.time === time,
+      );
+    if (hasConflict) return;
     setSchedules((prev) => ({
       ...prev,
       [serviceId]: { ...(prev[serviceId] ?? { dayKey: null }), time },
@@ -367,9 +494,12 @@ export function SelectionScreenE({
   // ── Estado de conclusão ─────────────────────────────────
 
   function isServiceComplete(id: string): boolean {
+    const svc = config.services.find((s) => s.id === id)!;
+    // Profissional obrigatório quando a lista de profissionais existe
+    if (svc.professionals?.length && !selectedProfessionals[id]) return false;
     const sch = schedules[id];
     if (!sch?.dayKey) return false;
-    if (sch.waitlisted) return true; // na lista de espera do dia
+    if (sch.waitlisted) return true;
     return !!sch.time;
   }
 
@@ -403,6 +533,7 @@ export function SelectionScreenE({
     setMultiMode(e.target.checked);
     setSelectedIds(new Set());
     setSchedules({});
+    setSelectedProfessionals({});
     setExpandedId(null);
   }
 
@@ -435,10 +566,9 @@ export function SelectionScreenE({
               {config.location}
             </span>
           </div>
-          {effectiveMax > 1 && (
+          {multiMode && (
             <p className={styles.eventHint}>
-              Selecione até {effectiveMax} serviços - cada um com seu próprio
-              horário.
+              Selecione os serviços desejados, cada um terá seu próprio horário
             </p>
           )}
         </div>
@@ -483,6 +613,9 @@ export function SelectionScreenE({
               const isComplete = isSelected && isServiceComplete(svc.id);
               const selectedDay = DAYS.find((d) => d.key === sch?.dayKey);
               const isWaitlist = svc.globallyExhausted || sch?.waitlisted;
+              const selectedProId = selectedProfessionals[svc.id];
+              const hasProfessionals = !!svc.professionals?.length;
+              const proSelected = !hasProfessionals || !!selectedProId;
 
               return (
                 <div
@@ -596,60 +729,42 @@ export function SelectionScreenE({
                     </div>
                   )}
 
-                  {/* Scheduler (dias e horários) */}
+                  {/* Scheduler (profissional → dias → horários) */}
                   {isExpanded && (
                     <div className={styles.cardBody}>
                       <div className={styles.scheduler}>
-                        {/* Seletor de dias — oculto no cenário D (evento de 1 dia) */}
-                        {!config.singleDay && (
+
+                        {/* ── Seleção de profissional ── */}
+                        {hasProfessionals && (
                           <div className={styles.pickerSection}>
                             <h3 className={styles.pickerLabel}>
-                              Escolha o dia
+                              Escolha o profissional
                             </h3>
-                            <div className={styles.dayStrip}>
-                              {DAYS.map((day) => {
-                                const isExhausted =
-                                  !!svc.globallyExhausted ||
-                                  (svc.exhaustedDayKeys ?? []).includes(
-                                    day.key,
-                                  );
-                                const isActive = sch?.dayKey === day.key;
-                                const isWaitlisted =
-                                  isActive && sch?.waitlisted;
-
+                            <div className={styles.profStrip}>
+                              {svc.professionals!.map((pro) => {
+                                const isProSelected = selectedProId === pro.id;
                                 return (
                                   <button
-                                    key={day.key}
+                                    key={pro.id}
                                     className={[
-                                      styles.dayBtn,
-                                      isExhausted && !isActive
-                                        ? styles.dayBtnExhausted
-                                        : "",
-                                      isActive && !isWaitlisted
-                                        ? styles.dayBtnActive
-                                        : "",
-                                      isWaitlisted
-                                        ? styles.dayBtnWaitlisted
-                                        : "",
+                                      styles.profBtn,
+                                      isProSelected ? styles.profBtnActive : "",
                                     ]
                                       .filter(Boolean)
                                       .join(" ")}
-                                    onClick={() => setDay(svc.id, day.key)}
+                                    onClick={() =>
+                                      selectProfessional(svc.id, pro.id)
+                                    }
                                   >
-                                    <span className={styles.dayName}>
-                                      {day.dayName}
+                                    <span className={styles.profAvatar}>
+                                      {pro.initials}
                                     </span>
-                                    <span className={styles.dayNum}>
-                                      {day.dayNum}
+                                    <span className={styles.profName}>
+                                      {pro.name}
                                     </span>
-                                    <span className={styles.dayMonth}>
-                                      {day.month}
+                                    <span className={styles.profSpecialty}>
+                                      {pro.specialty}
                                     </span>
-                                    {isExhausted && (
-                                      <span className={styles.dayExhaustedTag}>
-                                        Esgotado
-                                      </span>
-                                    )}
                                   </button>
                                 );
                               })}
@@ -657,60 +772,153 @@ export function SelectionScreenE({
                           </div>
                         )}
 
-                        {/* Após seleção do dia: horários ou feedback de lista de espera */}
-                        {sch?.dayKey &&
-                          (sch.waitlisted ? (
-                            <Feedback
-                              type="info"
-                              title="Na lista de espera"
-                              message={`Após confirmar seleção, você entrará na lista de espera e será notificado caso abra uma vaga para ${formatDayLabel(sch.dayKey)}.`}
-                            />
-                          ) : (
-                            <div className={styles.pickerSection}>
-                              <h3 className={styles.pickerLabel}>
-                                Horário disponível
-                              </h3>
-                              <div className={styles.shiftGroups}>
-                                {groupSlotsByShift(
-                                  generateSlots(svc.id, sch.dayKey),
-                                ).map((shift) => (
-                                  <div
-                                    key={shift.label}
-                                    className={styles.shiftGroup}
-                                  >
-                                    <span className={styles.shiftLabel}>
-                                      {shift.label}
-                                    </span>
-                                    <div className={styles.timeGrid}>
-                                      {shift.slots.map((slot) => (
-                                        <button
-                                          key={slot.time}
-                                          className={[
-                                            styles.timeBtn,
-                                            !slot.available
-                                              ? styles.timeBtnUnavailable
-                                              : "",
-                                            sch.time === slot.time
-                                              ? styles.timeBtnActive
-                                              : "",
-                                          ]
-                                            .filter(Boolean)
-                                            .join(" ")}
-                                          disabled={!slot.available}
-                                          onClick={() =>
-                                            slot.available &&
-                                            setTime(svc.id, slot.time)
-                                          }
+                        {/* ── Seletor de dias + horários — só após selecionar profissional ── */}
+                        {proSelected && (
+                          <>
+                            {/* Seletor de dias — oculto no cenário D (evento de 1 dia) */}
+                            {!config.singleDay && (
+                              <div className={styles.pickerSection}>
+                                <h3 className={styles.pickerLabel}>
+                                  Escolha o dia
+                                </h3>
+                                <div className={styles.dayStrip}>
+                                  {DAYS.map((day) => {
+                                    const pro = svc.professionals?.find(
+                                      (p) => p.id === selectedProId,
+                                    );
+                                    const isExhausted = pro
+                                      ? (!!pro.globallyExhausted ||
+                                          (pro.exhaustedDayKeys ?? []).includes(
+                                            day.key,
+                                          ))
+                                      : (!!svc.globallyExhausted ||
+                                          (svc.exhaustedDayKeys ?? []).includes(
+                                            day.key,
+                                          ));
+                                    const isActive = sch?.dayKey === day.key;
+                                    const isWaitlisted =
+                                      isActive && sch?.waitlisted;
+
+                                    return (
+                                      <button
+                                        key={day.key}
+                                        className={[
+                                          styles.dayBtn,
+                                          isExhausted && !isActive
+                                            ? styles.dayBtnExhausted
+                                            : "",
+                                          isActive && !isWaitlisted
+                                            ? styles.dayBtnActive
+                                            : "",
+                                          isWaitlisted
+                                            ? styles.dayBtnWaitlisted
+                                            : "",
+                                        ]
+                                          .filter(Boolean)
+                                          .join(" ")}
+                                        onClick={() =>
+                                          setDay(svc.id, day.key)
+                                        }
+                                      >
+                                        <span className={styles.dayName}>
+                                          {day.dayName}
+                                        </span>
+                                        <span className={styles.dayNum}>
+                                          {day.dayNum}
+                                        </span>
+                                        <span className={styles.dayMonth}>
+                                          {day.month}
+                                        </span>
+                                        {isExhausted && (
+                                          <span
+                                            className={styles.dayExhaustedTag}
+                                          >
+                                            Esgotado
+                                          </span>
+                                        )}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Após seleção do dia: horários ou feedback de lista de espera */}
+                            {sch?.dayKey &&
+                              (sch.waitlisted ? (
+                                <Feedback
+                                  type="info"
+                                  title="Na lista de espera"
+                                  message={`Após confirmar seleção, você entrará na lista de espera e será notificado caso abra uma vaga para ${formatDayLabel(sch.dayKey)}.`}
+                                />
+                              ) : (() => {
+                                const conflictingTimes = [...selectedIds]
+                                  .filter(
+                                    (id) =>
+                                      id !== svc.id &&
+                                      schedules[id]?.dayKey === sch.dayKey,
+                                  )
+                                  .map((id) => schedules[id]?.time)
+                                  .filter(Boolean) as string[];
+                                return (
+                                  <div className={styles.pickerSection}>
+                                    <h3 className={styles.pickerLabel}>
+                                      Horário disponível
+                                    </h3>
+                                    <div className={styles.shiftGroups}>
+                                      {groupSlotsByShift(
+                                        generateSlots(svc.id, sch.dayKey),
+                                      ).map((shift) => (
+                                        <div
+                                          key={shift.label}
+                                          className={styles.shiftGroup}
                                         >
-                                          {slot.time}
-                                        </button>
+                                          <span className={styles.shiftLabel}>
+                                            {shift.label}
+                                          </span>
+                                          <div className={styles.timeGrid}>
+                                            {shift.slots.map((slot) => {
+                                              const isConflict =
+                                                conflictingTimes.includes(
+                                                  slot.time,
+                                                );
+                                              return (
+                                                <button
+                                                  key={slot.time}
+                                                  className={[
+                                                    styles.timeBtn,
+                                                    !slot.available ||
+                                                    isConflict
+                                                      ? styles.timeBtnUnavailable
+                                                      : "",
+                                                    sch.time === slot.time
+                                                      ? styles.timeBtnActive
+                                                      : "",
+                                                  ]
+                                                    .filter(Boolean)
+                                                    .join(" ")}
+                                                  disabled={
+                                                    !slot.available || isConflict
+                                                  }
+                                                  onClick={() =>
+                                                    slot.available &&
+                                                    !isConflict &&
+                                                    setTime(svc.id, slot.time)
+                                                  }
+                                                >
+                                                  {slot.time}
+                                                </button>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
                                       ))}
                                     </div>
                                   </div>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
+                                );
+                              })())}
+                          </>
+                        )}
                       </div>
                     </div>
                   )}

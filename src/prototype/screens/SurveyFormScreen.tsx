@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Star } from 'lucide-react';
 import { RadioButton } from '../../components/RadioButton/RadioButton';
 import { Button } from '../../components/Button/Button';
 import { AppHeader } from '../components/AppHeader';
@@ -9,8 +10,28 @@ import styles from './SurveyFormScreen.module.css';
 
 interface SurveyOption   { label: string; value: string; }
 interface SurveyQuestion { id: string; text: string; subtitle?: string; options: SurveyOption[]; }
-interface ServiceBlock   { id: string; name: string; questions: SurveyQuestion[]; }
-interface SurveyData     { eventName: string; services: ServiceBlock[]; eventQuestions: SurveyQuestion[]; }
+
+interface ProfessionalEntry {
+  id: string;
+  name: string;
+  initials: string;
+  ratingId: string; // ID único para a resposta deste profissional no mapa de answers
+}
+
+interface ProfessionalRatingGroup {
+  text: string;
+  subtitle?: string;
+  professionals: ProfessionalEntry[];
+}
+
+interface ServiceBlock {
+  id: string;
+  name: string;
+  questions?: SurveyQuestion[];
+  professionalRatingGroup?: ProfessionalRatingGroup;
+}
+
+interface SurveyData { eventName: string; services: ServiceBlock[]; eventQuestions: SurveyQuestion[]; }
 
 // ─── Demo data ───────────────────────────────────────────
 
@@ -60,10 +81,17 @@ const SURVEYS: Record<'A' | 'B', SurveyData> = {
         id: 'reflexology',
         name: 'Reflexologia',
         questions: [
-          { id: 're-q1', text: 'Como você avalia o atendimento do profissional?', subtitle: 'Considere a cordialidade, atenção e profissionalismo durante o atendimento.', options: RATING_OPTIONS },
-          { id: 're-q2', text: 'O serviço trouxe relaxamento e bem-estar?',        subtitle: 'Considere como você se sentiu durante e após a sessão.',                    options: RATING_OPTIONS },
-          { id: 're-q3', text: 'O serviço atendeu às suas expectativas?',          subtitle: 'Compare com o que você esperava antes do atendimento.',                     options: RATING_OPTIONS },
+          { id: 're-q1', text: 'O serviço trouxe relaxamento e bem-estar?',  subtitle: 'Considere como você se sentiu durante e após a sessão.',       options: RATING_OPTIONS },
+          { id: 're-q2', text: 'O serviço atendeu às suas expectativas?',    subtitle: 'Compare com o que você esperava antes do atendimento.',         options: RATING_OPTIONS },
         ],
+        professionalRatingGroup: {
+          text: 'Como você avalia o atendimento dos profissionais?',
+          subtitle: 'Considere a cordialidade, atenção e profissionalismo durante o atendimento.',
+          professionals: [
+            { id: 're-carlos',  name: 'Carlos Mendes',  initials: 'CM', ratingId: 're-carlos-rating'  },
+            { id: 're-beatriz', name: 'Beatriz Santos', initials: 'BS', ratingId: 're-beatriz-rating' },
+          ],
+        },
       },
     ],
     eventQuestions: [
@@ -96,20 +124,68 @@ export function SurveyFormScreen({
   }
 
   // ── Progresso e score ─────────────────────────────────
-  const allQuestions = [
-    ...survey.services.flatMap(s => s.questions),
-    ...survey.eventQuestions,
+  // IDs rastreados: perguntas normais + ratingId de cada profissional
+  const allTrackedIds: string[] = [
+    ...survey.services.flatMap(s => [
+      ...(s.questions?.map(q => q.id) ?? []),
+      ...(s.professionalRatingGroup?.professionals.map(p => p.ratingId) ?? []),
+    ]),
+    ...survey.eventQuestions.map(q => q.id),
   ];
-  const total     = allQuestions.length;
-  const answered  = allQuestions.filter(q => answers[q.id]).length;
+
+  const total     = allTrackedIds.length;
+  const answered  = allTrackedIds.filter(id => answers[id]).length;
   const canSubmit = answered === total;
 
   function handleSubmit() {
     if (!canSubmit) return;
-    const avg = allQuestions
-      .map(q => Number(answers[q.id]))
-      .reduce((a, b) => a + b, 0) / total;
+    const allValues = allTrackedIds.map(id => Number(answers[id]));
+    const avg = allValues.reduce((a, b) => a + b, 0) / total;
     onNavigate?.(avg >= 4 ? 'positive' : 'neutral');
+  }
+
+  // ── Helper: avaliação em estrelas ────────────────────
+  function StarRating({ id, value }: { id: string; value: string }) {
+    const rating = Number(value) || 0;
+    return (
+      <div className={styles.starRating} role="group" aria-label="Avaliação em estrelas">
+        {[1, 2, 3, 4, 5].map(n => (
+          <button
+            key={n}
+            type="button"
+            className={styles.starBtn}
+            onClick={() => setAnswer(id, String(n))}
+            aria-label={`${n} estrela${n > 1 ? 's' : ''}`}
+            aria-pressed={n <= rating}
+          >
+            <Star
+              size={28}
+              strokeWidth={1.5}
+              fill={n <= rating ? 'currentColor' : 'none'}
+              className={n <= rating ? styles.starFilled : styles.starEmpty}
+            />
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  // ── Helper: renderiza uma questionCard padrão ─────────
+  function renderQuestion(q: SurveyQuestion) {
+    return (
+      <div key={q.id} className={styles.questionCard}>
+        <div className={styles.questionTextBlock}>
+          <p className={styles.questionText}>{q.text}</p>
+          {q.subtitle && <p className={styles.questionSubtitle}>{q.subtitle}</p>}
+        </div>
+        <RadioButton
+          name={q.id}
+          options={q.options}
+          value={answers[q.id] ?? ''}
+          onChange={val => setAnswer(q.id, val)}
+        />
+      </div>
+    );
   }
 
   // ── Render ────────────────────────────────────────────
@@ -117,7 +193,6 @@ export function SurveyFormScreen({
     <div className={styles.page}>
       <div className={styles.stickyHeader}>
         <AppHeader />
-        {/* Barra de progresso — colada ao header, uma única unidade sticky */}
         <div className={styles.progressBar}>
           <div
             className={styles.progressFill}
@@ -142,22 +217,45 @@ export function SurveyFormScreen({
         {survey.services.map(svc => (
           <section key={svc.id} className={styles.section}>
             <h2 className={styles.sectionTitle}>{svc.name}</h2>
-            <div className={styles.questionList}>
-              {svc.questions.map(q => (
-                <div key={q.id} className={styles.questionCard}>
+
+            {/* Perguntas sobre o serviço */}
+            {svc.questions && svc.questions.length > 0 && (
+              <div className={styles.questionList}>
+                {svc.questions.map(renderQuestion)}
+              </div>
+            )}
+
+            {/* Card único de avaliação dos profissionais */}
+            {svc.professionalRatingGroup && (
+              <div className={styles.questionList}>
+                <div className={styles.questionCard}>
                   <div className={styles.questionTextBlock}>
-                    <p className={styles.questionText}>{q.text}</p>
-                    {q.subtitle && <p className={styles.questionSubtitle}>{q.subtitle}</p>}
+                    <p className={styles.questionText}>{svc.professionalRatingGroup.text}</p>
+                    {svc.professionalRatingGroup.subtitle && (
+                      <p className={styles.questionSubtitle}>{svc.professionalRatingGroup.subtitle}</p>
+                    )}
                   </div>
-                  <RadioButton
-                    name={q.id}
-                    options={q.options}
-                    value={answers[q.id] ?? ''}
-                    onChange={val => setAnswer(q.id, val)}
-                  />
+
+                  <div className={styles.profRatingList}>
+                    {svc.professionalRatingGroup.professionals.map((pro, idx) => (
+                      <div
+                        key={pro.id}
+                        className={[
+                          styles.profRatingItem,
+                          idx > 0 ? styles.profRatingItemDivider : '',
+                        ].filter(Boolean).join(' ')}
+                      >
+                        <div className={styles.profRatingIdentity}>
+                          <span className={styles.profAvatar}>{pro.initials}</span>
+                          <span className={styles.profName}>{pro.name}</span>
+                        </div>
+                        <StarRating id={pro.ratingId} value={answers[pro.ratingId] ?? ''} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </section>
         ))}
 
@@ -165,20 +263,7 @@ export function SurveyFormScreen({
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Sobre o evento</h2>
           <div className={styles.questionList}>
-            {survey.eventQuestions.map(q => (
-              <div key={q.id} className={styles.questionCard}>
-                <div className={styles.questionTextBlock}>
-                  <p className={styles.questionText}>{q.text}</p>
-                  {q.subtitle && <p className={styles.questionSubtitle}>{q.subtitle}</p>}
-                </div>
-                <RadioButton
-                  name={q.id}
-                  options={q.options}
-                  value={answers[q.id] ?? ''}
-                  onChange={val => setAnswer(q.id, val)}
-                />
-              </div>
-            ))}
+            {survey.eventQuestions.map(renderQuestion)}
           </div>
         </section>
 

@@ -205,3 +205,82 @@
   letter-spacing: 0.02em;
   text-align: center;
 }
+
+/* ─── Avaliação de profissionais — lista dentro de um único card ── */
+.profRatingList {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Cada bloco profissional: cabeçalho (avatar + nome) + RadioButton */
+.profRatingItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Divisor com respiro simétrico acima e abaixo da linha */
+.profRatingItemDivider {
+  margin-top: var(--spacing-lg);
+  border-top: var(--border-width-thin) solid var(--color-border-subtle);
+  padding-top: var(--spacing-lg);
+}
+
+/* ─── Star rating ──────────────────────────────────────── */
+.starRating {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.starBtn {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: transform var(--transition-fast);
+  color: var(--color-border-muted);
+}
+
+.starBtn:hover { transform: scale(1.15); }
+
+.starBtn:focus-visible {
+  outline: var(--border-width-medium) solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.starFilled { color: #F59E0B; }
+.starEmpty  { color: var(--color-border-muted); }
+
+/* Cabeçalho: avatar + nome funcionam como título do bloco de avaliação */
+.profRatingIdentity {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.profAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Nome em destaque — mesmo tamanho das opções dos Radio Buttons, peso semibold */
+.profName {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: 1.3;
+}

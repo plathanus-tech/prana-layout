@@ -382,3 +382,184 @@
 .ctaInner { max-width: 720px; margin: 0 auto; width: 100%; }
 
 .ctaInnerDesktop { max-width: none; margin: 0; padding-left: 120px; padding-right: 120px; }
+
+/* ─── Filter bar ──────────────────────────────────────── */
+.filterBar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--spacing-sm);
+}
+
+/* ─── Empty state ─────────────────────────────────────── */
+.emptyState {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  padding: var(--spacing-lg) 0;
+  text-align: center;
+}
+
+/* ─── Event card — list view (sem radio, com seta) ────── */
+.eventCardMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--color-brand-600);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  margin-bottom: 1px;
+}
+
+.eventCardMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.eventCardMetaSep {
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-regular);
+}
+
+.eventCardArrow {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.eventCard:hover .eventCardArrow {
+  color: var(--color-brand-500);
+}
+
+/* ─── Detail hero — back button + meta ───────────────── */
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  padding: 0;
+  margin-bottom: var(--spacing-xs);
+  line-height: 1.4;
+  transition: color var(--transition-fast);
+}
+
+.backBtn:hover {
+  color: var(--color-brand-600);
+}
+
+.eventDetailMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.eventDetailMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.eventDetailMetaSep {
+  color: var(--color-text-tertiary);
+}
+
+/* ─── Professional strip ─────────────────────────────── */
+.profPickerSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: var(--border-width-thin) solid var(--color-border-subtle);
+}
+
+.profStrip {
+  display: flex;
+  gap: var(--spacing-xs);
+  overflow-x: auto;
+  padding-bottom: var(--spacing-xs);
+  scrollbar-width: none;
+  flex-wrap: wrap;
+}
+.profStrip::-webkit-scrollbar { display: none; }
+
+.profBtn {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  min-width: 76px;
+  border-radius: var(--radius-sm);
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  text-align: center;
+}
+
+.profBtn:hover {
+  border-color: var(--color-brand-300);
+  background: var(--color-brand-50);
+}
+
+.profBtnActive {
+  background: var(--color-brand-50);
+  border-color: var(--color-brand-500);
+  border-width: 2px;
+  box-shadow: none;
+}
+
+.profAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.profBtnActive .profAvatar {
+  background: var(--color-brand-100);
+  color: var(--color-brand-700);
+}
+
+.profName {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.profBtnActive .profName {
+  color: var(--color-brand-700);
+}
+
+.profSpecialty {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  line-height: 1.3;
+  white-space: nowrap;
+}

@@ -37,7 +37,7 @@ interface TipoServico {
 }
 
 interface CatForm  { nome: string; descricao: string; }
-interface TipoForm { categoriaId: string; nome: string; duracao: string; valorRepasse: string; iconNome: string; }
+interface TipoForm { categoriaId: string; nome: string; valorRepasse: string; iconNome: string; }
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 const MOCK_CATEGORIAS: Categoria[] = [
@@ -110,17 +110,6 @@ function validateTipo(data: TipoForm, existing: TipoServico[]): Record<string, s
     t.nome.toLowerCase() === nome.toLowerCase()
   )) {
     errors.nome = 'Já existe um tipo com este nome nesta categoria';
-  }
-
-  if (!data.duracao.trim()) {
-    errors.duracao = 'Duração é obrigatória';
-  } else {
-    const dur = Number(data.duracao);
-    if (!Number.isInteger(dur) || dur < 5) {
-      errors.duracao = 'Mínimo de 5 minutos';
-    } else if (dur > 480) {
-      errors.duracao = 'Máximo de 480 minutos (8h)';
-    }
   }
 
   if (data.valorRepasse.trim()) {
@@ -334,7 +323,7 @@ export function ServicosScreen({ role, sidebarOffset = 0, onNavChange, initialTa
   }
 
   // ─── Modal: Novo Tipo de Serviço ───────────────────────────────────────────
-  const EMPTY_TIPO: TipoForm = { categoriaId: '', nome: '', duracao: '', valorRepasse: '', iconNome: '' };
+  const EMPTY_TIPO: TipoForm = { categoriaId: '', nome: '', valorRepasse: '', iconNome: '' };
   const [showTipoModal, setShowTipoModal] = useState(false);
   const [tipoForm,      setTipoForm]      = useState<TipoForm>(EMPTY_TIPO);
   const [tipoErrors,    setTipoErrors]    = useState<Record<string, string>>({});
@@ -351,7 +340,6 @@ export function ServicosScreen({ role, sidebarOffset = 0, onNavChange, initialTa
     const errors = validateTipo(tipoForm, tipos);
     if (Object.keys(errors).length > 0) { setTipoErrors(errors); return; }
 
-    const dur  = parseInt(tipoForm.duracao, 10);
     const val  = tipoForm.valorRepasse.trim()
       ? parseFloat(tipoForm.valorRepasse.replace(',', '.'))
       : null;
@@ -360,7 +348,7 @@ export function ServicosScreen({ role, sidebarOffset = 0, onNavChange, initialTa
       id:            `SVC-${String(tipos.length + 1).padStart(3, '0')}`,
       nome:          tipoForm.nome.trim(),
       categoriaId:   tipoForm.categoriaId,
-      duracaoPadrao: dur,
+      duracaoPadrao: 0,
       valorRepasse:  val,
       iconNome:      tipoForm.iconNome || undefined,
       status:        'ativo',
@@ -599,7 +587,6 @@ export function ServicosScreen({ role, sidebarOffset = 0, onNavChange, initialTa
                       <tr className={styles.headerRow}>
                         <th className={styles.th}>Nome do tipo</th>
                         <th className={styles.th}>Categoria</th>
-                        <th className={styles.th}>Duração padrão (min)</th>
                         <th className={styles.th}>Valor padrão de repasse</th>
                         <th className={styles.th}>Status</th>
                         <th className={styles.th}>Ação</th>
@@ -614,7 +601,7 @@ export function ServicosScreen({ role, sidebarOffset = 0, onNavChange, initialTa
                           return t.nome.toLowerCase().includes(q) || catNome.toLowerCase().includes(q);
                         });
                         if (filtered.length === 0) return (
-                          <tr><td colSpan={6} className={styles.emptyCell}>
+                          <tr><td colSpan={5} className={styles.emptyCell}>
                             {q ? 'Nenhum tipo de serviço encontrado.' : 'Nenhum tipo de serviço cadastrado.'}
                           </td></tr>
                         );
@@ -634,9 +621,6 @@ export function ServicosScreen({ role, sidebarOffset = 0, onNavChange, initialTa
                               </td>
                               <td className={styles.td}>
                                 <span className={styles.cellText}>{catNome}</span>
-                              </td>
-                              <td className={styles.td}>
-                                <span className={styles.cellText}>{tipo.duracaoPadrao} min</span>
                               </td>
                               <td className={styles.td}>
                                 <span className={styles.cellText}>{fmtCurrency(tipo.valorRepasse)}</span>
@@ -781,20 +765,6 @@ export function ServicosScreen({ role, sidebarOffset = 0, onNavChange, initialTa
             <IconPicker
               value={tipoForm.iconNome}
               onChange={name => handleTipoChange('iconNome', name)}
-            />
-
-            {/* Duração padrão */}
-            <Input
-              label="Duração padrão (min)"
-              type="number"
-              placeholder="Ex: 30"
-              value={tipoForm.duracao}
-              onChange={e => handleTipoChange('duracao', e.target.value)}
-              error={tipoErrors.duracao}
-              step={5}
-              helperText={!tipoErrors.duracao
-                ? 'Múltiplos de 5 são recomendados · Mínimo: 5 min · Máximo: 480 min (8h)'
-                : undefined}
             />
 
             {/* Valor padrão de repasse */}

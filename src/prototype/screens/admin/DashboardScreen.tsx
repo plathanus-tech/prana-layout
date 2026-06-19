@@ -9,6 +9,7 @@ import { useState } from 'react';
 import {
   CalendarCheck, Building2, ContactRound, DollarSign,
   MapPin, TrendingUp, Users, Activity, Heart, ChevronDown, Zap,
+  HelpCircle, X,
 } from 'lucide-react';
 import { Sidebar } from '../../../components/Sidebar/Sidebar';
 import styles from './DashboardScreen.module.css';
@@ -40,13 +41,26 @@ function TrendArrow({ dir }: { dir: TrendDir }) {
 interface StatCardProps {
   label: string; value: string; trend: string;
   trendDir: TrendDir; icon: React.ReactNode;
+  onHelp?: () => void;
 }
-function StatCard({ label, value, trend, trendDir, icon }: StatCardProps) {
+function StatCard({ label, value, trend, trendDir, icon, onHelp }: StatCardProps) {
   return (
     <div className={styles.statCard}>
       {/* Linha 1: título + ícone */}
       <div className={styles.statHeader}>
-        <span className={styles.statLabel}>{label}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
+          <span className={styles.statLabel}>{label}</span>
+          {onHelp && (
+            <span className={tooltipStyles.wrapper}>
+              <button className={styles.statHelpBtn} onClick={onHelp}>
+                <HelpCircle size={13} />
+              </button>
+              <span className={[tooltipStyles.tip, tooltipStyles.top].join(' ')}>
+                O que é o IBE?
+              </span>
+            </span>
+          )}
+        </span>
         <div className={styles.statIconBox}>{icon}</div>
       </div>
       {/* Linha 2: número */}
@@ -1026,15 +1040,59 @@ function BenchmarkSection({ filterEvent }: BenchmarkSectionProps) {
 }
 
 // ─── Impacto Tab Container ────────────────────────────────────────────────────
+// ─── IbeHelpModal ─────────────────────────────────────────────────────────────
+const IBE_CLASSES = [
+  { range: '0 – 59',   label: 'Baixo impacto',       color: '#EF4444' },
+  { range: '60 – 74',  label: 'Impacto moderado',     color: '#F59E0B' },
+  { range: '75 – 89',  label: 'Alto impacto',         color: '#3B82F6' },
+  { range: '90 – 100', label: 'Impacto estratégico',  color: '#10B981' },
+];
+function IbeHelpModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <div className={styles.modalTitleRow}>
+            <Activity size={18} className={styles.modalTitleIcon} />
+            <span className={styles.modalTitle}>IBE – Índice de Bem-Estar Empresarial</span>
+          </div>
+          <button className={styles.modalClose} onClick={onClose}><X size={14} /></button>
+        </div>
+        <div className={styles.modalBody}>
+          <p className={styles.modalText}>
+            Indicador desenvolvido para mensurar a efetividade das iniciativas de bem-estar
+            corporativo. O IBE integra métricas de adesão, satisfação, NPS, impacto percebido
+            e recorrência de participação, oferecendo ao RH uma visão clara da evolução do
+            programa e do engajamento dos colaboradores.
+          </p>
+          <div>
+            <span className={styles.modalSubtitle}>Classificação do IBE</span>
+            <div className={styles.ibeClassTable}>
+              {IBE_CLASSES.map(({ range, label, color }) => (
+                <div key={range} className={styles.ibeClassRow}>
+                  <span className={styles.ibeClassRange}>{range}</span>
+                  <span className={styles.ibeClassDot} style={{ background: color }} />
+                  <span className={styles.ibeClassLabel}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface ImpactoTabProps { role: UserRole; filterEvent: string; }
 function ImpactoTab({ role, filterEvent }: ImpactoTabProps) {
+  const [showIbeModal, setShowIbeModal] = useState(false);
   return (
     <div className={styles.impactoSection}>
 
       {/* ── Top KPIs ───────────────────────────────────────────────────────── */}
       <div className={styles.statCardsRow}>
         <StatCard label="NPS"                      value="82"    trend="+5 pts" trendDir="up" icon={<TrendingUp size={24} />} />
-        <StatCard label="IBE"                      value="7.8"   trend="+0.4"   trendDir="up" icon={<Activity   size={24} />} />
+        <StatCard label="IBE"                      value="7.8"   trend="+0.4"   trendDir="up" icon={<Activity   size={24} />} onHelp={() => setShowIbeModal(true)} />
         <StatCard label="Taxa de Participação"     value="83%"   trend="+6%"    trendDir="up" icon={<Users      size={24} />} />
         <StatCard label="Colaboradores Impactados" value="1.240" trend="+180"   trendDir="up" icon={<Heart      size={24} />} />
       </div>
@@ -1086,15 +1144,18 @@ function ImpactoTab({ role, filterEvent }: ImpactoTabProps) {
         <StatCard label="Melhora do foco"       value="+21%" trend="+4 pp" trendDir="up" icon={<Zap      size={24} />} />
       </div>
 
-      {/* ═══════════════════ SEÇÃO: EFICIÊNCIA ════════════════════════════════ */}
-      <h2 className={styles.impactoSectionTitle}>Eficiência</h2>
-
-      <div className={styles.statCardsRow}>
-        <StatCard label="Investimento total"    value="R$ 42,8k" trend="+8%"   trendDir="up"   icon={<DollarSign size={24} />} />
-        <StatCard label="Custo por colaborador" value="R$ 34,52" trend="-3%"   trendDir="down" icon={<Users      size={24} />} />
-        <StatCard label="Custo por ação"        value="R$ 18,70" trend="-5%"   trendDir="down" icon={<Activity   size={24} />} />
-        <StatCard label="Índice de retorno"     value="3,2x"     trend="+0,4"  trendDir="up"   icon={<TrendingUp size={24} />} />
-      </div>
+      {/* ═══════════════════ SEÇÃO: EFICIÊNCIA (somente Admin) ══════════════ */}
+      {role !== 'empresa' && (
+        <>
+          <h2 className={styles.impactoSectionTitle}>Eficiência</h2>
+          <div className={styles.statCardsRow}>
+            <StatCard label="Investimento total"    value="R$ 42,8k" trend="+8%"   trendDir="up"   icon={<DollarSign size={24} />} />
+            <StatCard label="Custo por colaborador" value="R$ 34,52" trend="-3%"   trendDir="down" icon={<Users      size={24} />} />
+            <StatCard label="Custo por ação"        value="R$ 18,70" trend="-5%"   trendDir="down" icon={<Activity   size={24} />} />
+            <StatCard label="Índice de retorno"     value="3,2x"     trend="+0,4"  trendDir="up"   icon={<TrendingUp size={24} />} />
+          </div>
+        </>
+      )}
 
       {/* ── Seções exclusivas do perfil Empresa ───────────────────────────── */}
       {role === 'empresa' && (
@@ -1109,6 +1170,8 @@ function ImpactoTab({ role, filterEvent }: ImpactoTabProps) {
           </div>
         </>
       )}
+
+      {showIbeModal && <IbeHelpModal onClose={() => setShowIbeModal(false)} />}
     </div>
   );
 }

@@ -1,21 +1,22 @@
 import { CheckCircle2 } from 'lucide-react';
 import { AppHeader } from '../components/AppHeader';
-// Reutiliza exatamente o mesmo módulo CSS do OnSiteSuccessScreen
 import styles from './OnSiteSuccessScreen.module.css';
 
-// ─── Demo data ──────────────────────────────────────────
+// ─── Demo data ───────────────────────────────────────────────────────────────
 
-const WALKIN_TIME   = '09:30';
-const DEMO_DATE     = 'hoje, segunda-feira · 13 abr';
-const DEMO_SERVICE  = 'Quick Massage';
+const EVENT_NAME = 'Programa de Bem-Estar';
+const CHECKIN_TIME = '09:15';
+const CHECKIN_DATE = 'hoje, segunda-feira · 13 abr';
 
-// ─── Componente ─────────────────────────────────────────
+// ─── Componente ──────────────────────────────────────────────────────────────
 
-interface WalkInSuccessScreenProps {
+interface ProfessionalCheckinSuccessScreenProps {
   viewport?: 'mobile' | 'desktop';
 }
 
-export function WalkInSuccessScreen({ viewport = 'desktop' }: WalkInSuccessScreenProps) {
+export function ProfessionalCheckinSuccessScreen({
+  viewport = 'desktop',
+}: ProfessionalCheckinSuccessScreenProps) {
   const isDesktop = viewport === 'desktop';
 
   return (
@@ -32,22 +33,22 @@ export function WalkInSuccessScreen({ viewport = 'desktop' }: WalkInSuccessScree
 
           {/* Texto */}
           <div className={styles.body}>
-            <h1 className={styles.title}>Encaixe confirmado</h1>
+            <h1 className={styles.title}>Check-in realizado</h1>
             <p className={[styles.subtitle, isDesktop ? styles.subtitleDesktop : ''].filter(Boolean).join(' ')}>
-              Seu agendamento foi registrado.
+              Sua presença foi confirmada com sucesso.
               <br />
-              Siga para o atendimento quando estiver pronto.
+              Bom atendimento!
             </p>
           </div>
 
           {/* Resumo */}
           <div className={styles.summary}>
-            <p className={styles.summaryLabel}>Resumo do agendamento</p>
+            <p className={styles.summaryLabel}>{EVENT_NAME}</p>
             <ul className={styles.summaryList}>
               <li className={styles.summaryItem}>
                 <CheckCircle2 size={14} className={styles.summaryIconConfirmed} />
                 <span>
-                  {DEMO_SERVICE} — <strong>{DEMO_DATE} · {WALKIN_TIME}</strong>
+                  Check-in registrado — <strong>{CHECKIN_DATE} · {CHECKIN_TIME}</strong>
                 </span>
               </li>
             </ul>
